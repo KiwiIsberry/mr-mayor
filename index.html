@@ -705,13 +705,28 @@ const EV={
 /* ======================= STATE ======================= */
 const rnd=n=>Math.floor(Math.random()*n);
 const shuffle=a=>{for(let i=a.length-1;i>0;i--){const j=rnd(i+1);[a[i],a[j]]=[a[j],a[i]]}return a};
+/* Start maps: 2 houses + 1 shop (side-touching a house) + 1 park, all inside one zone.
+   Coords are [row,col] inside the zone's 3x3 block. One is picked at random each new game;
+   the same 8 layouts can be printed as start cards for the table version. */
+const START_MAPS=[
+ {id:1,z:"old",  h:[[0,0],[1,1]],s:[0,1],g:[1,0]},
+ {id:2,z:"old",  h:[[2,0],[2,2]],s:[2,1],g:[1,1]},
+ {id:3,z:"river",h:[[0,0],[0,2]],s:[0,1],g:[1,1]},
+ {id:4,z:"river",h:[[1,0],[2,1]],s:[1,1],g:[0,2]},
+ {id:5,z:"soft", h:[[0,1],[1,2]],s:[1,1],g:[2,0]},
+ {id:6,z:"soft", h:[[1,0],[2,2]],s:[2,0],g:[0,2]},
+ {id:7,z:"open", h:[[0,0],[1,0]],s:[0,1],g:[2,2]},
+ {id:8,z:"open", h:[[2,1],[1,2]],s:[2,2],g:[0,0]},
+];
 let S;
 function fresh(){
   const s={v:5,round:0,coins:6,pieces:[],nextId:1,totems:[],ff:0,evDeck:[],disDeck:[],
     phase:"ready",events:[],disCard:null,blocked:false,zone:null,dice:null,hits:[],saved:[],mod:{},pending:[],
     tool:null,orient:"h",undo:[],log:[],msg:null,stats:{dis:0,blocked:0,hits:0,saved:0},result:null,modal:"lang",deal:0};
   const add=(type,cells)=>s.pieces.push({id:s.nextId++,type,cells,dmg:false,rf:false});
-  add("house",[[0,0]]); add("house",[[1,1]]); add("shop",[[0,2]]); add("green",[[1,0]]);
+  const L=START_MAPS[rnd(START_MAPS.length)], Z=ZONES[L.z], at=([r,c])=>[[Z.r[0]+r,Z.c[0]+c]];
+  L.h.forEach(x=>add("house",at(x))); add("shop",at(L.s)); add("green",at(L.g));
+  s.startMap=L.id; s.log.push({r:0,th:`ผังเริ่มต้น #${L.id}: เมืองเริ่มที่${Z.th}`,en:`Start map #${L.id}: your town begins in ${Z.en}`,kind:""});
   return s;
 }
 const count=(t,ok)=>S.pieces.filter(p=>p.type===t&&(!ok||!p.dmg)).length;
@@ -1375,6 +1390,8 @@ function renderModal(){
 }
 
 /* ======================= EVENTS ======================= */
+function startTip(){ const L=START_MAPS.find(m=>m.id===S.startMap); const z=L?L.z:null;
+  return z?T(`เมืองคุณเริ่มที่${ZONES[z].th} (ผัง #${L.id}) · พร้อมแล้วกด ▶ เริ่มวาระ`,`Your town starts in ${ZONES[z].en} (map #${L.id}) · press ▶ Start your term`):T("พร้อมเมื่อไร กด ▶ เริ่มวาระ ที่มุมขวาล่าง","Ready? Press ▶ Start your term") }
 function newGame(){ PREV=null; S=fresh(); S.modal="menu"; effects=[]; parts=[]; dmgShow.clear(); drops.clear(); render() }
 document.addEventListener("click",e=>{
   if(splashDone&&e.target.closest("#splash")){ splashDone(); return }
@@ -1393,11 +1410,11 @@ document.addEventListener("click",e=>{
   if(a.dataset.menu){ const m=a.dataset.menu;
     if(m==="lang"){ lang=lang==="th"?"en":"th"; try{localStorage.setItem("mm4-lang",lang)}catch(err){} render(); return }
     if(m==="rules"){ introPage=0; S.modal="intro"; render(); return }
-    if(m==="play"){ S.modal=null; render(); setTimeout(()=>toast(T("พร้อมเมื่อไร กด ▶ เริ่มวาระ ที่มุมขวาล่าง","Ready? Press ▶ Start your term")),250); return } }
+    if(m==="play"){ S.modal=null; render(); setTimeout(()=>toast(startTip()),250); return } }
   if(a.dataset.ipage!==undefined){ if(document.querySelector("#overlay .modal.intro")) showIntroPage(+a.dataset.ipage); else { introPage=+a.dataset.ipage; renderModal() } return }
   if(a.id==="help"){ if(S.phase!=="over"){introPage=0;S.modal="intro"; renderModal()} return }
   if(a.id==="lang-th"||a.id==="lang-en"){ lang=a.id==="lang-th"?"th":"en"; try{localStorage.setItem("mm4-lang",lang)}catch(err){} render(); return }
-  if(a.dataset.close){ const k=a.dataset.close; S.modal=null; if(k==="new"){ newGame(); S.modal=null; startRound(); return } if(k==="intro"&&S.round===0){ render(); setTimeout(()=>toast(T("พร้อมเมื่อไร กด ▶ เริ่มวาระ ที่มุมขวาล่าง","Ready? Press ▶ Start your term")),250); return } render(); return }
+  if(a.dataset.close){ const k=a.dataset.close; S.modal=null; if(k==="new"){ newGame(); S.modal=null; startRound(); return } if(k==="intro"&&S.round===0){ render(); setTimeout(()=>toast(startTip()),250); return } render(); return }
 });
 document.addEventListener("keydown",e=>{ if((e.key==="r"||e.key==="R")&&SIZE[S.tool]){S.orient=S.orient==="h"?"v":"h"; render()} });
 
