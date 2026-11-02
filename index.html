@@ -1,0 +1,1416 @@
+<!doctype html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<style>html,body{margin:0}:root{padding-top:env(safe-area-inset-top,0px)}</style>
+<title>Mr. Mayor</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Mr. Mayor">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Silkscreen:wght@400;700&family=Chakra+Petch:wght@500;600;700&display=swap">
+<style>
+/* Layout: an 8-bit city-builder cartridge. Night-blue cabinet frame; cream "dialog box" panels with hard pixel shadows.
+   Left: the pixel-art district (canvas, integer-scaled). Right: council desk. Bottom: build tray. Deliberately one look in any theme. */
+:root{
+  --cab:#262A48; --cab-2:#1E2140; --dot:#2E3356;
+  --panel:#FBF5E6; --panel-2:#F1E7CF; --ink:#1B1B2F; --muted:#6A6478;
+  --grass:#5CB85C; --red:#D94A3A; --gold:#F2C230; --sky:#5FA8E8; --plum:#7A6AB0; --go:#3FAE5A; --go-dk:#2B7D3E;
+  --f-pix:"Silkscreen","Chakra Petch",ui-monospace,monospace;
+  --f-body:"Chakra Petch","Leelawadee UI",Tahoma,system-ui,sans-serif;
+  color-scheme:light;
+}
+*{box-sizing:border-box}
+html{background:var(--cab)}
+body{background:var(--cab);background-image:radial-gradient(var(--dot) 1px,transparent 1.5px);background-size:8px 8px;color:var(--ink);
+  font-family:var(--f-body);font-size:15px;line-height:1.45;
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));
+  padding-block:14px calc(136px + env(safe-area-inset-bottom,0px))}
+button{font:inherit;color:inherit;cursor:pointer}
+button:focus-visible{outline:3px solid var(--gold);outline-offset:2px}
+.wrap{max-width:1240px;margin:0 auto;display:flex;flex-direction:column;gap:14px}
+.pix{font-family:var(--f-pix);letter-spacing:.02em}
+.box{background:var(--panel);border:3px solid var(--ink);box-shadow:5px 5px 0 var(--ink);min-width:0}
+.box-pad{padding:12px 14px}
+
+/* header */
+.top{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:10px}
+.brand{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.brand h1{margin:0;font-family:var(--f-pix);font-weight:700;font-size:clamp(24px,3.4vw,34px);color:var(--panel);line-height:1;text-shadow:3px 3px 0 var(--ink),0 0 0 var(--ink)}
+.brand h1 span{color:var(--gold)}
+.brand p{margin:0;color:#C9C6E0;font-size:14px}
+.tools{display:flex;gap:8px;align-items:center}
+.btn{border:3px solid var(--ink);background:var(--panel);box-shadow:3px 3px 0 var(--ink);padding:5px 11px;font-weight:600;font-size:13.5px}
+.btn:active{transform:translate(2px,2px);box-shadow:1px 1px 0 var(--ink)}
+.btn[aria-pressed="true"]{background:var(--gold)}
+.seg{display:flex}
+.seg .btn{box-shadow:none;font-family:var(--f-pix);font-size:12px;padding:5px 9px}
+.seg .btn+.btn{border-left:0}
+.seg{box-shadow:3px 3px 0 var(--ink)}
+
+/* status */
+.status{display:grid;grid-template-columns:1.2fr 1fr 1.1fr;gap:12px}
+@media (max-width:600px){.status{grid-template-columns:1fr 1fr}.status .riskbox{grid-column:1 / -1}}
+.stat{padding:8px 12px;position:relative}
+.stat .k{font-family:var(--f-pix);font-size:10px;letter-spacing:.06em;color:var(--muted);text-transform:uppercase}
+.stat .v{font-family:var(--f-pix);font-weight:700;font-size:26px;line-height:1.15;display:flex;align-items:center;gap:8px}
+.stat .v small{font-size:12px;color:var(--muted);font-weight:400}
+.stat .s{font-size:12.5px;color:var(--muted)}
+.coinimg{width:22px;height:22px;image-rendering:pixelated}
+.track{display:flex;gap:4px;margin-top:6px}
+.track .yr{display:flex;gap:2px;flex:1}
+.track i{flex:1;height:8px;background:#DCD2B8;border:1px solid var(--ink)}
+.track i.done{background:var(--muted)} .track i.now{background:var(--gold);animation:blink 1s steps(2) infinite}
+@keyframes blink{50%{background:var(--panel)}}
+.gauge{display:grid;grid-template-columns:repeat(11,1fr);gap:2px;margin-top:5px}
+.gauge i{height:10px;background:#DCD2B8;border:1px solid var(--ink)}
+.gauge i.on{background:var(--gold)} .gauge i.on.hi{background:var(--red)}
+.float{position:absolute;right:10px;top:4px;font-family:var(--f-pix);font-weight:700;font-size:15px;animation:floatup 1.3s steps(8) forwards}
+.float.up{color:var(--go)} .float.down{color:var(--red)}
+@keyframes floatup{0%{opacity:0;transform:translateY(8px)}15%{opacity:1}100%{opacity:0;transform:translateY(-18px)}}
+
+/* main */
+.main{display:grid;grid-template-columns:auto minmax(330px,1fr);gap:16px;align-items:start}
+@media (max-width:960px){.main{grid-template-columns:1fr}}
+.col{display:flex;flex-direction:column;gap:14px;min-width:0}
+.mapbox{padding:10px;justify-self:center}
+.mapgrid{display:grid;grid-template-columns:18px auto;grid-template-rows:18px auto;gap:4px}
+.lx,.ly{display:grid;font-family:var(--f-pix);font-size:11px;color:var(--muted);text-align:center}
+.lx{align-items:end} .ly{align-items:center}
+.lx span.hl,.ly span.hl{color:var(--red);font-weight:700}
+#stage{position:relative;line-height:0}
+#city{image-rendering:pixelated;image-rendering:crisp-edges;display:block;border:3px solid var(--ink);touch-action:manipulation;max-width:100%}
+#stage.shake{animation:shake .08s steps(2) infinite}
+@keyframes shake{0%{transform:translate(3px,-2px)}50%{transform:translate(-3px,2px)}100%{transform:translate(2px,3px)}}
+.legend{display:flex;flex-wrap:wrap;gap:6px 12px;justify-content:center;margin-top:8px;font-size:12.5px;color:var(--muted)}
+.legend img{width:16px;height:16px;image-rendering:pixelated;vertical-align:-3px;margin-right:4px}
+.legend{flex-direction:column;align-items:center}.legend>div{display:flex;flex-wrap:wrap;gap:6px 12px;justify-content:center}
+.legend .zl span{display:inline-flex;align-items:center;gap:4px;color:var(--ink)} .legend .zl i{width:12px;height:12px;border:2px solid var(--ink);display:inline-block}
+.zt{font-weight:700;font-size:22px;line-height:1.1}
+.goal .ck{width:auto;min-width:20px;padding:0 2px;color:var(--gold)} .goal.s1 .ck,.goal.s2 .ck{background:var(--ink)}
+.goal.s2 .bar i{background:repeating-linear-gradient(90deg,var(--go) 0 6px,var(--go-dk) 6px 8px)}
+.goal .bar{position:relative} .goal .bar b{position:absolute;top:-2px;bottom:-2px;width:2px;background:var(--ink)}
+.goal .gv small{font-size:11px;color:var(--muted)}
+.goalnote{font-size:12.5px;color:var(--muted)} .goalnote.bad{color:var(--red);font-weight:700}
+.stats3.s4{grid-template-columns:repeat(4,1fr)} .stats3.s4 b{color:var(--gold);text-shadow:1px 1px 0 var(--ink)}
+
+.tsteps{display:flex;align-items:center;gap:4px;flex-wrap:wrap;margin:-4px 0 8px;font-size:11.5px;color:var(--muted)}
+.tsteps i{font-style:normal;font-family:var(--f-pix);font-weight:700;font-size:12px;border:2px solid var(--ink);padding:0 5px;background:var(--panel-2);color:var(--ink)}
+.tsteps i.done{text-decoration:line-through;opacity:.45}.tsteps i.now{background:var(--gold)}
+.tsteps b{color:var(--ink);font-size:11px}.tsteps span{flex-basis:100%}
+#splash .evsplash{position:relative;display:flex;flex-direction:column;align-items:center;gap:12px;width:min(720px,96vw)}
+#splash.out .evsplash{transform:scale(.85) translateY(30px);opacity:0;transition:transform .25s ease-in,opacity .25s ease-in}
+#splash .evhead{font-family:var(--f-pix);font-weight:700;font-size:18px;color:var(--panel);background:var(--ink);border:3px solid var(--panel);padding:3px 12px;animation:pop .3s ease-out both}
+#splash .ecards{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px;width:100%}
+#splash .ecard{position:relative;will-change:transform,opacity;animation:ecdeal .45s cubic-bezier(.2,1.25,.4,1) var(--d) both}
+#splash .ecard>div{border:4px solid var(--ink);box-shadow:6px 6px 0 var(--ink);will-change:transform}
+#splash .efront{background:var(--panel-2);padding:10px;display:flex;flex-direction:column;gap:5px;transform:scaleX(0);animation:ecfront .22s ease-out calc(var(--d) + .55s) both}
+#splash .eback{position:absolute;inset:0;background:var(--cab);background-image:repeating-linear-gradient(45deg,#2E3356 0 6px,#262A48 6px 12px);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;color:var(--panel);font-family:var(--f-pix);font-weight:700;font-size:22px;z-index:1;animation:ecback .22s ease-in calc(var(--d) + .33s) both}
+#splash .eback b{color:var(--gold)} #splash .eback i{font-style:normal;font-size:13px;color:#C9C6E0}
+@keyframes ecdeal{0%{transform:translateY(120px) rotate(-12deg) scale(.6);opacity:0}100%{transform:none;opacity:1}}
+@keyframes ecfront{0%{transform:scaleX(0)}100%{transform:scaleX(1)}}
+@keyframes ecback{0%{transform:scaleX(1)}99%{transform:scaleX(0);opacity:1}100%{transform:scaleX(0);opacity:0;visibility:hidden}}
+#splash .ecard.plus .efront{background:#E3F2D6} #splash .ecard.minus .efront{background:#F8DDD6} #splash .ecard.special .efront{background:#DDEBF7}
+#splash .sk2{font-family:var(--f-pix);font-size:11px;letter-spacing:.08em;color:var(--muted)}
+#splash .et{font-weight:700;font-size:22px;line-height:1.15}
+#splash .eb{font-size:14px;color:var(--ink);opacity:.85;min-height:2.6em}
+#splash .delta{align-self:center;display:flex;align-items:center;gap:8px;font-family:var(--f-pix);font-weight:700;font-size:28px;padding:4px 14px;border:4px solid var(--ink);box-shadow:4px 4px 0 var(--ink);animation:boom .4s cubic-bezier(.2,1.4,.4,1) calc(var(--d) + .85s) both;transform:rotate(-4deg)}
+#splash .delta img{width:30px;height:30px;image-rendering:pixelated}
+#splash .delta.plus{background:var(--go);color:#fff;text-shadow:2px 2px 0 var(--go-dk)}
+#splash .delta.minus{background:var(--red);color:#fff;text-shadow:2px 2px 0 #8E2A22;font-size:22px}
+#splash .delta.special{background:var(--sky);color:#fff;text-shadow:2px 2px 0 #2F5F9E;font-size:22px}
+#splash .delta.none{background:var(--panel);color:var(--muted);font-size:18px}
+@keyframes boom{0%{transform:scale(2.6) rotate(-16deg);opacity:0}100%{transform:scale(1) rotate(-4deg);opacity:1}}
+#splash .evinc{display:flex;align-items:center;gap:8px;background:var(--gold);border:4px solid var(--ink);box-shadow:4px 4px 0 var(--ink);padding:5px 14px;font-weight:700;font-size:18px;animation:boom .4s cubic-bezier(.2,1.4,.4,1) var(--d) both}
+#splash .evinc img{width:22px;height:22px;image-rendering:pixelated}
+#splash .evsplash .skip{color:#C9C6E0;font-size:12px}
+@media (max-width:560px){#splash .ecards{gap:8px}#splash .et{font-size:16px}#splash .eb{font-size:12px}#splash .delta{font-size:18px;padding:3px 8px}#splash .delta img{width:20px;height:20px}#splash .efront{padding:6px}}
+.modal.intro{max-width:640px;gap:8px;padding:14px 18px}.modal.intro h3{font-size:24px}
+.ihead{display:flex;align-items:center;gap:10px;font-size:20px}.ihead .inum{font-family:var(--f-pix);font-size:12px;background:var(--ink);color:var(--panel);padding:2px 7px}
+.ibody{display:flex;flex-direction:column;gap:9px;font-size:15px;line-height:1.5}
+.ibody p{margin:0}.ibody p.sm{font-size:13px;color:var(--muted)}
+.ibody img{image-rendering:pixelated}
+.ig4{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+.ig4>div{border:3px solid var(--ink);background:var(--panel-2);padding:8px;display:grid;grid-template-columns:34px 1fr;column-gap:8px;align-items:center}
+.ig4 img{grid-row:span 2;width:30px;height:30px;object-fit:contain}.ig4>div>b{font-size:15px}.ig4 span{font-size:12.5px;color:var(--muted);line-height:1.3}
+.ig4.zones .z-old{background:#DCC193}.ig4.zones .z-river{background:#7FD6C4}.ig4.zones .z-soft{background:#B9A36B}.ig4.zones .z-open{background:#A8D86E}.ig4.zones span{color:var(--ink)}
+.bt{display:flex;flex-direction:column;gap:5px}
+.bt>div{display:grid;grid-template-columns:52px 1fr;column-gap:10px;align-items:center;border:2px solid var(--ink);background:var(--panel-2);padding:3px 8px}
+.bt>div>img,.bt>div>.tico4,.bt>div>.gl{grid-row:span 2;justify-self:center}
+.bt>div>img{width:32px;height:32px;object-fit:contain}.bt>div>img.wide{width:48px;height:24px}.bt>div>img.tall{width:18px;height:36px}
+.bt>div>b{font-size:14.5px;line-height:1.3}.bt span{font-size:12.5px;line-height:1.35}
+.bt .tico4{display:grid;grid-template-columns:1fr 1fr;gap:2px}.bt .tico4 img{height:16px;width:auto;max-width:24px}
+.bt .gl{font-style:normal;font-family:var(--f-pix);font-weight:700;font-size:22px}
+.flow{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:7px}
+.flow li{display:grid;grid-template-columns:30px 1fr;gap:10px;align-items:start}
+.flow li>b{width:30px;height:30px;display:flex;align-items:center;justify-content:center;background:var(--gold);border:3px solid var(--ink);font-family:var(--f-pix)}
+.flow li>div>b{display:block}.flow li>div>span{font-size:13.5px;color:var(--ink);opacity:.85}
+.exc{display:flex;gap:10px;align-items:center;border:3px solid var(--ink);background:#F8D5CF;padding:8px}.exc img{width:30px;height:30px}.exc>div>b{display:block}.exc>div>span{font-size:13px}
+.itab{border-collapse:collapse;width:100%;font-size:14px}.itab td,.itab th{border:2px solid var(--ink);padding:5px 8px}.itab th{background:var(--ink);color:var(--panel)}
+.itab td:not(:first-child){text-align:center;font-family:var(--f-pix);font-weight:700}.itab img{width:18px;height:18px;vertical-align:-3px;margin-right:6px;object-fit:contain}
+.ibody .rk{text-align:center;font-size:13.5px}
+.idots{display:flex;justify-content:center;gap:6px}.idots button{width:12px;height:12px;padding:0;border:2px solid var(--ink);background:var(--panel)}.idots button.on{background:var(--gold)}
+.inav{display:grid;grid-template-columns:1fr 2fr;gap:10px}.inav .primary{padding:11px}
+@media (max-width:520px){.ig4{grid-template-columns:1fr}.ihead{font-size:17px}}
+.modal.start{max-width:460px;align-items:stretch;text-align:center}
+.startart{border:3px solid var(--ink);line-height:0}.startart img{width:100%;aspect-ratio:64/36;image-rendering:pixelated}
+.langpick{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.langpick button{border:3px solid var(--ink);background:var(--panel-2);box-shadow:4px 4px 0 var(--ink);padding:16px 8px;display:flex;flex-direction:column;align-items:center;gap:2px}
+.langpick button b{font-size:24px}.langpick button span{font-size:13px;color:var(--muted)}
+.langpick button:hover,.langpick button:focus-visible{background:var(--gold)}
+.langpick button:active{transform:translate(2px,2px);box-shadow:2px 2px 0 var(--ink)}
+.menu{display:flex;flex-direction:column;gap:10px}.menu .primary small{display:block;font-size:12px;font-weight:500;text-shadow:none;opacity:.9}
+.langsw{border:0;background:none;color:var(--muted);text-decoration:underline;font-size:13px;padding:4px}
+/* desk */
+.desk{display:flex;flex-direction:column;gap:12px}
+.head{display:flex;justify-content:space-between;align-items:baseline;gap:8px;flex-wrap:wrap}
+.head h2{margin:0;font-size:18px;font-weight:700}
+.tagk{font-family:var(--f-pix);font-size:10px;letter-spacing:.06em;text-transform:uppercase;color:var(--panel);background:var(--ink);padding:2px 6px}
+.cards{display:grid;grid-template-columns:minmax(0,1fr);gap:8px}
+@media (max-width:440px){.cards{grid-template-columns:1fr}}
+.card{border:3px solid var(--ink);background:var(--panel-2);padding:9px 10px;min-height:112px;display:flex;flex-direction:column;gap:3px;min-width:0;position:relative;box-shadow:3px 3px 0 var(--ink)}
+.card .ck{font-family:var(--f-pix);font-size:9.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.card .t{font-weight:700;font-size:16px;line-height:1.25;text-wrap:balance}
+.card .b{font-size:13.5px;color:var(--muted)}
+.card.plus{background:#E3F2D6} .card.minus{background:#F8DDD6} .card.special{background:#DDEBF7}
+.card.dis{background:#F8D5CF} .card.blocked{background:#DDF1DF} .card.loc{background:var(--panel)}
+.card.empty{align-items:center;justify-content:center;text-align:center;color:var(--muted);border-style:dashed;background:transparent;box-shadow:none;font-size:13px}
+.card .real{font-size:12px;color:var(--muted);border-top:2px dotted var(--ink);padding-top:4px;margin-top:3px}
+.card .icon{width:auto;height:28px;max-width:44px;image-rendering:pixelated}
+.deal{animation:deal .55s cubic-bezier(.2,.9,.3,1.25) both}
+@keyframes deal{0%{transform:translateY(40px) rotate(-8deg) scale(.85);opacity:0}60%{opacity:1}100%{transform:none;opacity:1}}
+.flip{animation:flip .5s ease-out both}
+@keyframes flip{0%{transform:perspective(600px) rotateY(90deg)}100%{transform:none}}
+.cellcode{font-family:var(--f-pix);font-weight:700;font-size:38px;line-height:1}
+.card:not(.empty){display:grid;grid-template-columns:auto minmax(0,1fr);column-gap:10px;row-gap:1px;align-content:start;min-height:0}
+.card:not(.empty)>*{grid-column:2}
+.card>.cart,.card>.cartw{grid-column:1;grid-row:1 / span 5;align-self:start}
+.card .cart{width:128px;height:72px;object-fit:contain;image-rendering:pixelated;border:2px solid var(--ink);display:block;background:#CDEBFA}
+.card .cartw .cart{width:128px}
+.card.empty{min-height:56px}
+@media (max-width:420px){.card .cart,.card .cartw .cart{width:104px;height:58.5px}}
+.card .cartw{position:relative}.card .cstamp{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;background:rgba(221,241,223,.55)}
+.card .cstamp img{height:40px;width:auto;image-rendering:pixelated;animation:got .5s steps(4)}
+.card.deal .cart{animation:artin .6s steps(6) both;animation-delay:inherit}
+@keyframes artin{0%{filter:brightness(2.2) saturate(0)}100%{filter:none}}
+.zbar{display:grid;gap:0;margin:4px 0}
+.zbar>i{display:block}
+.zb{display:flex;align-items:center;gap:6px;border:3px solid var(--ink);padding:3px 6px;min-width:0;box-shadow:2px 2px 0 var(--ink);margin:0 2px}
+.zb img{width:22px;height:22px;image-rendering:pixelated;flex:none}.zb img.own{width:14px;height:14px;vertical-align:-2px}
+.zb b{display:block;font-size:13.5px;line-height:1.1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.zb span{display:block;font-size:11px;color:var(--ink);opacity:.8;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.zb.z-old{background:repeating-linear-gradient(0deg,#DCC193 0 6px,#C9A97A 6px 8px)}
+.zb.z-river{background:repeating-linear-gradient(90deg,#7FD6C4 0 8px,#5FBFAE 8px 10px)}
+.zb.z-soft{background:radial-gradient(#8C7744 1px,transparent 1.5px) 0 0/6px 6px,#B9A36B}
+.zb.z-open{background:radial-gradient(#F2C230 1px,transparent 1.5px) 0 0/9px 9px,#A8D86E}
+.zb.hit{animation:zhit .5s steps(2) 4;outline:3px solid var(--red)}
+@media (max-width:640px){.zb span{display:none}.zb b{font-size:12px}.zb img{width:16px;height:16px}.zb{padding:2px 4px;gap:4px}}
+@keyframes zhit{50%{transform:translateY(-3px);filter:brightness(1.25)}}
+.tray .h2{display:none}
+.hinfo{font-size:12.5px;line-height:1.5;margin:6px 2px 0;min-height:38px;color:var(--ink)}
+.hinfo .th{display:inline-flex;align-items:center;gap:3px;border:2px solid var(--ink);padding:0 5px;margin:1px 2px;background:#F8D5CF;font-weight:700}
+.hinfo .th.safe{background:#CDEBC9}.hinfo .th small{font-weight:500}
+.hinfo img{width:14px;height:14px;image-rendering:pixelated}
+.hinfo .zn.z-old{background:#DCC193}.hinfo .zn.z-river{background:#7FD6C4}.hinfo .zn.z-soft{background:#B9A36B}.hinfo .zn.z-open{background:#A8D86E}.hinfo .zn{padding:0 4px;border:2px solid var(--ink)}
+#splash{position:fixed;inset:0;z-index:80;display:none;align-items:center;justify-content:center;padding:16px}
+#splash.show,#splash.out{display:flex}
+#splash .sp-bg{position:absolute;inset:0;background:rgba(14,15,34,.55);animation:fadein .2s steps(3)}
+#splash.out .sp-bg{opacity:0;transition:opacity .25s}
+#splash .scard{position:relative;width:min(380px,92vw);background:#F8D5CF;border:4px solid var(--ink);box-shadow:8px 8px 0 var(--ink);padding:12px;display:flex;flex-direction:column;gap:6px;animation:slam .45s cubic-bezier(.2,1.3,.4,1) both, jolt .08s linear .45s 5;will-change:transform}
+#splash .scard.blk{background:#DDF1DF}
+#splash.out .scard{animation:none;transform:scale(.8) translateY(40px);opacity:0;transition:transform .25s ease-in,opacity .25s ease-in}
+#splash .sk{font-family:var(--f-pix);font-size:14px;letter-spacing:.1em;background:var(--red);color:#fff;align-self:flex-start;padding:2px 8px;border:3px solid var(--ink)}
+#splash .sart{width:100%;aspect-ratio:64/36;image-rendering:pixelated;border:3px solid var(--ink)}
+#splash .st{font-weight:700;font-size:30px;line-height:1.1}
+#splash .sz{font-size:16px;display:flex;align-items:center;gap:6px;flex-wrap:wrap}#splash .sz img{width:22px;height:22px;image-rendering:pixelated;vertical-align:-5px}
+#splash .stamp{position:absolute;right:14px;top:58px;display:flex;flex-direction:column;align-items:center;gap:2px;background:var(--panel);border:4px solid var(--go-dk,#2E8B3E);padding:8px 12px;transform:rotate(-10deg);animation:stamp .35s cubic-bezier(.2,1.4,.4,1) .7s both;font-family:var(--f-pix);font-weight:700;color:#2E8B3E;font-size:15px}
+#splash .stamp img{height:44px;width:auto;image-rendering:pixelated}#splash .stamp span{font-family:var(--f-body);font-size:14px}#splash .stamp small{font-size:16px}
+#splash .skip{font-size:11px;color:var(--muted);text-align:right}
+@keyframes slam{0%{transform:scale(2.2) rotate(-6deg);opacity:0}60%{opacity:1}100%{transform:none;opacity:1}}
+@keyframes jolt{0%{transform:translate(4px,-3px)}100%{transform:translate(-4px,3px)}}
+@keyframes stamp{0%{transform:scale(2.6) rotate(-25deg);opacity:0}100%{transform:rotate(-10deg) scale(1);opacity:1}}
+@keyframes fadein{from{opacity:0}}
+.goal.gain{animation:gain .6s steps(3) 3}.goal.gain .ck{animation:got .5s steps(4) 2}
+@keyframes gain{50%{background:#FFF1B8}}
+.starrow{display:flex;justify-content:center;gap:6px;font-size:34px;line-height:1}
+.starrow i{font-style:normal;color:#D8D0BC;text-shadow:2px 2px 0 var(--ink)}
+.starrow i.on{color:var(--gold);animation:staron .45s steps(4) both}
+@keyframes staron{0%{transform:scale(0) rotate(-90deg);color:#D8D0BC}70%{transform:scale(1.5)}100%{transform:none}}
+.mini{width:63px;height:63px;image-rendering:pixelated;border:2px solid var(--ink)}
+.row{display:flex;gap:12px;align-items:center;flex-wrap:wrap}
+.dice{display:flex;gap:10px}
+.die{width:46px;height:46px;background:var(--panel);border:3px solid var(--ink);box-shadow:3px 3px 0 var(--ink);display:grid;grid-template-columns:repeat(3,1fr);grid-template-rows:repeat(3,1fr);padding:5px;gap:3px}
+.die i.p{background:var(--ink)}
+.die.roll{animation:tumble .32s steps(4) infinite}
+@keyframes tumble{0%{transform:translateY(0) rotate(0)}25%{transform:translateY(-10px) rotate(90deg)}50%{transform:translateY(0) rotate(180deg)}75%{transform:translateY(-6px) rotate(270deg)}100%{transform:rotate(360deg)}}
+.die.land{animation:land .3s steps(3)}
+@keyframes land{0%{transform:translateY(-8px)}60%{transform:translateY(2px)}100%{transform:none}}
+.verdict{font-family:var(--f-pix);font-weight:700;font-size:15px;padding:4px 8px;border:3px solid var(--ink)}
+.verdict.safe{background:#CDEBC9} .verdict.hit{background:var(--red);color:var(--panel)}
+.msg{font-size:14px;background:var(--panel-2);border:2px solid var(--ink);padding:7px 10px}
+.msg:empty{display:none}
+.hint{font-size:13.5px;background:#FFF0B8;border:2px solid var(--ink);padding:7px 10px;display:flex;gap:8px;align-items:flex-start}
+.hint:empty{display:none}
+.hint::before{content:"!";font-family:var(--f-pix);font-weight:700;background:var(--gold);border:2px solid var(--ink);width:20px;height:20px;flex:0 0 20px;display:flex;align-items:center;justify-content:center;font-size:12px;line-height:1}
+.decks{display:flex;gap:12px;flex-wrap:wrap;font-size:12.5px;color:var(--muted)}
+.decks b{font-family:var(--f-pix);color:var(--ink)}
+
+/* totems + goals */
+.totems{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px}
+.totem{border:3px solid var(--ink);background:var(--panel-2);box-shadow:3px 3px 0 var(--ink);padding:8px 3px;display:flex;flex-direction:column;align-items:center;gap:2px;font-size:12.5px;text-align:center;line-height:1.2;min-width:0;font-weight:600}
+.totem img{width:32px;height:32px;image-rendering:pixelated}
+.totem .tico{position:relative;display:flex;align-items:flex-end;justify-content:center;height:34px}
+.totem .tico .tbig{width:auto;height:30px}
+.totem .tico .hz{position:absolute;right:-12px;top:-4px;width:16px;height:16px;background:var(--panel);border:2px solid var(--ink)}
+.totem .p{font-family:var(--f-pix);font-size:10.5px;color:var(--muted);font-weight:400}
+.totem.own{background:#BFE6C2}
+.totem.own .p{color:var(--go-dk)}
+.totem:disabled{opacity:.45;cursor:not-allowed;box-shadow:none}
+.totem:not(:disabled):active{transform:translate(2px,2px);box-shadow:1px 1px 0 var(--ink)}
+.totem.got{animation:got .6s steps(6)}
+@keyframes got{0%{transform:scale(1.25)}100%{transform:none}}
+.goals{display:flex;flex-direction:column;gap:9px}
+.goal{display:grid;grid-template-columns:22px minmax(0,1fr) auto;gap:3px 10px;align-items:center}
+.goal .ck{width:20px;height:20px;border:3px solid var(--ink);grid-row:span 2;background:var(--panel);display:flex;align-items:center;justify-content:center;font-family:var(--f-pix);font-size:12px;line-height:1}
+.goal.done .ck{background:var(--go);color:var(--panel)}
+.goal .gn{font-weight:700;font-size:14px} .goal .gn small{font-weight:500;color:var(--muted)}
+.goal .gv{font-family:var(--f-pix);font-size:13px}
+.goal .bar{grid-column:2 / 4;height:10px;border:2px solid var(--ink);background:#E5DBC0;overflow:hidden}
+.goal .bar i{display:block;height:100%;background:repeating-linear-gradient(90deg,var(--sky) 0 6px,#4A90D0 6px 8px);transition:width .4s steps(6)}
+.goal.done .bar i{background:repeating-linear-gradient(90deg,var(--go) 0 6px,var(--go-dk) 6px 8px)}
+.goal.bad .bar i{background:var(--red)}
+details.log summary{cursor:pointer;font-weight:700}
+.log ul{list-style:none;margin:8px 0 0;padding:0;display:flex;flex-direction:column;gap:5px;max-height:210px;overflow:auto;font-size:13px}
+.log li{display:grid;grid-template-columns:34px 1fr;gap:8px}
+.log li .r{font-family:var(--f-pix);color:var(--muted);font-size:11px}
+.log li.bad{color:#B0322A} .log li.good{color:var(--go-dk)}
+
+/* tray */
+.tray{position:fixed;left:0;right:0;bottom:0;z-index:40;background:var(--cab-2);border-top:3px solid var(--ink);
+  padding:8px max(12px,env(safe-area-inset-right,0px)) calc(8px + env(safe-area-inset-bottom,0px)) max(12px,env(safe-area-inset-left,0px))}
+.tray-in{max-width:1240px;margin:0 auto;display:grid;grid-template-columns:minmax(0,1fr) minmax(220px,300px);gap:7px 12px;align-items:center}
+.tray .tip{grid-column:1 / -1;font-size:13px;color:#D8D5EC;min-height:19px;line-height:1.35}
+.tray .tip b{color:var(--gold)} .tray .tip .w{color:#FF9B8E;font-weight:700}
+.pal{display:flex;gap:6px;min-width:0}
+.pal button{flex:1 1 0;min-width:0;border:3px solid var(--ink);background:var(--panel);box-shadow:3px 3px 0 #0E0F22;padding:4px 2px 3px;display:flex;flex-direction:column;align-items:center;gap:0;line-height:1.15}
+.pal button img{width:32px;height:32px;image-rendering:pixelated}
+.pal .nm{font-size:11.5px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%}
+.pal .pr{font-family:var(--f-pix);font-size:10.5px;color:var(--muted);display:flex;align-items:center;gap:2px}
+.pal .pr img{width:10px;height:10px}
+.pal button[aria-pressed="true"]{background:var(--gold);transform:translateY(-4px);box-shadow:3px 7px 0 #0E0F22}
+.pal button:disabled,.pal button.off{opacity:.4;cursor:not-allowed}
+.pal button:not(:disabled):active{transform:translate(2px,2px);box-shadow:1px 1px 0 #0E0F22}
+.pal .sep{flex:0 0 3px;background:#3A3F68;margin:4px 2px}
+.pal .tool .glyph{width:32px;height:32px;display:flex;align-items:center;justify-content:center;font-family:var(--f-pix);font-weight:700;font-size:18px}
+.primary{border:3px solid var(--ink);background:var(--go);color:#fff;box-shadow:4px 4px 0 #0E0F22;padding:13px 10px;font-weight:700;font-size:16px;width:100%;text-shadow:2px 2px 0 var(--go-dk)}
+.primary:active{transform:translate(2px,2px);box-shadow:2px 2px 0 #0E0F22}
+.primary:disabled{opacity:.6;cursor:wait}
+.primary.red{background:var(--red);text-shadow:2px 2px 0 #8E2A22}
+.primary.pulse{animation:pulsebtn 1.2s steps(2) infinite}
+@keyframes pulsebtn{50%{background:#55C36E}}
+.primary.red.pulse{animation:pulsered 1.2s steps(2) infinite}
+@keyframes pulsered{50%{background:#E86A5B}}
+.choice{display:grid;grid-template-columns:1fr 1fr;gap:8px;width:100%}.choice button{white-space:nowrap;min-width:0;overflow:hidden;text-overflow:ellipsis}
+.choice button{flex:1;border:3px solid var(--ink);background:var(--panel);box-shadow:3px 3px 0 #0E0F22;padding:11px 6px;font-weight:700}
+.choice button.main{background:var(--go);color:#fff}
+@media (max-width:780px){.tray-in{grid-template-columns:1fr}.pal .nm{display:none}.pal button img{width:26px;height:26px}}
+
+/* toast + modal */
+.toast{position:fixed;left:50%;top:max(12px,env(safe-area-inset-top,0px));transform:translate(-50%,-24px);opacity:0;z-index:60;pointer-events:none;
+  background:var(--panel);border:3px solid var(--ink);box-shadow:4px 4px 0 var(--ink);padding:9px 16px;font-weight:700;font-size:15px;transition:opacity .2s steps(3),transform .2s steps(3);max-width:min(92vw,520px);text-align:center}
+.toast.show{opacity:1;transform:translate(-50%,0)}
+.toast.bad{background:var(--red);color:#fff} .toast.good{background:var(--go);color:#fff}
+.overlay{position:fixed;inset:0;background:rgba(14,15,34,.7);display:flex;align-items:center;justify-content:center;z-index:70;
+  padding:max(16px,env(safe-area-inset-top,0px)) max(16px,env(safe-area-inset-right,0px)) max(16px,env(safe-area-inset-bottom,0px)) max(16px,env(safe-area-inset-left,0px))}
+.modal{max-width:560px;width:100%;padding:20px;display:flex;flex-direction:column;gap:12px;max-height:100%;overflow:auto;animation:pop .25s ease-out}
+.modal.still{animation:none}
+.modal.intro .ipg{display:none;flex-direction:column;gap:8px}.modal.intro .ipg.on{display:flex}
+@keyframes pop{0%{transform:scale(.6);opacity:0}100%{transform:none;opacity:1}}
+.modal h3{margin:0;font-family:var(--f-pix);font-size:30px;line-height:1.1;text-align:center}
+.modal h3 span{background:var(--gold);padding:0 .15em}
+.modal .lead{text-align:center;color:var(--muted);margin:0}
+.steps{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:10px}
+.steps li{display:grid;grid-template-columns:40px minmax(0,1fr);gap:10px;align-items:start}
+.steps img{width:40px;height:40px;image-rendering:pixelated;border:3px solid var(--ink);background:var(--panel-2)}
+.steps div>b{display:block;font-size:15px} .steps span{font-size:13.5px;color:var(--muted)}
+.big{font-family:var(--f-pix);font-weight:700;font-size:clamp(34px,8vw,52px);line-height:1;text-align:center}
+.stats3{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.stats3 div{background:var(--panel-2);border:2px solid var(--ink);padding:8px;text-align:center}
+.stats3 b{display:block;font-family:var(--f-pix);font-size:22px}
+.stats3 span{font-size:11.5px;color:var(--muted)}
+.debrief{font-size:14px;background:#DDEBF7;border:2px solid var(--ink);padding:10px 12px}
+.ghostbtn{border:3px solid var(--ink);background:var(--panel);padding:10px;font-weight:700}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+/* ===== wide (landscape) app layout: board biggest, sidebar scrolls, build tray sticky in sidebar ===== */
+@media (min-width:821px) and (orientation:landscape){
+  html,body{height:100%}
+  body{overflow:hidden;padding:10px max(12px,env(safe-area-inset-right,0px)) max(10px,env(safe-area-inset-bottom,0px)) max(12px,env(safe-area-inset-left,0px))}
+  .wrap{height:100%;max-width:1680px;gap:10px}
+  .top{flex:none}
+  .brand h1{font-size:26px} .brand p{font-size:13px}
+  .main{flex:1;min-height:0;grid-template-columns:auto minmax(360px,1fr);gap:14px;align-items:stretch}
+  .mapcol{min-height:0;align-items:center;justify-content:center}
+  .mapbox{padding:8px 10px;max-height:100%}
+  .side{min-height:0;overflow-y:auto;gap:10px;padding:0 8px 0 0;overscroll-behavior:contain}
+  .side .tray{position:sticky;bottom:0;margin-top:auto;border:3px solid var(--ink);box-shadow:5px 5px 0 var(--ink);padding:8px;z-index:5}
+  .side .tray-in{grid-template-columns:minmax(0,1fr)}
+  .side .pal{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:6px}
+  .side .pal .sep{display:none}
+  .side .pal button>img,.side .pal .tool .glyph{width:22px;height:22px;font-size:15px}
+  .side .pal button{padding:3px 2px 2px}
+  .side .pal .nm{font-size:10.5px}
+  .side .tray .tip{font-size:12px;min-height:0}
+  .side .primary{padding:9px;font-size:15px}
+  .side .choice button{padding:9px 6px}
+  .mapbox .hinfo{display:none}
+  .tray .h2{display:block;color:#D8D5EC;margin:0 0 6px;height:auto;min-height:36px}
+  .tray .h2 .th{color:var(--ink)} .tray .h2 b{color:var(--gold)} .tray .h2 .zn{color:var(--ink)}
+  .zb{padding:2px 6px;gap:5px;box-shadow:2px 2px 0 var(--ink)}
+  .zb img{width:18px;height:18px}
+  .zb>div{display:flex;gap:6px;align-items:baseline;min-width:0}
+  .zb b{font-size:13px;flex:none;overflow:visible}.zb span{font-size:10.5px;flex:1;min-width:0}
+  .status .stat .k,.status .stat .s{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .status .stat .v small{font-size:11px;white-space:nowrap}
+  .status .track{gap:2px} .status .gauge{gap:1px}
+  .zbar{margin:2px 0}
+  .side .primary{padding:10px}
+  .status{grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+  .status .stat{padding:5px 9px}
+  .status .stat .v{font-size:20px}
+  .status .stat .s{font-size:11.5px}
+  .status .coinimg{width:18px;height:18px}
+  .desk{gap:8px} .box-pad{padding:10px 12px}
+  .legend{display:none}
+  .hinfo{min-height:0;height:38px;overflow:hidden;font-size:12px;line-height:1.45}
+}
+@media (min-width:821px) and (orientation:landscape) and (max-height:720px){
+  .side .pal{grid-template-columns:repeat(10,minmax(0,1fr));gap:4px}
+  .side .pal .nm{display:none}
+  .side .tray .tip{display:none}
+  .status .track,.status .gauge{display:none}
+}
+@media (min-width:821px) and (orientation:landscape) and (max-width:1199px){ .brand p{display:none} }
+</style>
+
+<div class="wrap">
+  <header class="top">
+    <div class="brand"><h1>MR.<span>MAYOR</span></h1><p id="subtitle"></p></div>
+    <div class="tools">
+      <div class="seg" role="group" aria-label="Language"><button class="btn" id="lang-th" type="button">TH</button><button class="btn" id="lang-en" type="button">EN</button></div>
+      <button class="btn" id="newgame" type="button"></button>
+      <button class="btn" id="help" type="button" aria-label="How to play">?</button>
+    </div>
+  </header>
+  <section class="main">
+    <div class="col mapcol">
+      <div class="box mapbox">
+        <div class="zbar" id="zbar-top"></div>
+        <div class="mapgrid"><div></div><div class="lx" id="lx"></div><div class="ly" id="ly"></div>
+          <div id="stage"><canvas id="city" width="112" height="112" aria-label="City map"></canvas></div></div>
+        <div class="zbar" id="zbar-bot"></div><div class="hinfo" id="hinfo"></div><div class="legend" id="legend"></div>
+      </div>
+    </div>
+    <div class="col side" id="side">
+      <section class="status" id="status"></section>
+      <div class="box box-pad desk" id="desk"></div>
+      <div class="box box-pad" id="totem-panel"></div>
+      <div class="box box-pad" id="goal-panel"></div>
+      <details class="box box-pad log" id="log"></details>
+      <nav class="tray" id="tray" aria-label="Build"><div class="hinfo h2" id="hinfo2"></div><div id="trayin"></div></nav>
+    </div>
+  </section>
+</div>
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+<div id="overlay"></div>
+<div id="splash" aria-live="assertive"></div>
+
+<script>
+(function(){
+"use strict";
+/* ===================== RULES v4 (Nov 2 2026) =====================
+   4 named zones, each with a home hazard. Disaster cards name a zone + building types. Shops/factories must touch a home. Reinforce 3. Play all 12 rounds, 2-tier stars.
+   (old v3 note)
+   7x7 board, cross road on column D and row 4 -> 36 lots. 12 rounds = 4 years.
+   Round: 2 event cards -> income -> 2d6 <= risk -> disaster card -> (no Totem) location card -> 3x3 zone damaged -> build -> win check. */
+const N=7, ROAD=3, ROUNDS=12, TILE=16;
+const PRICE={house:4,shop:7,factory:8,condo:10,green:4}, TOTEM_STEPS=[8,12,16,20];
+const INCOME={house:1,shop:2,factory:4,condo:1}, SIZE={factory:2,condo:2}, NEEDS_HOME={shop:1,factory:1}, RF_PRICE=3;
+const STAR={income:[22,36],housing:[14,24],green:[3,6],totems:[2,4]}, STAR_KEYS=["income","housing","green","totems"];
+const STAR_LAB={income:["รายได้","income","เศรษฐกิจ","Economy","รายได้ต่อรอบ","income / round"],housing:["ที่อยู่","housing","สังคม","Society","ที่อยู่ บ้าน 1 · คอนโด 4","housing: house 1 · block 4"],
+  green:["สวน","park(s)","สิ่งแวดล้อม","Environment","พื้นที่สีเขียว","parks"],totems:["Totem","Totem(s)","พร้อมรับภัย","Disaster-ready","Totem","Totems"]};
+const RISK0=4, RISK_YEAR=2, RISK_FACTORY=1, RISK_CAP=12;
+const COLS="ABCDEFG", TOT=["flood","quake","storm","fire"];
+const TOTEM_OF={flood:"flood",quake:"quake",storm:"storm",fire:"fire",ffire:"fire"};
+const isRoad=(r,c)=>r===ROAD||c===ROAD;
+const ZONES={old:{r:[0,2],c:[0,2],hz:"fire",th:"ย่านเก่า",en:"Old Town",col:"#C9A97A"},river:{r:[0,2],c:[4,6],hz:"flood",th:"ริมแม่น้ำ",en:"Riverside",col:"#4FAE9E"},
+  soft:{r:[4,6],c:[0,2],hz:"quake",th:"ดินอ่อน",en:"Soft Ground",col:"#A08A55"},open:{r:[4,6],c:[4,6],hz:"storm",th:"ที่โล่ง",en:"Open Plain",col:"#7CC45A"}};
+const zoneOf=(r,c)=>isRoad(r,c)?null:r<ROAD?(c<ROAD?"old":"river"):(c<ROAD?"soft":"open");
+const HAZ={flood:{hits:["house","shop"],zones:["river","river","soft"]},quake:{hits:["condo","factory"],zones:["soft","soft","open"]},
+  storm:{hits:["house","factory"],zones:["open","open","old"]},fire:{hits:["shop","condo"],zones:["old","old","river"]}};
+const LOTS=[];for(let r=0;r<N;r++)for(let c=0;c<N;c++)if(!isRoad(r,c))LOTS.push([r,c]);
+const code=(r,c)=>COLS[c]+(r+1);
+const reduce=()=>window.matchMedia&&matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+/* ======================= PIXEL ART ======================= */
+const PAL={k:"#1B1B2F",w:"#F4F4F4",g:"#5CB85C",G:"#3E8E41",l:"#8FD16A",r:"#D94A3A",R:"#9E2B25",y:"#F2C230",Y:"#D08A1C",
+  b:"#7FC1F2",B:"#2F5F9E",s:"#A0A8B0",S:"#5A6270",t:"#8A5A2B",T:"#5C3A1A",o:"#E9783A",p:"#8C7CC4",P:"#5B4E8F",c:"#F1E3C2",C:"#D4BB8A",
+  a:"#3A3F4A",A:"#2C3038",m:"#E7C548",n:"#F7A8B8"};
+function canvasOf(w,h){const c=document.createElement("canvas");c.width=w;c.height=h;return c}
+function fromMap(rows){const h=rows.length,w=rows[0].length,c=canvasOf(w,h),x=c.getContext("2d");
+  rows.forEach((row,y)=>{[...row].forEach((ch,i)=>{if(ch!=="."){x.fillStyle=PAL[ch];x.fillRect(i,y,1,1)}})});return c}
+function draw(w,h,fn){const c=canvasOf(w,h),x=c.getContext("2d");const R=(col,a,b,ww,hh)=>{x.fillStyle=PAL[col]||col;x.fillRect(a,b,ww,hh)};fn(R,x);return c}
+const SPR={};
+SPR.house=fromMap(["................","......kkkk......",".....krrrrk.....","....krrrrrrk....","...krrrrrrrrk...","..krrrrrrrrrrk..",".kRRRRRRRRRRRRk.",".kkkkkkkkkkkkkk.",
+ "..kcccccccccck..","..kcbbccccbbck..","..kcbbcttcbbck..","..kcccctTcccck..","..kcccctTcccck..","..kkkkkkkkkkkk..","..GGGGGGGGGGGG..","................"]);
+SPR.shop=fromMap(["................","................",".kkkkkkkkkkkkkk.",".kwowowowowowok.",".kwowowowowowok.","..kkkkkkkkkkkk..","..kcccccccccck..","..kcbbbccbbbck..",
+ "..kcbBbccbBbck..","..kcbbbccbbbck..","..kccccttcccck..","..kcccctTcccck..","..kcccctTcccck..","..kkkkkkkkkkkk..","..GGGGGGGGGGGG..","................"]);
+SPR.green=fromMap(["................",".....kkkkkk.....","....kGGggGGk....","...kGgglllggGk..","..kGgglllllggGk.","..kGggllllgggGk.","..kGGggggggGGGk.","...kGGGggGGGGk..",
+ "....kkGGGGkkk...","......kttk......",".....ktTtk......","..y...kTk...r...",".yyy..kTk..rrr..","..y...GGG...r...","................","................"]);
+SPR.condo_v=draw(16,32,R=>{R("G",2,30,12,1);R("k",1,3,14,27);R("C",2,4,12,25);R("S",2,4,12,2);R("k",7,0,1,3);R("r",7,0,1,1);
+  for(let y=8;y<=23;y+=4)for(const x of[3,7,11]){R("B",x,y,2,2);R("b",x,y,1,1)} R("t",7,25,2,4);R("T",8,26,1,3)});
+SPR.condo_h=draw(32,16,R=>{R("G",2,14,28,1);R("k",1,2,30,12);R("C",2,3,28,10);R("S",2,3,28,2);
+  for(let x=4;x<=26;x+=4){if(x===16)continue;R("B",x,6,2,2);R("b",x,6,1,1);R("B",x,9,2,2);R("b",x,9,1,1)} R("t",15,9,2,4);R("T",16,10,1,3)});
+SPR.factory_h=draw(32,16,R=>{R("G",2,14,28,1);R("k",1,6,30,8);R("p",2,7,28,6);
+  for(let i=0;i<3;i++){const x0=2+i*7;for(let s=0;s<4;s++){R("k",x0+s,5-s,1,1);R("P",x0+s,6-s,1,1+s)} R("k",x0+4,2,1,4)}
+  R("k",23,0,6,7);R("S",24,1,4,6);R("r",24,2,4,1);R("B",4,9,3,2);R("B",10,9,3,2);R("b",4,9,1,1);R("b",10,9,1,1);R("Y",17,9,3,4);R("k",17,8,3,1)});
+SPR.factory_v=draw(16,32,R=>{R("G",2,30,12,1);R("k",1,10,14,20);R("p",2,11,12,18);R("k",9,0,6,11);R("S",10,1,4,10);R("r",10,3,4,1);
+  for(let s=0;s<4;s++){R("k",2+s,9-s,1,1);R("P",2+s,10-s,1,1+s)} R("k",6,6,1,5);
+  for(let y=14;y<=22;y+=4){R("B",4,y,3,2);R("b",4,y,1,1);R("B",9,y,3,2);R("b",9,y,1,1)} R("Y",6,26,4,3);R("k",6,25,4,1)});
+SPR.chimney={factory_h:[25,0],factory_v:[11,0]};
+SPR.coin=fromMap(["..yyyy..",".yywyyy.","yywyyyYy","yywyyyYy","yyyyyyYy","yyyyyYYy",".yYYYYy.","..yyyy.."]);
+SPR.flood=fromMap(["........",".bb..bb.","b..bb..b","........",".BB..BB.","B..BB..B","........","........"]);
+SPR.fire=fromMap(["...r....","...rr...","..rorr..",".rroorr.",".roooyr.","rooyyoor","royyyyor",".rrrrrr."]);
+SPR.quake=fromMap(["........","k.......","k..k....",".k.k..k.",".kk.k.k.","..k.kk.k","....k..k","........"]);
+SPR.storm=fromMap(["..ss....",".ssss.s.","ssssssss","SSSSSSSS","...yy...","..yy....","...yy...","..y....."]);
+SPR.shield=fromMap(["..kkkk..",".kbbbbk.","kbwbbbbk","kbwbbbbk","kbbbbbbk",".kbbbbk.","..kbbk..","...kk..."]);
+SPR.ffire=SPR.fire;
+function gray(src){const c=canvasOf(src.width,src.height),x=c.getContext("2d");x.drawImage(src,0,0);const d=x.getImageData(0,0,c.width,c.height),a=d.data;
+  for(let i=0;i<a.length;i+=4){const v=(a[i]*.3+a[i+1]*.55+a[i+2]*.15)*.62;a[i]=v;a[i+1]=v;a[i+2]=v+6}x.putImageData(d,0,0);
+  x.fillStyle=PAL.k;const w=c.width,h=c.height;for(let i=0;i<Math.min(w,h)-4;i++){if(i%5!==3)x.fillRect(3+i,2+Math.floor(i*.9)%h,1,1)}
+  for(let i=0;i<6;i++)x.fillRect(w-5-i,4+i*2,1,1);return c}
+["house","shop","green","condo_v","condo_h","factory_h","factory_v"].forEach(k=>SPR[k+"_d"]=gray(SPR[k]));
+function sprKey(p){const o=p.cells.length>1?(p.cells[0][0]===p.cells[1][0]?"_h":"_v"):"";return p.type+o}
+/* ===== Totem sprites: the real thing, not a symbol ===== */
+const TSPR={};
+TSPR.fire=fromMap([ // fire truck
+"......sssssssssss...",
+".....s.s.s.s.s.s.s..",
+"kkkkkkkkkkkkkkkk....",
+"krrrrrrrrrrrrrk.kkk.",
+"krwrrwrrwrrwrrkkbbbk",
+"krrrrrrrrrrrrrkrbbbk",
+"kRRRRRRRRRRRRRRrrrrk",
+"kwwRRRRRRRRRRRRRRRyk",
+"kkkkkkkkkkkkkkkkkkkk",
+"..kSSk.......kSSk...",
+".kSssSk.....kSssSk..",
+"..kSSk.......kSSk..."]);
+TSPR.flood=fromMap([ // levee with sandbags
+"................",
+"..CCk.CCk.CCk...",
+".CCCCkCCCCkCCCk.",
+".kkkkkkkkkkkkkk.",
+".kssssssssssssk.",
+".ksSssssSssssSk.",
+".kssssssssssssk.",
+".ksssSssssSsssk.",
+".kssssssssssssk.",
+".kkkkkkkkkkkkkk.",
+"bBBbBBBbBBBbBBBb",
+"BBBBBBBBBBBBBBBB"]);
+TSPR.quake=fromMap([ // structural engineer with hard hat
+"....kkkkk.....",
+"...kyyyyyk....",
+"..kyywyyyyk...",
+"..kyyyyyyyk...",
+".kkkkkkkkkkk..",
+"kYYYYYYYYYYYk.",
+".kkkkkkkkkkk..",
+"...kcccccck...",
+"...kckcckck...",
+"...kcccccck...",
+"....kcccck....",
+"..kkoooookk.ks",
+".koooywyoook.s",
+".koooywyoookss",
+".koooooooook.."]);
+TSPR.storm=fromMap([ // warning siren tower
+"......kk......",
+"....kkrrkk....",
+"...krrwrrrk...",
+"...krrrrrrk...",
+"...kkkkkkkk...",
+"....kyyyyk....",
+".....kssk.....",
+"..k..kssk..k..",
+".k...kssk...k.",
+"..k..kssk..k..",
+".....kssk.....",
+".....kssk.....",
+"....kssssk....",
+"...kssssssk...",
+"..kkkkkkkkkk.."]);
+const TURL={}; for(const k in TSPR) TURL[k]=TSPR[k].toDataURL();
+const timg=(k,cls)=>`<img src="${TURL[k]}" alt="" class="${cls||""}">`;
+const TOTEM_ACT={fire:["รถดับเพลิงมาดับไฟแล้ว!","The fire truck put it out!"],flood:["คันกั้นน้ำกันน้ำไว้ได้!","The flood wall held the water back!"],
+  quake:["วิศวกรเสริมโครงสร้างไว้แล้ว!","Engineers kept the buildings standing!"],storm:["เตือนภัยทัน ทุกคนเตรียมพร้อม!","The warning came in time!"]};
+
+const URL={};["house","shop","green","coin","flood","fire","quake","storm","shield"].forEach(k=>URL[k]=SPR[k].toDataURL());
+/* ===== card art (same pixel scenes as the printed cards) ===== */
+const XS={};
+XS.person=fromMap(["..k..",".kck.","..k..","kBBBk",".BBB.",".BBB.",".k.k.",".k.k.","kk.kk"]);
+XS.person2=fromMap(["..k..",".kck.","..k..","krrrk",".rrr.",".rrr.",".k.k.",".k.k.","kk.kk"]);
+XS.cloud=fromMap(["....kkkk....","..kkwwwwkk..",".kwwwwwwwwk.","kwwwwwwwwwwk","kssssssssssk",".kkkkkkkkkk."]);
+XS.dark=fromMap(["....kkkk....","..kkSSSSkk..",".kSSSSSSSSk.","kSSSSSSSSSSk","kaaaaaaaaaak",".kkkkkkkkkk."]);
+XS.sun=fromMap(["....k....",".k.....k.","...kkk...","..kyyyk..","k.kyyyk.k","..kyyyk..","...kkk...",".k.....k.","....k...."]);
+XS.bolt=fromMap(["..kk.",".kyk.",".kyk.","kyyk.","kkyyk",".kyyk",".kyk.",".kk..",".k..."]);
+XS.cone=fromMap(["..k..",".kok.",".kwk.",".kok.","kowok","kkkkk"]);
+XS.doc=fromMap(["kkkkkk..","kwwwwkk.","kwkkwwkk","kwwwwwwk","kwkkkkwk","kwwwwwwk","kwkkkkwk","kwwwwwwk","kwwwwwwk","kkkkkkkk"]);
+XS.sign=fromMap(["kkkkkkk","kwwkwwk","kwwkwwk","kwwwwwk","kwwkwwk","kkkkkkk","...k...","...k...","...k..."]);
+XS.hammer=fromMap(["kkkkk...","ksssk...","kkkkkk..","...kTk..","....kTk.",".....kTk","......kk"]);
+XS.bricks=fromMap(["kkkkkkkkkk","krrkrrrkrk","kkkkkkkkkk","krkrrrkrrk","kkkkkkkkkk"]);
+XS.up=fromMap(["...k...","..kkk..",".kkkkk.","kkkkkkk","..kkk..","..kkk..","..kkk.."]);
+XS.down=fromMap(["..kkk..","..kkk..","..kkk..","kkkkkkk",".kkkkk.","..kkk..","...k..."]);
+XS.drop=fromMap(["..k..",".kbk.",".kbk.","kbbbk","kbbbk",".kkk."]);
+XS.flag=fromMap(["kkkkk.","kyyyyk","kyyyyk","kkkkk.","k.....","k.....","k.....","k....."]);
+XS.closed=fromMap(["kkkkkkkkk","kwwwwwwwk","kwkkkkkwk","kwwwwwwwk","kkkkkkkkk"]);
+XS.flame=fromMap(["...y...","..yy...","..yoy..",".yooy..",".yoooy.","yoorooy","yorrroy","orrrrro",".orrro."]);
+XS.flameS=fromMap(["..y..",".yo..",".yoy.","yoroy","orrro",".rrr."]);
+XS.smoke=fromMap(["..SSS...",".SaaaS..","SaaaaaSS","SaaaaaaS",".SSaaaS.","...SSS.."]);
+XS.boat=fromMap(["....k.....","....kw....","....kww...","kkkkkkkkkk",".kttttttk.","..kkkkkk.."]);
+XS.tree=fromMap(["...kkk...","..kGgGk..",".kGglgGk.","kGgllggGk","kGggggGGk",".kGGGGGk.","..kkTkk..","...kTk...","...kTk...","..kkTkk.."]);
+XS.treeBent=fromMap([".....kkk.","...kkGgGk","..kGgllgk",".kGgggGk.","kGGGGkk..",".kkkk....","...kT....","...kT....","..kkTk..."]);
+XS.debris=fromMap(["rR.","Rr.","..r"]);
+XS.truck=fromMap(["..kkkkkkkkk...","..krrrrrrrkbk..","..krrrrrrrkbbk.","kkkkkkkkkkkkkk","kRRRRRRRRRRRRk",".kk.....kk....","kssk...kssk...",".kk.....kk...."]);
+XS.crane=fromMap(["kkkkkkkkkkk","k.....k...k","......k...k","......k...y","......k...y","......k....","......k....","......k....",".....kkk..."]);
+XS.coin=fromMap(["..kkkk..",".kyyyyk.","kyywyyYk","kywyyyYk","kyyyyyYk","kyyyyYYk",".kYYYYk.","..kkkk.."]);
+XS.shield=fromMap(["..kkkk..",".kbbbbk.","kbwbbbbk","kbwbbbbk","kbbbbbbk",".kbbbbk.","..kbbk..","...kk..."]);
+XS.house=SPR.house; XS.shop=SPR.shop; XS.green=SPR.green; XS.condo=SPR.condo_v; XS.factory=SPR.factory_h;
+const SW=64,SH=36,SGY=30;
+function sbase(x,mood){
+  if(mood==="dark"){x.fillStyle="#5F6B80";x.fillRect(0,0,SW,SGY)}
+  else if(mood==="warm"){x.fillStyle="#F6D9B0";x.fillRect(0,0,SW,SGY)}
+  else {x.fillStyle="#CDEBFA";x.fillRect(0,0,SW,SGY);x.fillStyle="#E3F4FC";x.fillRect(0,0,SW,8)}
+  x.fillStyle=PAL.l;x.fillRect(0,SGY,SW,SH-SGY);x.fillStyle=PAL.k;x.fillRect(0,SGY,SW,1);
+  x.fillStyle=PAL.G;for(let i=1;i<SW;i+=5){x.fillRect(i,SGY+2+(i%3),1,1);x.fillRect(i+2,SGY+4-(i%2),1,1)}}
+function srain(x,n){for(let i=0;i<n;i++){const px=(i*13+i*i)%SW,py=(i*7)%24+1;x.fillStyle="#7FC1F2";x.fillRect(px,py,1,2)}}
+function swater(x,top){x.fillStyle=PAL.B;x.fillRect(0,top,SW,SH-top);x.fillStyle=PAL.b;for(let i=0;i<SW;i+=5){x.fillRect(i,top,3,1);x.fillRect(i+2,top+3,2,1)}}
+function scoins(p,x0,n){for(let i=0;i<n;i++)p("coin",x0+(i%3)*7,SGY-Math.floor(i/3)*7)}
+function scrack(x,x0,y0,len,dir){let px=x0,py=y0;x.fillStyle=PAL.k;for(let i=0;i<len;i++){x.fillRect(px,py,1,1);py+=1;px+=(i%3===0?dir:0)}}
+const SCENE={
+ tourism:(p)=>{p("sun",52,11);p("shop",4);p("shop",20);[38,44,50,56].forEach((v,i)=>p(i%2?"person2":"person",v))},
+ investor:(p)=>{p("factory",2);scoins(p,35,6);p("person",55)},
+ grant:(p)=>{p("doc",8,26,2);p("coin",28,18,2);p("house",44)},
+ tax:(p)=>{scoins(p,6,9);p("condo",42);p("doc",28,SGY)},
+ wastewater:(p,x)=>{p("factory",2);x.fillStyle=PAL.S;x.fillRect(34,24,12,3);x.fillStyle=PAL.k;x.fillRect(34,23,12,1);[48,53,58].forEach((v,i)=>p("drop",v,SGY-1-i*3))},
+ road:(p,x)=>{x.fillStyle=PAL.a;x.fillRect(0,25,SW,5);for(let i=2;i<SW;i+=8){x.fillStyle=PAL.m;x.fillRect(i,27,4,1)}[8,22,36].forEach(v=>p("cone",v,25));p("person",48,25);p("hammer",54,19)},
+ power:(p)=>{p("factory",2);p("bolt",40,26,2);p("shop",48)},
+ forecast:(p)=>{p("sun",4,14);p("cloud",12,16,2);p("sign",44,SGY);p("person",54)},
+ drill:(p)=>{p("flag",4,SGY,2);[18,26,34,42,50].forEach((v,i)=>p(i%2?"person2":"person",v));p("up",56,12)},
+ volunteers:(p)=>{p("house",4);[24,32,40].forEach((v,i)=>p(i%2?"person2":"person",v));p("hammer",48,18,2)},
+ material:(p)=>{p("bricks",4,SGY,2);p("bricks",8,SGY-10,2);p("crane",30,SGY);p("up",44,20,2);p("coin",56,24)},
+ totemsale:(p)=>{p("shield",4,28,3);p("down",32,22,2);p("coin",50,20);p("coin",50,28)},
+ movein:(p)=>{[4,11,18].forEach((v,i)=>p(i%2?"person2":"person",v));p("up",28,22);p("house",40)},
+ strike:(p)=>{p("factory",30);p("sign",4,SGY);[13,21].forEach(v=>p("person2",v))},
+ holiday:(p)=>{p("sun",50,12);p("shop",6);p("closed",11,24);p("person",34);p("person2",40)},
+ tide:(p,x)=>{p("house",24,SGY);swater(x,25);p("up",52,16);p("boat",4,26)},
+ parkdemand:(p)=>{p("tree",36,SGY);p("green",46);p("sign",4,SGY);[14,21,28].forEach((v,i)=>p(i%2?"person2":"person",v))},
+ quiet:(p)=>{p("sun",52,11);p("house",4);p("tree",22,SGY);p("house",36)},
+ flood:(p,x)=>{p("dark",2,10);p("dark",34,8);srain(x,26);p("house",2,SGY);p("house",20,SGY);p("shop",40,SGY);swater(x,24);p("boat",50,25);x.fillStyle=PAL.T;x.fillRect(14,26,3,1);x.fillRect(33,27,2,1)},
+ quake:(p,x)=>{p("condo",6,SGY);p("house",26,SGY);p("house",44,SGY);scrack(x,12,9,14,1);scrack(x,30,20,8,-1);scrack(x,49,21,7,1);
+   x.fillStyle=PAL.k;for(let i=0;i<SW;i++){x.fillRect(i,SGY+((Math.floor(i/4)%2)?1:0),1,1)}x.fillStyle=PAL.a;x.fillRect(20,SGY+1,8,3);x.fillRect(38,SGY+1,6,2);
+   x.fillStyle=PAL.C;[[22,12],[40,16],[58,10],[24,6],[3,14]].forEach(([a,b])=>x.fillRect(a,b,2,2));p("bricks",52,SGY-1)},
+ storm:(p,x)=>{p("dark",2,9,2);p("dark",36,7);srain(x,34);p("bolt",30,22,2);p("treeBent",6,SGY);p("house",42,SGY);[[24,14],[38,10],[56,6]].forEach(([a,b])=>p("debris",a,b));x.fillStyle=PAL.w;for(let i=0;i<4;i++)x.fillRect(16+i*3,18+i,6,1)},
+ fire:(p)=>{p("house",4,SGY);p("shop",22,SGY);p("house",40,SGY);p("smoke",8,9);p("smoke",28,6);p("smoke",44,10);p("flame",8,18);p("flame",26,18);p("flameS",14,22);p("flame",44,18);p("flameS",33,22);p("truck",48,SGY)},
+ ffire:(p)=>{p("factory",4,SGY);p("smoke",22,3);p("smoke",6,8);p("flame",7,22);p("flame",16,20);p("flameS",12,24);p("flame",26,10);p("house",44,SGY);p("flameS",50,16)},
+};
+const SMOOD={flood:"dark",storm:"dark",fire:"warm",ffire:"warm"};
+const ART={};
+function art(k){ if(ART[k]) return ART[k]; const c=canvasOf(SW,SH),x=c.getContext("2d"); x.imageSmoothingEnabled=false; sbase(x,SMOOD[k]);
+  const put=(s,px,bse=SGY,sc=1)=>{const im=XS[s];const off=(s==="house"||s==="shop"||s==="green")?2*sc:s==="condo"?1:s==="factory"?2:0;x.drawImage(im,px,bse-im.height*sc+off,im.width*sc,im.height*sc)};
+  SCENE[k](put,x); return ART[k]=c.toDataURL(); }
+
+URL.condo=draw(16,16,(R,x)=>{x.drawImage(SPR.condo_v,0,0,16,32,0,0,16,32)}).toDataURL();
+URL.condo=(()=>{const c=canvasOf(16,16),x=c.getContext("2d");x.imageSmoothingEnabled=false;x.drawImage(SPR.condo_v,4,0,8,32,4,0,8,16);return c.toDataURL()})();
+URL.condoTall=SPR.condo_v.toDataURL(); URL.factoryWide=SPR.factory_h.toDataURL();
+URL.factory=(()=>{const c=canvasOf(16,16),x=c.getContext("2d");x.imageSmoothingEnabled=false;x.drawImage(SPR.factory_h,0,0,32,16,0,4,16,8);return c.toDataURL()})();
+/* tiny 3x5 digits for repair tags */
+const DIG={"0":"111101101101111","1":"010110010010111","2":"111001111100111","3":"111001111001111","4":"101101111001001","5":"111100111001111","6":"111100111101111","7":"111001001001001","8":"111101111101111","9":"111101111001111"};
+function digits(x,ctx,str,px,py,col){ctx.fillStyle=col;[...str].forEach((d,i)=>{const m=DIG[d];for(let j=0;j<15;j++)if(m[j]==="1")ctx.fillRect(px+i*4+j%3,py+Math.floor(j/3),1,1)})}
+/* background tiles */
+function hash(a,b){let h=(a*374761393+b*668265263)^0x5bf03635;h=(h^(h>>>13))*1274126177;return ((h^(h>>>16))>>>0)/4294967295}
+const BG=draw(112,112,(R)=>{
+  for(let r=0;r<N;r++)for(let c=0;c<N;c++){const x0=c*TILE,y0=r*TILE;
+    if(isRoad(r,c)){R("a",x0,y0,TILE,TILE);
+      if(r===ROAD&&c===ROAD){for(let i=0;i<4;i++){R("w",x0+2+i*3,y0+1,2,2);R("w",x0+2+i*3,y0+13,2,2);R("w",x0+1,y0+2+i*3,2,2);R("w",x0+13,y0+2+i*3,2,2)}}
+      else if(r===ROAD){R("s",x0,y0,TILE,1);R("s",x0,y0+15,TILE,1);R("m",x0+2,y0+7,4,1);R("m",x0+10,y0+7,4,1)}
+      else{R("s",x0,y0,1,TILE);R("s",x0+15,y0,1,TILE);R("m",x0+7,y0+2,1,4);R("m",x0+7,y0+10,1,4)}}
+    else{const z=zoneOf(r,c), TN={old:["#C9A97A","#DCC193","#A9895C"],river:["#4FAE9E","#7FD6C4","#2F8C7C"],soft:["#A08A55","#B9A36B","#7E6A3E"],open:["#7CC45A","#A8D86E","#5CA03E"]}[z];
+      R(TN[0],x0,y0,TILE,TILE);
+      if(z==="old"){ // cobblestone paving
+        for(let j=0;j<TILE;j+=4){R(TN[2],x0,y0+j,TILE,1);for(let i=((j/4)%2)*3;i<TILE;i+=6)R(TN[2],x0+i,y0+j,1,4)}
+        for(let i=0;i<TILE;i++)for(let j=0;j<TILE;j++)if(hash(x0+i,y0+j)>.97)R(TN[1],x0+i,y0+j,1,1)}
+      if(z==="river"){ // wet grass, reeds and a puddle
+        for(let i=0;i<TILE;i++)for(let j=0;j<TILE;j++){const v=hash(x0+i,y0+j);if(v<.07)R(TN[1],x0+i,y0+j,1,1);else if(v>.95)R(TN[2],x0+i,y0+j,1,1)}
+        const px=x0+3+Math.floor(hash(r,c)*6), py=y0+8+Math.floor(hash(c,r)*4); R("#2F6FAE",px,py,6,2);R("#7FC1F2",px+1,py,3,1);
+        for(let k=0;k<3;k++){const rx=x0+2+Math.floor(hash(r*7+k,c)*12), ry=y0+2+Math.floor(hash(c*5,k+r)*5);R("#1F6B5A",rx,ry,1,3);R("#1F6B5A",rx+1,ry+1,1,2)}}
+      if(z==="soft"){ // cracked mud
+        for(let i=0;i<TILE;i++)for(let j=0;j<TILE;j++){const v=hash(x0+i,y0+j);if(v<.05)R(TN[1],x0+i,y0+j,1,1)}
+        let cx0=x0+2+Math.floor(hash(r,c)*4), cy0=y0+3; for(let k=0;k<10;k++){R(TN[2],cx0,cy0,1,1);cx0+=hash(k,r+c)>.5?1:0;cy0+=1}
+        let dx=x0+9, dy=y0+2+Math.floor(hash(c,r)*4); for(let k=0;k<6;k++){R(TN[2],dx,dy,1,1);dx+=1;dy+=hash(k+3,c)>.5?1:0}
+        R("#8C7744",x0+3+Math.floor(hash(c+2,r)*8),y0+11,4,2)}
+      if(z==="open"){ // meadow with flowers
+        for(let i=0;i<TILE;i++)for(let j=0;j<TILE;j++){const v=hash(x0+i,y0+j);if(v<.06)R(TN[1],x0+i,y0+j,1,1);else if(v>.955)R(TN[2],x0+i,y0+j,1,2)}
+        for(let k=0;k<2;k++){const fx=x0+2+Math.floor(hash(r+k*9,c)*12), fy=y0+2+Math.floor(hash(c+k*5,r)*11);R(k?"#F4F4F4":"#F2C230",fx,fy,1,1)}}
+      R(TN[2],x0,y0+15,TILE,1);R(TN[2],x0+15,y0,1,TILE)}}});
+
+/* ======================= TEXT ======================= */
+let lang="th"; try{const s=localStorage.getItem("mm4-lang"); if(s==="en"||s==="th") lang=s}catch(e){}
+const T=(th,en)=>lang==="th"?th:en;
+const NAME={house:["บ้าน","House"],shop:["ร้านค้า","Shop"],factory:["โรงงาน","Factory"],condo:["ตึกคอนโด","Apartments"],green:["พื้นที่สีเขียว","Park"]};
+const nm=t=>T(NAME[t][0],NAME[t][1]);
+const DIS={
+ flood:{th:"น้ำท่วม",en:"Flood",real:["น้ำท่วมใหญ่ปี 2554 กรุงเทพฯ หลายเขตจมน้ำนานหลายสัปดาห์","The 2011 flood left many Bangkok districts under water for weeks"]},
+ quake:{th:"แผ่นดินไหว",en:"Earthquake",real:["มี.ค. 2568 แผ่นดินไหวเมียนมาทำให้ตึกที่กำลังสร้างในกรุงเทพฯ ถล่ม เพราะก่อสร้างไม่ได้มาตรฐาน","In March 2025 a Myanmar quake collapsed a substandard tower under construction in Bangkok"]},
+ storm:{th:"พายุ",en:"Storm",real:["การเตือนภัยล่วงหน้าแค่ 24 ชั่วโมง ช่วยลดความเสียหายได้มาก","Even 24 hours of warning cuts storm damage a lot"]},
+ fire:{th:"ไฟไหม้ชุมชน",en:"Neighbourhood fire",real:["ชุมชนที่บ้านติดกันแน่นและซอยแคบ รถดับเพลิงเข้าไม่ถึง","Packed houses and narrow lanes keep fire trucks out"]},
+ ffire:{th:"ไฟไหม้โรงงาน",en:"Factory fire",real:["โรงงานควรตั้งห่างจากบ้านคน ตามหลักผังเมือง","Zoning keeps factories away from homes"]},
+};
+const TOTEM={flood:["คันกั้นน้ำ","Flood wall"],quake:["วิศวกรโครงสร้าง","Quake engineers"],storm:["ศูนย์เตือนพายุ","Storm warning"],fire:["นักดับเพลิง","Firefighters"]};
+const EV={
+ tourism:{n:3,cls:"plus",th:"ท่องเที่ยวคึกคัก",en:"Tourist boom",b:["+1 ต่อร้านค้าที่เปิดอยู่","+1 per open shop"]},
+ investor:{n:2,cls:"plus",th:"นักลงทุนต่างชาติ",en:"Foreign investors",b:["ถ้ามีโรงงาน: +2 และ +1 ต่อโรงงาน","With a factory: +2, plus 1 per factory"]},
+ grant:{n:2,cls:"plus",th:"งบจากรัฐบาลกลาง",en:"National grant",b:["+4 เหรียญ","+4 coins"]},
+ tax:{n:2,cls:"plus",th:"เก็บภาษีได้ดี",en:"Good tax year",b:["+3 เหรียญ","+3 coins"]},
+ wastewater:{n:2,cls:"minus",th:"ค่าบำบัดน้ำเสีย",en:"Wastewater bill",b:["−2 ต่อโรงงาน","−2 per factory"]},
+ road:{n:3,cls:"minus",th:"ซ่อมถนน",en:"Road repairs",b:["−3 เหรียญ","−3 coins"]},
+ power:{n:1,cls:"minus",th:"ค่าไฟพุ่ง",en:"Power prices spike",b:["−1 ต่อร้านค้าและโรงงาน","−1 per shop and factory"]},
+ forecast:{n:3,cls:"special",th:"พยากรณ์อากาศ",en:"Weather forecast",b:["ดูการ์ดภัยใบบนสุด แล้วเลือกเก็บไว้หรือส่งไปใต้กอง","Peek at the top disaster card; keep it or send it to the bottom"]},
+ drill:{n:2,cls:"special",th:"ซ้อมอพยพ",en:"Evacuation drill",b:["รอบนี้ไม่ต้องทอยความเสี่ยง","No risk roll this round"]},
+ volunteers:{n:2,cls:"special",th:"อาสาสมัครซ่อมเมือง",en:"Repair volunteers",b:["ซ่อมฟรี 1 ชิ้นในรอบนี้","Repair 1 building free this round"]},
+ material:{n:2,cls:"minus",th:"วัสดุก่อสร้างขึ้นราคา",en:"Material costs rise",b:["รอบนี้สร้างอาคารแพงขึ้น 2","Buildings cost 2 more this round"]},
+ totemsale:{n:2,cls:"special",th:"โครงการรัฐอุดหนุน",en:"Safety subsidy",b:["รอบนี้ Totem ลด 3","Totems cost 3 less this round"]},
+ movein:{n:1,cls:"plus",th:"แรงงานย้ายเข้าเมือง",en:"Workers move in",b:["ได้บ้านฟรี 1 หลัง วางได้ในรอบนี้","One free house to place this round"]},
+ strike:{n:1,cls:"minus",th:"สหภาพหยุดงาน",en:"Factory strike",b:["รอบนี้โรงงานไม่ได้เงิน","Factories earn nothing this round"]},
+ holiday:{n:1,cls:"minus",th:"วันหยุดยาว",en:"Long holiday",b:["รอบนี้ร้านค้าไม่ได้เงิน","Shops earn nothing this round"]},
+ tide:{n:1,cls:"minus",th:"น้ำทะเลหนุนสูง",en:"King tide",b:["ความเสี่ยงรอบนี้ +2","Risk +2 this round"]},
+ parkdemand:{n:1,cls:"minus",th:"ชาวบ้านเรียกร้องสวน",en:"Residents want parks",b:["ถ้าพื้นที่สีเขียวน้อยกว่าโรงงาน เสีย 3","If parks < factories, pay 3"]},
+ quiet:{n:2,cls:"",th:"วันธรรมดาในเมือง",en:"A quiet day",b:["ไม่มีอะไรเกิดขึ้น","Nothing happens"]},
+};
+
+/* ======================= STATE ======================= */
+const rnd=n=>Math.floor(Math.random()*n);
+const shuffle=a=>{for(let i=a.length-1;i>0;i--){const j=rnd(i+1);[a[i],a[j]]=[a[j],a[i]]}return a};
+let S;
+function fresh(){
+  const s={v:5,round:0,coins:6,pieces:[],nextId:1,totems:[],ff:0,evDeck:[],disDeck:[],
+    phase:"ready",events:[],disCard:null,blocked:false,zone:null,dice:null,hits:[],saved:[],mod:{},pending:[],
+    tool:null,orient:"h",undo:[],log:[],msg:null,stats:{dis:0,blocked:0,hits:0,saved:0},result:null,modal:"lang",deal:0};
+  const add=(type,cells)=>s.pieces.push({id:s.nextId++,type,cells,dmg:false,rf:false});
+  add("house",[[0,0]]); add("house",[[1,1]]); add("shop",[[0,2]]); add("green",[[1,0]]);
+  return s;
+}
+const count=(t,ok)=>S.pieces.filter(p=>p.type===t&&(!ok||!p.dmg)).length;
+function income(noshop,nofac){return S.pieces.reduce((a,p)=>a+(!p.dmg&&!(noshop&&p.type==="shop")&&!(nofac&&p.type==="factory")?(INCOME[p.type]||0):0),0)}
+const housing=()=>count("house",1)+4*count("condo",1);
+const year=r=>Math.floor((Math.max(r,1)-1)/3)+1;
+function risk(){return Math.min(RISK_CAP,RISK0+RISK_YEAR*(year(S.round)-1)+RISK_FACTORY*count("factory")+(S.mod.riskup||0))}
+const chance=r=>{let k=0;for(let a=1;a<=6;a++)for(let b=1;b<=6;b++)if(a+b<=r)k++;return Math.round(k/36*100)};
+const damaged=()=>S.pieces.filter(p=>p.dmg);
+const metric=k=>k==="income"?income():k==="housing"?housing():k==="green"?count("green"):S.totems.length;
+const starOf=k=>{const v=metric(k),t=STAR[k];return v>=t[1]?2:v>=t[0]?1:0};
+const stars=()=>STAR_KEYS.reduce((a,k)=>a+starOf(k),0);
+const rankOf=n=>n>=8?["Best Mayor 👑","Best Mayor 👑"]:n>=6?["นายกฯ ฝีมือดี","Skilled Mayor"]:n>=4?["ผ่าน","Pass"]:["ไม่ได้รับเลือกตั้งอีกสมัย","Not re-elected"];
+function log(th,en,kind){S.log.unshift({r:S.round,th,en,kind:kind||""})}
+function occ(){const m={};S.pieces.forEach(p=>p.cells.forEach(([r,c])=>m[r+","+c]=p));return m}
+const cheb=(a,b)=>Math.max(Math.abs(a[0]-b[0]),Math.abs(a[1]-b[1]));
+const side=(a,b)=>Math.abs(a[0]-b[0])+Math.abs(a[1]-b[1])===1;
+const touches=(p,q)=>p.cells.some(a=>q.cells.some(b=>side(a,b)));
+const zoneName=z=>T(ZONES[z].th,ZONES[z].en);
+
+/* decks */
+function drawEvent(){ if(!S.evDeck.length){S.evDeck=shuffle(Object.entries(EV).flatMap(([k,v])=>Array(v.n).fill(k)))} return S.evDeck.pop() }
+function refillDis(){ S.disDeck=shuffle(TOT.flatMap(k=>HAZ[k].zones.map(z=>({k,z}))).concat(Array(S.ff).fill(0).map(()=>({k:"ffire"})))) }
+function drawDis(){ if(!S.disDeck.length) refillDis(); return S.disDeck.pop() }
+const disLabel=(c,lg)=>c.k==="ffire"?DIS.ffire[lg]:`${DIS[c.k][lg]} · ${lg==="th"?ZONES[c.z].th:ZONES[c.z].en}`;
+
+/* ======================= ROUND FLOW ======================= */
+function startRound(){
+  S.round++; S.mod={}; S.events=[]; S.disCard=null; S.blocked=false; S.zone=null; S.dice=null; S.hits=[]; S.saved=[]; S.undo=[]; S.tool=null; S.msg=null; S.pending=[]; S.deal++;
+  const c0=S.coins;
+  const evd=[]; for(let i=0;i<2;i++){ const k=drawEvent(); S.events.push(k); evd.push(applyEvent(k)) }
+  const inc=income(S.mod.noshop,S.mod.nofac); S.coins+=inc;
+  log(`รอบ ${S.round} · รายได้ +${inc}`,`Round ${S.round} · income +${inc}`);
+  bump(S.coins-c0); FX.coins(inc);
+  toast(T(`รอบ ${S.round} · ปีที่ ${year(S.round)} · รายได้ +${inc}`,`Round ${S.round} · year ${year(S.round)} · income +${inc}`));
+  try{$("side").scrollTo({top:0,behavior:"smooth"})}catch(e){}
+  eventSplash(S.events.slice(),evd,inc,()=>nextStep());
+}
+function applyEvent(k){
+  const e=EV[k], f=count("factory"), fo=count("factory",1); let d=0;
+  switch(k){
+    case "tourism": d=count("shop",1); break;
+    case "investor": d=f?2+fo:0; break;
+    case "grant": d=4; break; case "tax": d=3; break;
+    case "wastewater": d=-2*f; break; case "road": d=-3; break;
+    case "power": d=-(count("shop")+f); break;
+    case "parkdemand": d=count("green")<f?-3:0; break;
+    case "forecast": S.pending.push("forecast"); break;
+    case "drill": S.mod.noroll=true; break;
+    case "volunteers": S.mod.freerepair=(S.mod.freerepair||0)+1; break;
+    case "material": S.mod.buildcost=(S.mod.buildcost||0)+2; break;
+    case "totemsale": S.mod.totemdisc=(S.mod.totemdisc||0)+3; break;
+    case "movein": S.mod.freehouse=(S.mod.freehouse||0)+1; break;
+    case "strike": S.mod.nofac=true; break;
+    case "holiday": S.mod.noshop=true; break;
+    case "tide": S.mod.riskup=(S.mod.riskup||0)+2; break;
+  }
+  if(d) S.coins=Math.max(0,S.coins+d);
+  log(`${e.th}${d?` (${d>0?"+":""}${d})`:""}`,`${e.en}${d?` (${d>0?"+":""}${d})`:""}`,d>0?"good":d<0?"bad":"");
+  return d;
+}
+function nextStep(){
+  if(S.pending.length){ S.phase="forecast"; if(!S.disDeck.length) refillDis(); render(); return }
+  if(S.round===1){ S.phase="build"; S.msg={th:"รอบแรกยังไม่ต้องทอยความเสี่ยง วางรากฐานเมืองก่อน",en:"No risk roll in round 1. Build your foundations."} }
+  else if(S.mod.noroll){ S.phase="build"; S.msg={th:"ซ้อมอพยพ: รอบนี้ไม่ต้องทอยความเสี่ยง",en:"Evacuation drill: no risk roll this round."} }
+  else S.phase="roll";
+  render();
+}
+function forecastChoice(keep){
+  const top=S.disDeck[S.disDeck.length-1];
+  if(!keep){ S.disDeck.unshift(S.disDeck.pop()); log(`พยากรณ์: ส่ง${disLabel(top,"th")}ไปใต้กอง`,`Forecast: sent ${disLabel(top,"en")} to the bottom`,"good") }
+  else log(`พยากรณ์: เก็บ${disLabel(top,"th")}ไว้บนกอง`,`Forecast: kept ${disLabel(top,"en")} on top`);
+  S.pending.shift(); nextStep();
+}
+let anim=null, landed=false;
+function rollRisk(){
+  S.busy=true; const r=risk(); let n=0;
+  const tick=()=>{ anim=[1+rnd(6),1+rnd(6)]; renderDesk(); if(++n<(reduce()?1:9)) setTimeout(tick,90); else done() };
+  const done=()=>{ anim=null; landed=true; const a=1+rnd(6), b=1+rnd(6); S.dice=[a,b]; S.busy=false;
+    if(a+b<=r){ log(`ทอยได้ ${a+b} ≤ ${r}: เกิดภัย`,`Rolled ${a+b} ≤ ${r}: disaster`,"bad"); toast(T(`ทอยได้ ${a+b} · เกิดภัย!`,`Rolled ${a+b} · disaster!`),"bad"); drawDisaster() }
+    else { log(`ทอยได้ ${a+b} > ${r}: ปลอดภัย`,`Rolled ${a+b} > ${r}: safe`,"good"); toast(T(`ทอยได้ ${a+b} · ปลอดภัย`,`Rolled ${a+b} · safe`),"good"); S.phase="build"; render() } };
+  tick();
+}
+function zoneBox(z){const Z=ZONES[z];return {r0:Z.r[0],r1:Z.r[1],c0:Z.c[0],c1:Z.c[1]}}
+function drawDisaster(){ const card=drawDis(); S.busy=true; render(); splash(card,S.totems.includes(TOTEM_OF[card.k]),()=>{S.busy=false;resolveDisaster(card);setTimeout(()=>{const c=document.querySelector(".desk .card.dis,.desk .card.blocked");const sd=$("side");if(c&&sd&&sd.scrollHeight>sd.clientHeight){sd.scrollTo({top:c.getBoundingClientRect().top-sd.getBoundingClientRect().top+sd.scrollTop-60,behavior:"smooth"})}},60)}) }
+let splashDone=null;
+function eventSplash(keys,ds,inc,cb){
+  const el=$("splash"); let fired=false; const go=()=>{ if(fired) return; fired=true; splashDone=null; el.className=""; el.innerHTML=""; S.busy=false; cb() };
+  if(reduce()||!keys.length){ go(); return }
+  S.busy=true; render();
+  const badge=(k,d)=>{const e=EV[k]; if(d) return `<div class="delta ${d>0?"plus":"minus"}">${img("coin")}${d>0?"+":"−"}${Math.abs(d)} ${T("เหรียญ","coins")}</div>`;
+    if(e.cls==="special") return `<div class="delta special">★ ${T("พิเศษ","SPECIAL")}</div>`;
+    if(k==="movein") return `<div class="delta plus">${img("house")}${T("บ้านฟรี","FREE HOUSE")}</div>`;
+    if(["strike","holiday","material","tide"].includes(k)) return `<div class="delta minus">⚠ ${T("รอบนี้","THIS ROUND")}</div>`;
+    return `<div class="delta none">${T("รอดไป ไม่มีผล","NO EFFECT")}</div>`};
+  el.innerHTML=`<div class="sp-bg"></div><div class="evsplash"><div class="evhead">${T(`รอบ ${S.round} · ปีที่ ${year(S.round)}`,`Round ${S.round} · Year ${year(S.round)}`)}</div>
+    <div class="ecards">${keys.map((k,i)=>{const e=EV[k];return `<div class="ecard ${e.cls}" style="--d:${.15+i*.45}s"><div class="eback"><span>MR.<b>MAYOR</b></span><i>${T("เหตุการณ์","EVENT")}</i></div><div class="efront"><div class="sk2">${T("เหตุการณ์","EVENT")}</div><img class="sart" src="${art(k)}" alt=""><div class="et">${T(e.th,e.en)}</div><div class="eb">${T(e.b[0],e.b[1])}</div>${badge(k,ds[i])}</div></div>`}).join("")}</div>
+    <div class="evinc" style="--d:${.15+keys.length*.45+.2}s">${img("coin")}${T(`รายได้จากเมือง +${inc}`,`City income +${inc}`)}</div><div class="skip">${T("แตะเพื่อข้าม","tap to skip")}</div></div>`;
+  el.className="show"; splashDone=()=>{ el.className="out"; setTimeout(go,260) };
+  setTimeout(()=>{ if(!fired&&splashDone) splashDone() }, 1000+keys.length*450+1500);
+}
+function splash(card,blocked,cb){
+  const el=$("splash"); let fired=false; const go=()=>{ if(fired) return; fired=true; splashDone=null; el.className=""; el.innerHTML=""; cb() };
+  if(reduce()){ go(); return }
+  const k=card.k, d=DIS[k];
+  const zh=k==="ffire"?T("สุ่มโรงงาน 1 แห่ง · พังพร้อมอาคารที่ติดกัน","A random factory and everything touching it")
+    :`<b>${zoneName(card.z)}</b> · ${HAZ[k].hits.map(t=>`${img(t)}${nm(t)}`).join(" ")}`;
+  el.innerHTML=`<div class="sp-bg"></div><div class="scard${blocked?" blk":""}"><div class="sk">${T("⚠ ภัยพิบัติ","⚠ DISASTER")}</div><img class="sart" src="${art(k)}" alt=""><div class="st">${T(d.th,d.en)}</div><div class="sz">${zh}</div>${blocked?`<div class="stamp">${timg(TOTEM_OF[k])}<span>${T(TOTEM[TOTEM_OF[k]][0],TOTEM[TOTEM_OF[k]][1])}</span><small>${T("กันได้!","BLOCKED!")}</small></div>`:""}<div class="skip">${T("แตะเพื่อข้าม","tap to skip")}</div></div>`;
+  el.className="show"; splashDone=()=>{ el.className="out"; setTimeout(go,260) };
+  setTimeout(()=>{ if(!fired&&splashDone) splashDone() }, blocked?2100:1750);
+}
+function resolveDisaster(card){
+  const k=card.k; S.disCard=card; S.stats.dis++;
+  if(S.totems.includes(TOTEM_OF[k])){ const tk=TOTEM_OF[k]; S.blocked=true; S.stats.blocked++; log(`${disLabel(card,"th")}: ${TOTEM[tk][0]}กันได้ทั้งใบ`,`${disLabel(card,"en")}: blocked by ${TOTEM[tk][1]}`,"good");
+    let box; if(k==="ffire"){ const fs=S.pieces.filter(p=>p.type==="factory"), f=fs.length?fs[rnd(fs.length)]:null;
+      if(f){ const rs=f.cells.map(x=>x[0]), cs=f.cells.map(x=>x[1]); box={r0:Math.max(0,Math.min(...rs)-1),r1:Math.min(N-1,Math.max(...rs)+1),c0:Math.max(0,Math.min(...cs)-1),c1:Math.min(N-1,Math.max(...cs)+1),fac:true} } }
+    else box=zoneBox(card.z);
+    S.msg={th:`${TOTEM_ACT[tk][0]} ${TOTEM[tk][0]}กัน${DIS[k].th}ได้ทั้งใบ`,en:`${TOTEM_ACT[tk][1]} Your ${TOTEM[tk][1]} blocks the whole ${DIS[k].en.toLowerCase()} card.`};
+    S.phase="build";
+    if(!box){ FX.shield(); render(); return }
+    S.zone=box; S.hits=[]; S.saved=[]; S.busy=true; const dur=FX.blocked(k,box); render();
+    setTimeout(()=>{ S.busy=false; toast(T(TOTEM_ACT[tk][0],TOTEM_ACT[tk][1]),"good"); render() },dur); return }
+  let targets=[], box;
+  if(k==="ffire"){
+    const fs=S.pieces.filter(p=>p.type==="factory");
+    if(!fs.length){ log("ไฟไหม้โรงงาน แต่ไม่มีโรงงาน","Factory fire, but no factory","good"); S.msg={th:"ไม่มีโรงงานในเมือง ไม่เกิดอะไร",en:"No factory in the city. Nothing happens."}; S.phase="build"; render(); return }
+    const f=fs[rnd(fs.length)];
+    targets=S.pieces.filter(p=>p===f||(p.type!=="green"&&touches(p,f)));
+    const rs=f.cells.map(x=>x[0]), cs=f.cells.map(x=>x[1]);
+    box={r0:Math.max(0,Math.min(...rs)-1),r1:Math.min(N-1,Math.max(...rs)+1),c0:Math.max(0,Math.min(...cs)-1),c1:Math.min(N-1,Math.max(...cs)+1),fac:true};
+  } else {
+    const Z=ZONES[card.z]; box=zoneBox(card.z);
+    targets=S.pieces.filter(p=>HAZ[k].hits.includes(p.type)&&p.cells.some(([r,c])=>zoneOf(r,c)===card.z));
+  }
+  strike(k,box,targets);
+}
+function strike(k,box,targets){
+  S.zone=box; S.hits=[]; S.saved=[];
+  for(const p of targets){ if(p.dmg) continue; if(p.rf){ p.rf=false; S.saved.push(p.id); continue } p.dmg=true; S.hits.push(p.id) }
+  S.stats.hits+=S.hits.length; S.stats.saved+=S.saved.length;
+  const card=S.disCard, names=S.hits.map(id=>nm(S.pieces.find(p=>p.id===id).type));
+  log(`${disLabel(card,"th")}: พัง ${S.hits.length} หลัง${S.saved.length?` · เสริมแล้วรอด ${S.saved.length}`:""}`,`${disLabel(card,"en")}: ${S.hits.length} damaged${S.saved.length?` · ${S.saved.length} saved by reinforcement`:""}`,S.hits.length?"bad":"good");
+  const svt=S.saved.length?` · เสริมความแข็งแรงช่วยไว้ ${S.saved.length} หลัง`:"", sve=S.saved.length?` · reinforcement saved ${S.saved.length}`:"";
+  const nmTh=S.hits.map(id=>NAME[S.pieces.find(p=>p.id===id).type][0]);
+  S.msg=S.hits.length?{th:`${nmTh.join(", ")} พัง${svt}`,en:`${S.hits.length} building(s) damaged${sve}`}
+                     :{th:`ไม่มีอาคารพัง${svt||" รอดไป"}`,en:`Nothing damaged${sve||". A near miss."}`};
+  const dur=FX.disaster(k,box,S.hits);
+  S.phase="build"; S.busy=true; render();
+  setTimeout(()=>{ S.busy=false; if(S.hits.length) toast(T(`${DIS[k].th}! พัง ${S.hits.length} หลัง`,`${DIS[k].en}! ${S.hits.length} damaged`),"bad"); else if(S.saved.length) toast(T("เสริมความแข็งแรงช่วยไว้!","Reinforcement held!"),"good"); render() },dur);
+}
+function endRound(){
+  S.tool=null;
+  if(S.round>=ROUNDS){ const n=stars(); S.result=n; S.phase="over"; log(`จบวาระ: ${n} ดาว · ${rankOf(n)[0]}`,`Term over: ${n} stars · ${rankOf(n)[1]}`,n>=4?"good":"bad");
+    if(n>=6) FX.confetti(); render(); setTimeout(()=>{S.modal="end";renderModal()},reduce()||n<6?0:1300); return }
+  startRound();
+}
+
+/* build */
+const priceOf=t=>(t==="house"&&S.mod.freehouse)?0:PRICE[t]+(S.mod.buildcost||0);
+const totemPrice=()=>Math.max(0,TOTEM_STEPS[Math.min(3,S.totems.length)]-(S.mod.totemdisc||0));
+function cellsFor(t,r,c,o){ return SIZE[t]?(o==="h"?[[r,c],[r,c+1]]:[[r,c],[r+1,c]]):[[r,c]] }
+function fits(t,r,c,o){ const m=occ(); return cellsFor(t,r,c,o).every(([a,b])=>a>=0&&b>=0&&a<N&&b<N&&!isRoad(a,b)&&!m[a+","+b]) }
+function nearHome(t,r,c,o){ if(!NEEDS_HOME[t]) return true; const cs=cellsFor(t,r,c,o);
+  return S.pieces.some(p=>(p.type==="house"||p.type==="condo")&&p.cells.some(a=>cs.some(b=>side(a,b)))) }
+function canPlace(t,r,c,o){ return fits(t,r,c,o)&&nearHome(t,r,c,o) }
+function anySpot(t){ for(const [r,c] of LOTS) for(const o of SIZE[t]?["h","v"]:["h"]) if(canPlace(t,r,c,o)) return true; return false }
+function why(t){
+  if(S.phase!=="build"||S.busy) return T("รอช่วงบริหารเมือง","Wait for the build phase");
+  if(S.coins<priceOf(t)) return T("เงินไม่พอ","Not enough coins");
+  if(NEEDS_HOME[t]&&!anySpot(t)) return T("ไม่มีช่องว่างที่ติดบ้านหรือคอนโด","No free lot next to a house or apartment block");
+  return "";
+}
+function place(r,c){
+  const t=S.tool; if(!PRICE[t]) return;
+  const w=why(t); if(w){toast(w,"bad");return}
+  if(!fits(t,r,c,S.orient)){ const m=SIZE[t]?T("ต้องมี 2 ช่องว่างติดกัน และข้ามถนนไม่ได้ กดหมุนเพื่อเปลี่ยนทิศ","Needs 2 free lots side by side, not across a road. Rotate to turn it."):T("ช่องนี้วางไม่ได้","You can't build here"); toast(m,"bad"); return }
+  if(!nearHome(t,r,c,S.orient)){ toast(T(`${nm(t)}ต้องวางติดด้านข้างกับบ้านหรือคอนโด (ทแยงไม่นับ)`,`A ${nm(t).toLowerCase()} must share a side with a house or apartment block (diagonals don't count)`),"bad"); return }
+  const cost=priceOf(t), free=(t==="house"&&S.mod.freehouse>0);
+  const p={id:S.nextId++,type:t,cells:cellsFor(t,r,c,S.orient),dmg:false,rf:false}; S.pieces.push(p); S.coins-=cost; bump(-cost); FX.build(p);
+  if(free) S.mod.freehouse--;
+  if(t==="factory"){ S.ff++; if(S.disDeck.length){S.disDeck.splice(rnd(S.disDeck.length+1),0,{k:"ffire"})} }
+  S.undo.push({kind:"piece",id:p.id,cost,free});
+  log(`สร้าง${nm(t)} ที่ ${code(r,c)}${cost?` (−${cost})`:" (ฟรี)"}`,`Built ${nm(t).toLowerCase()} at ${code(r,c)}${cost?` (−${cost})`:" (free)"}`);
+  if(why(t)) S.tool=null; render();
+}
+let gotTotem=null;
+function buyTotem(k){
+  if(S.phase!=="build"||S.busy||S.totems.includes(k)||S.coins<totemPrice()) return;
+  const cost=totemPrice(); S.coins-=cost; bump(-cost); S.totems.push(k); S.undo.push({kind:"totem",k,cost}); gotTotem=k; FX.shieldSmall();
+  log(`ซื้อ Totem ${TOTEM[k][0]} (−${cost})`,`Bought the ${TOTEM[k][1]} Totem (−${cost})`); render();
+}
+function repair(id){
+  const p=S.pieces.find(x=>x.id===id); if(!p||!p.dmg) return;
+  const free=(S.mod.freerepair||0)>0, cost=free?0:PRICE[p.type];
+  if(S.coins<cost){toast(T("เงินไม่พอซ่อม","Not enough coins to repair"),"bad");return}
+  p.dmg=false; S.coins-=cost; bump(-cost); if(free) S.mod.freerepair--; FX.sparkle(p);
+  S.undo.push({kind:"repair",id,cost,free}); log(`ซ่อม${nm(p.type)}${cost?` (−${cost})`:" (ฟรี)"}`,`Repaired ${nm(p.type).toLowerCase()}${cost?` (−${cost})`:" (free)"}`);
+  if(!damaged().length) S.tool=null; render();
+}
+const canRF=p=>p&&p.type!=="green"&&!p.dmg&&!p.rf;
+function reinforce(id){
+  const p=S.pieces.find(x=>x.id===id); if(!canRF(p)){ if(p&&p.rf) toast(T("หลังนี้เสริมแล้ว","Already reinforced"),"bad"); else if(p&&p.type==="green") toast(T("พื้นที่สีเขียวไม่พังอยู่แล้ว","Parks are never damaged"),"bad"); else if(p&&p.dmg) toast(T("ซ่อมก่อนจึงเสริมได้","Repair it first"),"bad"); return }
+  if(S.coins<RF_PRICE){toast(T("เงินไม่พอ","Not enough coins"),"bad");return}
+  p.rf=true; S.coins-=RF_PRICE; bump(-RF_PRICE); FX.sparkle(p);
+  S.undo.push({kind:"rf",id,cost:RF_PRICE}); log(`เสริมความแข็งแรง${nm(p.type)} (−${RF_PRICE})`,`Reinforced ${nm(p.type).toLowerCase()} (−${RF_PRICE})`);
+  if(S.coins<RF_PRICE||!S.pieces.some(canRF)) S.tool=null; render();
+}
+function demolish(id){
+  const p=S.pieces.find(x=>x.id===id); if(!p) return;
+  const i=S.pieces.indexOf(p); S.pieces.splice(i,1);
+  let ffCard=false; if(p.type==="factory"){ S.ff--; let j=-1; S.disDeck.forEach((c,k)=>{if(c.k==="ffire")j=k}); if(j>=0){S.disDeck.splice(j,1);ffCard=true} }
+  FX.demolish(p);
+  S.undo.push({kind:"demolish",piece:p,idx:i,ffCard,cost:0});
+  log(`รื้อ${nm(p.type)} ที่ ${code(...p.cells[0])}${p.dmg?" (ที่พังอยู่)":""}`,`Demolished ${nm(p.type).toLowerCase()} at ${code(...p.cells[0])}${p.dmg?" (damaged)":""}`);
+  if(!S.pieces.length) S.tool=null; render();
+}
+function undo(){
+  const u=S.undo.pop(); if(!u) return;
+  if(u.kind==="piece"){ const p=S.pieces.find(x=>x.id===u.id); S.pieces=S.pieces.filter(x=>x.id!==u.id);
+    if(p&&p.type==="factory"){ S.ff--; let i=-1; S.disDeck.forEach((c,j)=>{if(c.k==="ffire")i=j}); if(i>=0) S.disDeck.splice(i,1) }
+    if(u.free) S.mod.freehouse=(S.mod.freehouse||0)+1 }
+  if(u.kind==="totem") S.totems=S.totems.filter(t=>t!==u.k);
+  if(u.kind==="repair"){ const p=S.pieces.find(x=>x.id===u.id); if(p) p.dmg=true; if(u.free) S.mod.freerepair=(S.mod.freerepair||0)+1 }
+  if(u.kind==="rf"){ const p=S.pieces.find(x=>x.id===u.id); if(p) p.rf=false }
+  if(u.kind==="demolish"){ S.pieces.splice(u.idx,0,u.piece); if(u.piece.type==="factory"){ S.ff++; if(u.ffCard) S.disDeck.splice(rnd(S.disDeck.length+1),0,{k:"ffire"}) } }
+  S.coins+=u.cost; bump(u.cost); S.log.shift(); render();
+}
+function nextStarTxt(){
+  const out=[];
+  for(const k of STAR_KEYS){ const v=metric(k), t=STAR[k], s=starOf(k); if(s>=2) continue; const goal=t[s], lab=STAR_LAB[k];
+    out.push(T(`${lab[0]} อีก ${goal-v}`,`${goal-v} more ${lab[1]}`)) }
+  return out;
+}
+function advice(){
+  if(S.phase!=="build"||S.busy) return "";
+  const left=ROUNDS-S.round, dm=damaged().length;
+  if(dm&&left<=1) return T(`มีอาคารพัง ${dm} หลัง อาคารพังไม่นับดาว ซ่อมก่อนจบรอบสุดท้าย`,`${dm} building(s) damaged. Damaged buildings don't count for stars. Repair before the final round ends.`);
+  if(S.round>=2&&S.round<=7&&S.totems.length<2) return T(`รอบหน้าโอกาสเกิดภัยราว ${chance(Math.min(RISK_CAP,RISK0+RISK_YEAR*(year(S.round+1)-1)+count("factory")))}% ดูว่าโซนไหนมีอาคารมาก แล้วซื้อ Totem ภัยนั้นหรือเสริมความแข็งแรง`,`Next round's disaster chance is about ${chance(Math.min(RISK_CAP,RISK0+RISK_YEAR*(year(S.round+1)-1)+count("factory")))}%. Check which zone holds most of your city, then buy that Totem or reinforce.`);
+  if(S.pieces.some(p=>p.type==="factory"&&S.pieces.some(q=>q!==p&&q.type!=="green"&&touches(p,q)))&&!S.totems.includes("fire")&&S.round<=9)
+    return T("ไฟไหม้โรงงานทำให้อาคารที่ติดโรงงานพังด้วย","A factory fire also damages every building touching the factory.");
+  const miss=nextStarTxt();
+  if(miss.length) return T(`ดาวถัดไป: ${miss.join(" · ")} · เหลือ ${left} รอบ`,`Next stars: ${miss.join(" · ")} · ${left} round(s) left`);
+  return T("ได้ครบ 8 ดาวแล้ว รักษาเมืองไว้ให้ถึงรอบ 12","All 8 stars. Keep the city safe until round 12.");
+}
+
+/* ======================= CANVAS: CITY + FX ======================= */
+const cv=document.getElementById("city"), cx=cv.getContext("2d"); cx.imageSmoothingEnabled=false;
+let hover=null, parts=[], effects=[], drops=new Map(), dmgShow=new Map();
+const cars=[{h:1,d:1,p:0,col:"#D94A3A"},{h:1,d:-1,p:60,col:"#F2C230"},{h:0,d:1,p:30,col:"#5FA8E8"},{h:0,d:-1,p:90,col:"#F4F4F4"}];
+function fitCanvas(){
+  const box=document.querySelector(".mapbox"), app=matchMedia("(min-width:821px) and (orientation:landscape)").matches;
+  let px;
+  if(app){ const main=document.querySelector(".main"), zt=$("zbar-top").offsetHeight||34, zb=$("zbar-bot").offsetHeight||34, hi=0;
+    const chrome=14+24+26+(18+4)+16, availH=main.clientHeight-(16+6+6)-zt-zb-4-22-4-6;
+    px=Math.max(224,Math.floor(Math.min(availH,innerWidth-360-chrome)));
+    const sideW=Math.max(360,Math.min(560,innerWidth-px-chrome)); main.style.gridTemplateColumns=`minmax(0,1fr) ${sideW}px` }
+  else { document.querySelector(".main").style.gridTemplateColumns=""; const availW=box.parentElement.clientWidth-52; px=Math.max(224,Math.floor(Math.min(availW,innerHeight*0.62))) }
+  cv.style.width=px+"px"; cv.style.height=px+"px";
+  const cell=px/7;
+  document.getElementById("lx").style.gridTemplateColumns=`repeat(7,${cell}px)`; document.getElementById("lx").style.width=px+6+"px"; document.getElementById("lx").style.paddingLeft="3px";
+  document.getElementById("ly").style.gridTemplateRows=`repeat(7,${cell}px)`; document.getElementById("ly").style.paddingTop="3px";
+  for(const id of ["zbar-top","zbar-bot"]){const el=document.getElementById(id); el.style.gridTemplateColumns=`${3*cell}px ${cell}px ${3*cell}px`; el.style.marginLeft=(18+4+3)+"px"; el.style.width=px+"px"}
+}
+addEventListener("resize",fitCanvas);
+function emit(n,o){for(let i=0;i<n;i++)parts.push(Object.assign({x:0,y:0,vx:(Math.random()-.5)*.6,vy:-Math.random()*.6,life:0,max:40+rnd(30),col:"#A0A8B0",sz:1,g:0},typeof o==="function"?o(i):o))}
+function pieceRect(p){const rs=Math.min(...p.cells.map(x=>x[0])),cs=Math.min(...p.cells.map(x=>x[1])),re=Math.max(...p.cells.map(x=>x[0])),ce=Math.max(...p.cells.map(x=>x[1]));return {x:cs*TILE,y:rs*TILE,w:(ce-cs+1)*TILE,h:(re-rs+1)*TILE}}
+function zoneRect(z){const r0=z.r0,r1=z.r1,c0=z.c0,c1=z.c1;return {x:c0*TILE,y:r0*TILE,w:(c1-c0+1)*TILE,h:(r1-r0+1)*TILE}}
+const FX={
+  build(p){ if(reduce())return; const r=pieceRect(p); drops.set(p.id,performance.now());
+    setTimeout(()=>emit(14,i=>({x:r.x+Math.random()*r.w,y:r.y+r.h-2,vx:(i%2?1:-1)*(.3+Math.random()*.6),vy:-Math.random()*.4,max:22+rnd(12),col:i%3?"#D4BB8A":"#F1E3C2"})),260) },
+  sparkle(p){ if(reduce())return; const r=pieceRect(p); emit(16,()=>({x:r.x+Math.random()*r.w,y:r.y+Math.random()*r.h,vx:0,vy:-.25,max:26+rnd(16),col:Math.random()<.5?"#F2C230":"#F4F4F4",twinkle:1})) },
+  coins(n){ if(reduce()||!n)return; for(const p of S.pieces){ if(p.dmg||!INCOME[p.type])continue; const r=pieceRect(p);
+    for(let i=0;i<Math.min(3,INCOME[p.type]);i++) parts.push({x:r.x+r.w/2-2+i*3,y:r.y+2,vx:0,vy:-.35,life:-i*6,max:34,col:"#F2C230",sz:2,coin:1}) } },
+  shield(){ effects.push({type:"shield",t0:performance.now(),dur:1300}) },
+  shieldSmall(){ if(reduce())return; emit(24,i=>{const a=i/24*Math.PI*2;return {x:56,y:56,vx:Math.cos(a)*1.1,vy:Math.sin(a)*1.1,max:30,col:"#7FC1F2"}}) },
+  disaster(k,cell,hits){
+    const dur=reduce()?0:{flood:1900,fire:1800,ffire:1800,storm:1900,quake:1500}[k]; const t0=performance.now();
+    effects.push({type:k,box:cell,t0,dur,seed:Math.random()});
+    for(const id of hits) dmgShow.set(id,t0+dur*.62);
+    if(k==="quake"&&dur){ const st=document.getElementById("stage"); st.classList.add("shake"); setTimeout(()=>st.classList.remove("shake"),dur*.7) }
+    return dur },
+  demolish(p){ if(reduce())return; const r=pieceRect(p); emit(26,i=>({x:r.x+Math.random()*r.w,y:r.y+r.h-3-Math.random()*r.h*.6,vx:(Math.random()-.5)*.9,vy:-Math.random()*.7,g:.03,max:26+rnd(14),col:["#A0A8B0","#D4BB8A","#5A6270","#F1E3C2"][i%4],sz:2})) },
+  blocked(k,box){ const dur=reduce()?0:3000; const t0=performance.now(); effects.push({type:"blk",hz:k,box,t0,dur,seed:Math.random(),last:0});
+    if(k==="quake"&&dur){ const st=document.getElementById("stage"); st.classList.add("shake"); setTimeout(()=>st.classList.remove("shake"),dur*.32) }
+    return dur },
+  stars(){ if(reduce())return; emit(26,i=>{const a=i/26*Math.PI*2;return {x:56,y:56,vx:Math.cos(a)*1.3,vy:Math.sin(a)*1.3-.3,g:.02,max:34,col:i%2?"#F2C230":"#F4F4F4",sz:2,twinkle:1}}) },
+  confetti(){ if(reduce())return; const cols=["#F2C230","#D94A3A","#5FA8E8","#5CB85C","#8C7CC4","#F4F4F4"];
+    for(let w=0;w<3;w++) setTimeout(()=>emit(40,()=>({x:10+Math.random()*92,y:112,vx:(Math.random()-.5)*1.2,vy:-1.6-Math.random()*1.4,g:.045,max:70+rnd(30),col:cols[rnd(cols.length)],sz:2})),w*350) },
+};
+function drawPiece(p,now){
+  const key=sprKey(p), r=pieceRect(p), showD=p.dmg&&now>=(dmgShow.get(p.id)||0);
+  let dy=0; const t=drops.get(p.id);
+  if(t!==undefined){ const k=Math.min(1,(now-t)/320); dy=-Math.round((1-k)*(1-k)*28); if(k<1&&k>.85) dy=1; if(k>=1) drops.delete(p.id) }
+  const img=SPR[key+(showD?"_d":"")];
+  if(dy<-2){ cx.fillStyle="rgba(0,0,0,.25)"; cx.fillRect(r.x+3,r.y+r.h-3,r.w-6,2) }
+  cx.drawImage(img,r.x,r.y+dy);
+  if(showD&&S.phase!=="over"){ const s=String(PRICE[p.type]), w=s.length*4+3, tx=r.x+r.w-w-1, ty=r.y+1;
+    cx.fillStyle=PAL.k; cx.fillRect(tx-1,ty-1,w+2,9); cx.fillStyle=PAL.r; cx.fillRect(tx,ty,w,7); digits(0,cx,s,tx+2,ty+1,"#F4F4F4") }
+  if(p.rf&&!showD) cx.drawImage(SPR.shield,r.x,r.y+dy,7,7);
+}
+let last=0, frz=false;
+function loop(now){
+  requestAnimationFrame(loop);
+  if(S.modal&&frz){ last=now; return }  // city is hidden behind a dialog: draw it once, then stop burning CPU
+  frz=!!S.modal;
+  if(now-last<33) return; const dt=Math.min(3,(now-last)/33); last=now;
+  cx.setTransform(1,0,0,1,0,0); cx.drawImage(BG,0,0);
+  // cars
+  if(!reduce()) for(const c of cars){ c.p=(c.p+.5*dt)%140; const pos=c.d>0?c.p-14:126-c.p;
+    if(c.h){ const y=ROAD*TILE+(c.d>0?9:3); cx.fillStyle=PAL.k; cx.fillRect(pos,y,6,4); cx.fillStyle=c.col; cx.fillRect(pos+1,y+1,4,2) }
+    else { const x=ROAD*TILE+(c.d>0?3:9); cx.fillStyle=PAL.k; cx.fillRect(x,pos,4,6); cx.fillStyle=c.col; cx.fillRect(x+1,pos+1,2,4) } }
+  // zone marker (persisting)
+  if(S.zone&&S.phase!=="over"){ const z=zoneRect(S.zone), ph=Math.floor(now/140)%4;
+    for(let i=0;i<z.w;i++){ cx.fillStyle=(i+ph)%4<2?PAL.r:"#F4F4F4"; cx.fillRect(z.x+i,z.y,1,1); cx.fillRect(z.x+z.w-1-i,z.y+z.h-1,1,1) }
+    for(let i=0;i<z.h;i++){ cx.fillStyle=(i+ph)%4<2?PAL.r:"#F4F4F4"; cx.fillRect(z.x+z.w-1,z.y+i,1,1); cx.fillRect(z.x,z.y+z.h-1-i,1,1) } }
+  // zone life: river glints, meadow wind
+  if(!reduce()){ const om=occ();
+    for(const [r,c] of LOTS){ const z=zoneOf(r,c); if(om[r+","+c]) continue; const x0=c*TILE,y0=r*TILE;
+      if(z==="river"){ const t=(now/900+hash(r,c)*5)%1; cx.fillStyle="#C8F2E8"; cx.fillRect(x0+2+Math.floor(t*11),y0+4,2,1); cx.fillRect(x0+2+Math.floor(((t+.5)%1)*11),y0+13,2,1) }
+      if(z==="old"&&Math.floor(now/600+hash(r,c)*7)%9===0){ cx.fillStyle="#F2C230"; cx.fillRect(x0+13,y0+2,1,1) } }
+    const g=(now%5200)/5200; if(g<.45){ const sx=64+Math.floor(g/.45*60)-10; cx.globalAlpha=.75; cx.fillStyle="#F4F4F4";
+      [[70,0],[83,6],[99,2]].forEach(([y,o])=>{ if(sx+o<112) cx.fillRect(Math.max(64,sx+o),y,Math.max(0,Math.min(6,112-(sx+o))),1) }); cx.globalAlpha=1 } }
+  // pieces (draw in row order so tall sprites overlap correctly)
+  const ps=S.pieces.slice().sort((a,b)=>Math.min(...a.cells.map(x=>x[0]))-Math.min(...b.cells.map(x=>x[0])));
+  for(const p of ps) drawPiece(p,now);
+  // ambient smoke: factories (working) and damaged pieces
+  if(!reduce()&&Math.random()<.25*dt) for(const p of S.pieces){
+    if(p.type==="factory"&&!p.dmg&&Math.random()<.5){ const r=pieceRect(p), ch=SPR.chimney[sprKey(p)]; parts.push({x:r.x+ch[0]+Math.random()*3,y:r.y+ch[1],vx:.12,vy:-.3,life:0,max:40,col:"#C9CED6",sz:2,fade:1}) }
+    if(p.dmg&&performance.now()>=(dmgShow.get(p.id)||0)&&Math.random()<.35){ const r=pieceRect(p); parts.push({x:r.x+3+Math.random()*(r.w-6),y:r.y+4,vx:(Math.random()-.5)*.2,vy:-.25,life:0,max:34,col:"#5A6270",sz:2,fade:1}) } }
+  // hover ghost
+  if(hover&&S.phase==="build"&&PRICE[S.tool]&&!S.busy){ const t=S.tool, cells=cellsFor(t,hover[0],hover[1],S.orient), ok=canPlace(t,hover[0],hover[1],S.orient)&&!why(t);
+    cx.globalAlpha=.6; if(cells.every(([a,b])=>a<N&&b<N)){ const key=SIZE[t]?t+(S.orient==="h"?"_h":"_v"):t; cx.drawImage(SPR[key],hover[1]*TILE,hover[0]*TILE) } cx.globalAlpha=1;
+    cx.fillStyle=ok?"rgba(92,184,92,.35)":"rgba(217,74,58,.4)"; cells.forEach(([a,b])=>{ if(a<N&&b<N) cx.fillRect(b*TILE,a*TILE,TILE,TILE) }) }
+  if(hover&&S.phase==="build"&&S.tool==="demolish"){ const p=occ()[hover[0]+","+hover[1]]; if(p){ const r=pieceRect(p); cx.fillStyle="rgba(217,74,58,.35)"; cx.fillRect(r.x,r.y,r.w,r.h); cx.strokeStyle="#D94A3A"; cx.lineWidth=1; cx.strokeRect(r.x+.5,r.y+.5,r.w-1,r.h-1) } }
+  if(hover&&S.phase==="build"&&S.tool==="reinforce"){ const p=occ()[hover[0]+","+hover[1]]; if(p){ const r=pieceRect(p); cx.strokeStyle=canRF(p)?"#7FC1F2":"#D94A3A"; cx.lineWidth=1; cx.strokeRect(r.x+.5,r.y+.5,r.w-1,r.h-1) } }
+  if(hover&&S.phase==="build"&&S.tool==="repair"){ const p=occ()[hover[0]+","+hover[1]]; if(p&&p.dmg){ const r=pieceRect(p); cx.strokeStyle="#5CB85C"; cx.lineWidth=1; cx.strokeRect(r.x+.5,r.y+.5,r.w-1,r.h-1) } }
+  // effects
+  effects=effects.filter(e=>now-e.t0<e.dur);
+  for(const e of effects) drawEffect(e,now);
+  // particles
+  parts=parts.filter(p=>p.life<p.max);
+  for(const p of parts){ p.life+=dt; if(p.life<0) continue; p.x+=p.vx*dt; p.y+=p.vy*dt; p.vy+=(p.g||0)*dt;
+    if(p.twinkle&&Math.floor(p.life/4)%2) continue;
+    cx.globalAlpha=p.fade?Math.max(0,1-p.life/p.max):1; cx.fillStyle=p.col; const s=p.sz||1;
+    if(p.coin){ cx.drawImage(SPR.coin,Math.round(p.x),Math.round(p.y),6,6) } else cx.fillRect(Math.round(p.x),Math.round(p.y),s,s) }
+  cx.globalAlpha=1;
+}
+function drawBlocked(e,now,k){
+  const z=zoneRect(e.box), hz=e.hz==="ffire"?"fire":e.hz, cxm=z.x+z.w/2, cym=z.y+z.h/2;
+  const roadY=ROAD*TILE, roadX=ROAD*TILE;
+  if(hz==="fire"){
+    const heat=k<.3?k/.3:k<.5?1:Math.max(0,1-(k-.5)/.3);
+    const n=Math.round(6*heat); for(let i=0;i<n;i++) parts.push({x:z.x+2+Math.random()*(z.w-4),y:z.y+z.h-3-Math.random()*z.h*.55,vx:(Math.random()-.5)*.25,vy:-.4-Math.random()*.4,life:0,max:12+rnd(8),col:["#F2C230","#E9783A","#D94A3A"][rnd(3)],sz:Math.random()<.4?2:1});
+    if(heat>.05){ cx.globalAlpha=.16*heat; cx.fillStyle="#E9783A"; cx.fillRect(z.x,z.y,z.w,z.h); cx.globalAlpha=1 }
+    // truck drives in along the main road, parks next to the fire
+    const tw=TSPR.fire.width, th=TSPR.fire.height, tx=Math.max(0,Math.min(112-tw,Math.round(cxm-tw/2))), ty=roadY+2;
+    const a=Math.min(1,Math.max(0,(k-.12)/.26)), x=Math.round(-tw+(tx+tw)*(1-Math.pow(1-a,3)));
+    if(k>.12){ cx.drawImage(TSPR.fire,x,ty); if(Math.floor(now/150)%2){ cx.fillStyle="#7FC1F2"; cx.fillRect(x+15,ty+3,2,1) } else { cx.fillStyle="#D94A3A"; cx.fillRect(x+15,ty+3,2,1) } }
+    if(k>.4&&k<.82){ const sx=tx+6, sy=ty; for(let i=0;i<3;i++){ const txp=z.x+2+Math.random()*(z.w-4), typ=z.y+z.h*.3+Math.random()*z.h*.5, T0=18;
+        parts.push({x:sx,y:sy,vx:(txp-sx)/T0,vy:(typ-sy)/T0-.9,g:.1,life:0,max:T0,col:Math.random()<.5?"#7FC1F2":"#F4F4F4",sz:1}) } }
+    if(k>.55&&k<.95&&Math.random()<.6) parts.push({x:z.x+Math.random()*z.w,y:z.y+z.h*.5+Math.random()*z.h*.4,vx:(Math.random()-.5)*.2,vy:-.3,life:0,max:30,col:"#E8ECF2",sz:2,fade:1});
+    return }
+  if(hz==="flood"){
+    // levee rises around the zone first, then water surges outside it and drains away
+    const wallA=Math.min(1,k/.22), per=2*(z.w+z.h), len=Math.round(per*wallA);
+    const lvl=k<.25?0:k<.5?(k-.25)/.25:k<.75?1:Math.max(0,1-(k-.75)/.2), band=Math.round(10*lvl);
+    if(band>0){ cx.globalAlpha=.7; cx.fillStyle="#2F5F9E";
+      cx.fillRect(z.x-band,z.y-band,z.w+2*band,band); cx.fillRect(z.x-band,z.y+z.h,z.w+2*band,band); cx.fillRect(z.x-band,z.y,band,z.h); cx.fillRect(z.x+z.w,z.y,band,z.h);
+      cx.globalAlpha=1; const off=Math.floor(now/90); cx.fillStyle="#7FC1F2"; for(let i=0;i<z.w+2*band;i+=3){ if((i+off)%6<2){ cx.fillRect(z.x-band+i,z.y-band,1,1); cx.fillRect(z.x-band+i,z.y+z.h+band-1,1,1) } } }
+    cx.fillStyle="#5A6270"; let left=len; const W3=3;
+    const seg=(x,y,w,h)=>{ if(left<=0) return; const l=Math.min(left,Math.max(w,h)); if(w>h) cx.fillRect(x,y,l,h); else cx.fillRect(x,y,w,l); left-=l };
+    seg(z.x,z.y,z.w,W3); seg(z.x+z.w-W3,z.y,W3,z.h); seg(z.x,z.y+z.h-W3,z.w,W3); seg(z.x,z.y,W3,z.h);
+    if(wallA>=1){ cx.fillStyle="#D4BB8A"; for(let i=0;i<z.w;i+=4){ cx.fillRect(z.x+i,z.y,3,1); cx.fillRect(z.x+i,z.y+z.h-W3,3,1) } for(let i=0;i<z.h;i+=4){ cx.fillRect(z.x,z.y+i,1,3); cx.fillRect(z.x+z.w-W3,z.y+i,1,3) } }
+    if(k>.05&&k<.92){ const s=TSPR.flood, rise=Math.min(1,(k-.05)/.12), hh=Math.round(s.height*rise); cx.drawImage(s,0,0,s.width,hh,Math.round(Math.max(0,Math.min(112-s.width,cxm-s.width/2))),roadY+2+s.height-hh,s.width,hh) }
+    return }
+  if(hz==="storm"){
+    const dark=k<.15?k/.15:k<.7?1:Math.max(0,1-(k-.7)/.25);
+    cx.globalAlpha=.42*dark; cx.fillStyle="#1B1B2F"; cx.fillRect(0,0,112,112); cx.globalAlpha=1;
+    if(dark>.3) for(let i=0;i<24;i++){ const x=(i*37+Math.floor(now/20)*3)%140-14, y=(i*53+Math.floor(now/16)*5)%120-8; cx.fillStyle="#7FC1F2"; cx.fillRect(x,y,1,3) }
+    const s=TSPR.storm, pop=Math.min(1,Math.max(0,(k-.12)/.12)), sh=Math.round(s.height*pop);
+    if(sh>0){ cx.drawImage(s,0,s.height-sh,s.width,sh,Math.round(cxm-s.width/2),Math.round(cym+s.height/2-sh),s.width,sh) }
+    if(k>.24&&k<.85){ const on=Math.floor(now/160)%2; cx.fillStyle=on?"#F2C230":"#D94A3A"; cx.fillRect(Math.round(cxm-1),Math.round(cym-s.height/2+1),3,2);
+      for(let w=0;w<3;w++){ const ph=((now/700)+w/3)%1, r=Math.round(4+ph*Math.max(z.w,z.h)*.6); cx.globalAlpha=1-ph; cx.strokeStyle="#F2C230"; cx.lineWidth=1; cx.strokeRect(Math.round(cxm-r)+.5,Math.round(cym-r)+.5,2*r,2*r) } cx.globalAlpha=1 }
+    const strike=(k>.42&&k<.46)||(k>.6&&k<.63); if(strike){ let x=z.x+z.w/2+(e.seed>.5?z.w:-z.w)*.9, y=0; cx.fillStyle="#F2C230"; while(y<z.y+z.h){ cx.fillRect(Math.round(x),y,2,3); y+=3; x+=(Math.random()-.5)*5 } }
+    return }
+  if(hz==="quake"){
+    const grow=Math.min(1,k/.3), fade=k<.6?1:Math.max(0,1-(k-.6)/.3);
+    const rng=s=>{let v=Math.sin(s*999+e.seed*77)*10000;return v-Math.floor(v)};
+    cx.globalAlpha=fade; for(let b=0;b<4;b++){ let x=cxm, y=cym; const ang=b*Math.PI/2+rng(b)*1.2, len=Math.round(z.w*.45*grow);
+      for(let i=0;i<len;i++){ x+=Math.cos(ang)+(rng(b*31+i)-.5)*1.2; y+=Math.sin(ang)+(rng(b*17+i)-.5)*1.2; cx.fillStyle=PAL.k; cx.fillRect(Math.round(x),Math.round(y),1,1) } } cx.globalAlpha=1;
+    const inZ=S.pieces.filter(p=>p.type!=="green"&&p.cells.some(([r,c])=>r>=e.box.r0&&r<=e.box.r1&&c>=e.box.c0&&c<=e.box.c1));
+    if(k>.28){ const a=Math.min(1,(k-.28)/.15);
+      for(const p of inZ){ const r=pieceRect(p); cx.globalAlpha=a; cx.strokeStyle="#F2C230"; cx.lineWidth=1;
+        cx.beginPath(); cx.moveTo(r.x+2,r.y+3); cx.lineTo(r.x+r.w-2,r.y+r.h-2); cx.moveTo(r.x+r.w-2,r.y+3); cx.lineTo(r.x+2,r.y+r.h-2); cx.stroke();
+        cx.fillStyle="#F2C230"; cx.fillRect(r.x+1,r.y+r.h-3,r.w-2,1); cx.globalAlpha=1 }
+      const s=TSPR.quake, spots=inZ.length?inZ.slice(0,4).map(p=>{const r=pieceRect(p);return [r.x+r.w-9,r.y+r.h-11]}):[[cxm-7,cym-7]];
+      spots.forEach(([x,y],i)=>{ const bob=Math.round(Math.sin(now/140+i)*1); if(k>.3+i*.05) cx.drawImage(s,0,0,s.width,s.height,Math.round(x),Math.round(y+bob),10,11) }) }
+    return }
+}
+function drawEffect(e,now){
+  const k=(now-e.t0)/e.dur;
+  if(e.type==="blk"){ drawBlocked(e,now,k); return }
+  if(e.type==="shield"){ const rad=Math.round(k*80), a=1-k;
+    cx.globalAlpha=a*.35; cx.fillStyle="#7FC1F2"; cx.fillRect(0,0,112,112); cx.globalAlpha=1;
+    for(let i=0;i<64;i++){ const ang=i/64*Math.PI*2; cx.fillStyle=i%2?"#F4F4F4":"#7FC1F2"; cx.fillRect(Math.round(56+Math.cos(ang)*rad),Math.round(56+Math.sin(ang)*rad),2,2) }
+    if(k<.6) cx.drawImage(SPR.shield,48,48,16,16); return }
+  const z=zoneRect(e.box);
+  if(e.type==="flood"){ const lvl=k<.45?k/.45:k<.75?1:1-(k-.75)/.25, h=Math.round(z.h*lvl);
+    cx.globalAlpha=.72; cx.fillStyle="#2F5F9E"; cx.fillRect(z.x,z.y+z.h-h,z.w,h); cx.globalAlpha=1;
+    const off=Math.floor(now/90);
+    for(let x=0;x<z.w;x++){ if((x+off)%6<3){ cx.fillStyle="#7FC1F2"; cx.fillRect(z.x+x,z.y+z.h-h,1,1) } }
+    if(Math.random()<.6) parts.push({x:z.x+Math.random()*z.w,y:z.y+z.h-h,vx:0,vy:-.2,life:0,max:10,col:"#F4F4F4",sz:1}); return }
+  if(e.type==="fire"||e.type==="ffire"){ const n=k<.8?7:2;
+    for(let i=0;i<n;i++) parts.push({x:z.x+Math.random()*z.w,y:z.y+z.h-2-Math.random()*z.h*.6,vx:(Math.random()-.5)*.25,vy:-.45-Math.random()*.5,life:0,max:14+rnd(10),col:["#F2C230","#E9783A","#D94A3A","#F4F4F4"][rnd(4)],sz:Math.random()<.4?2:1});
+    if(k>.4&&Math.random()<.5) parts.push({x:z.x+Math.random()*z.w,y:z.y+Math.random()*z.h*.5,vx:.1,vy:-.35,life:0,max:30,col:"#3A3F4A",sz:2,fade:1});
+    cx.globalAlpha=.18+.1*Math.sin(now/60); cx.fillStyle="#E9783A"; cx.fillRect(z.x,z.y,z.w,z.h); cx.globalAlpha=1; return }
+  if(e.type==="storm"){ cx.globalAlpha=Math.min(.45,k*1.5)*(k>.85?(1-k)/.15:1); cx.fillStyle="#1B1B2F"; cx.fillRect(0,0,112,112); cx.globalAlpha=1;
+    for(let i=0;i<26;i++){ const x=(i*37+Math.floor(now/20)*3)%140-14, y=(i*53+Math.floor(now/16)*5)%120-8; cx.fillStyle="#7FC1F2"; cx.fillRect(x,y,1,3); cx.fillRect(x-1,y+3,1,1) }
+    const flash=(k>.28&&k<.32)||(k>.55&&k<.58);
+    if(flash){ cx.globalAlpha=.75; cx.fillStyle="#F4F4F4"; cx.fillRect(0,0,112,112); cx.globalAlpha=1;
+      let x=z.x+z.w/2, y=0; cx.fillStyle="#F2C230"; while(y<z.y+z.h/2){ cx.fillRect(Math.round(x),y,2,3); y+=3; x+=(Math.random()-.5)*6 } } return }
+  if(e.type==="quake"){ const grow=Math.min(1,k/.6), cxm=z.x+z.w/2, cym=z.y+z.h/2;
+    const rng=s=>{let v=Math.sin(s*999+e.seed*77)*10000;return v-Math.floor(v)};
+    for(let b=0;b<4;b++){ let x=cxm, y=cym; const ang=b*Math.PI/2+rng(b)*1.2, len=Math.round(z.w*.55*grow);
+      for(let i=0;i<len;i++){ x+=Math.cos(ang)+(rng(b*31+i)-.5)*1.2; y+=Math.sin(ang)+(rng(b*17+i)-.5)*1.2; cx.fillStyle=PAL.k; cx.fillRect(Math.round(x),Math.round(y),1,1) } }
+    if(Math.random()<.7) parts.push({x:z.x+Math.random()*z.w,y:z.y+z.h-2,vx:(Math.random()-.5)*.6,vy:-.3,life:0,max:20,col:"#D4BB8A",sz:2,fade:1}); }
+}
+function tileAt(ev){ const r=cv.getBoundingClientRect(); const x=(ev.clientX-r.left)/r.width*112, y=(ev.clientY-r.top)/r.height*112; const c=Math.floor(x/TILE), rr=Math.floor(y/TILE); return (c>=0&&rr>=0&&c<N&&rr<N)?[rr,c]:null }
+cv.addEventListener("pointermove",e=>{hover=tileAt(e);hoverInfo()});
+cv.addEventListener("pointerleave",()=>{hover=null;hoverInfo()});
+cv.addEventListener("click",e=>{ const t=tileAt(e); if(!t) return; hover=t;
+  if(S.phase==="build"&&!S.busy&&PRICE[S.tool]){ if(isRoad(t[0],t[1])){toast(T("สร้างบนถนนไม่ได้","You can't build on a road"),"bad");return} place(t[0],t[1]); return }
+  if(S.phase==="build"&&!S.busy&&S.tool==="repair"){ const p=occ()[t[0]+","+t[1]]; if(p&&p.dmg) repair(p.id); return }
+  if(S.phase==="build"&&!S.busy&&S.tool==="reinforce"){ const p=occ()[t[0]+","+t[1]]; if(p) reinforce(p.id); return }
+  if(S.phase==="build"&&!S.busy&&S.tool==="demolish"){ const p=occ()[t[0]+","+t[1]]; if(p) demolish(p.id); return }
+  const p=occ()[t[0]+","+t[1]]; if(p&&S.phase==="build"&&!S.tool&&p.dmg){ S.tool="repair"; render(); toast(T("แตะอีกครั้งเพื่อซ่อม","Tap again to repair")) } });
+
+/* ======================= DOM RENDER ======================= */
+const $=id=>document.getElementById(id);
+const PIPS={1:[4],2:[0,8],3:[0,4,8],4:[0,2,6,8],5:[0,2,4,6,8],6:[0,2,3,5,6,8]};
+const dieHTML=(v,r,l)=>`<div class="die${r?" roll":""}${l?" land":""}" aria-label="${v}">${[...Array(9)].map((_,i)=>`<i class="${PIPS[v].includes(i)?"p":""}"></i>`).join("")}</div>`;
+const img=(k,cls)=>`<img src="${URL[k]}" alt="" class="${cls||""}">`;
+let toastT=null;
+function toast(msg,kind){const el=$("toast"); el.textContent=msg; el.className="toast show"+(kind?" "+kind:""); clearTimeout(toastT); toastT=setTimeout(()=>{el.className="toast"+(kind?" "+kind:"")},2300)}
+let bumpQ=0; function bump(d){ bumpQ+=d }
+let lastDeal=-1, lastDis=null, lastLoc=null;
+function render(){
+  document.documentElement.lang=lang;
+  $("subtitle").textContent=T("นายกฯ สร้างเมืองที่รับมือภัยพิบัติได้","Build a city that can stand up to disasters");
+  $("lang-th").setAttribute("aria-pressed",lang==="th"); $("lang-en").setAttribute("aria-pressed",lang==="en");
+  $("newgame").textContent=T("เกมใหม่","New game");
+  renderStatus(); renderAxes(); renderDesk(); renderTotems(); renderGoals(); renderLog(); renderTray(); renderModal();
+  renderZones(); hoverInfo();
+  $("legend").innerHTML=`<div>${["house","shop","factory","condo","green"].map(t=>`<span>${img(t)}${nm(t)}</span>`).join("")}<span>${img("shield")}${T("เสริมแล้ว","reinforced")}</span></div>`;
+}
+function renderZones(){
+  const zb=z=>{const Z=ZONES[z], hit=S.zone&&!S.zone.fac&&!S.blocked&&S.disCard&&S.disCard.z===z&&S.phase!=="over", own=S.totems.includes(Z.hz);
+    return `<div class="zb z-${z}${hit?" hit":""}">${img(Z.hz)}<div><b>${zoneName(z)}</b><span>${T("ภัยประจำ","home hazard")}: ${T(DIS[Z.hz].th,DIS[Z.hz].en)}${own?` ${timg(Z.hz,"own")}`:""}</span></div></div>`};
+  $("zbar-top").innerHTML=zb("old")+"<i></i>"+zb("river"); $("zbar-bot").innerHTML=zb("soft")+"<i></i>"+zb("open");
+}
+const threats=(z,t)=>TOT.map(k=>({k,n:HAZ[k].zones.filter(x=>x===z).length})).filter(o=>o.n&&(!t||HAZ[o.k].hits.includes(t)));
+let lastHover="";
+function hoverInfo(){
+  const el={set innerHTML(v){$("hinfo").innerHTML=v;$("hinfo2").innerHTML=v}}; const key=(hover?hover.join():"")+"|"+S.tool+"|"+S.totems.join()+"|"+lang; if(key===lastHover) return; lastHover=key;
+  if(!hover){ el.innerHTML=T("ชี้หรือแตะช่องบนแผนที่ เพื่อดูว่าโซนนั้นเสี่ยงภัยอะไร","Point at a lot to see which disasters can hit it"); return }
+  const [r,c]=hover, z=zoneOf(r,c);
+  if(!z){ el.innerHTML=`<b>${code(r,c)}</b> · ${T("ถนน สร้างไม่ได้","road, can't build")}`; return }
+  const t=PRICE[S.tool]&&S.tool!=="green"?S.tool:null, list=threats(z,t);
+  const fmt=o=>{const own=S.totems.includes(o.k);return `<span class="th${own?" safe":""}">${img(o.k)}${T(DIS[o.k].th,DIS[o.k].en)} ×${o.n}${t?"":` <small>(${HAZ[o.k].hits.map(nm).join("·")})</small>`}${own?` ${T("กันได้แล้ว","blocked")}`:""}</span>`};
+  let msg;
+  if(S.tool==="green") msg=T("สวนไม่พังจากภัย","Parks are never damaged");
+  else if(t) msg=list.length?`${T(`${nm(t)}ตรงนี้โดนได้จาก`,`A ${nm(t).toLowerCase()} here can be hit by`)} ${list.map(fmt).join(" ")}`:`<span class="th safe">${T(`${nm(t)}ปลอดภัยจากการ์ดภัยของโซนนี้`,`No disaster card in this zone hits a ${nm(t).toLowerCase()}`)}</span>`;
+  else msg=`${T("การ์ดภัยของโซนนี้","Disaster cards here")}: ${list.map(fmt).join(" ")}`;
+  el.innerHTML=`<b>${code(r,c)}</b> · <b class="zn z-${z}">${zoneName(z)}</b> · ${msg}${t&&(t==="factory"||t==="shop"||t==="house"||t==="condo")&&S.pieces.some(p=>p.type==="factory")?` <small>· ${T("+ ไฟไหม้โรงงานถ้าติดโรงงาน","+ factory fire if touching a factory")}</small>`:""}`;
+}
+function renderAxes(){ const z=S.zone, on=z&&S.phase!=="over";
+  $("lx").innerHTML=[...COLS].map((l,i)=>`<span class="${on&&i>=z.c0&&i<=z.c1?"hl":""}">${l}</span>`).join("");
+  $("ly").innerHTML=[...Array(N)].map((_,i)=>`<span class="${on&&i>=z.r0&&i<=z.r1?"hl":""}">${i+1}</span>`).join("") }
+function renderStatus(){
+  const r=Math.max(S.round,1), rk=risk();
+  const track=[0,1,2,3].map(y=>`<span class="yr">${[0,1,2].map(i=>{const n=y*3+i+1;return `<i class="${n<S.round?"done":n===S.round?"now":""}"></i>`}).join("")}</span>`).join("");
+  const g=[...Array(11)].map((_,i)=>{const v=i+2;return `<i class="${v<=rk?"on":""}${v<=rk&&v>=8?" hi":""}"></i>`}).join("");
+  const d=bumpQ; bumpQ=0;
+  $("status").innerHTML=`
+   <div class="box stat"><div class="k">${T("รอบ","Round")} · ${T("ปีที่","Year")} ${year(r)}/4</div><div class="v">${S.round||"–"}<small>/ 12</small></div><div class="track">${track}</div></div>
+   <div class="box stat"><div class="k">${T("เหรียญ","Coins")}</div><div class="v">${img("coin","coinimg")}${S.coins}</div><div class="s">${T("รายได้","Income")} +${income()} ${T("ต่อรอบ","/ round")} · ⭐ ${stars()}/8</div>${d?`<span class="float ${d>0?"up":"down"}">${d>0?"+":""}${d}</span>`:""}</div>
+   <div class="box stat riskbox"><div class="k">${T("ความเสี่ยง · ทอย 2 ลูก","Risk · 2 dice")}</div><div class="v">${rk}<small>${T("โอกาสเกิดภัย","disaster chance")} ${S.round<=1?0:chance(rk)}%</small></div><div class="gauge">${g}</div></div>`;
+}
+function evCard(k,i){ if(!k) return `<div class="card empty">${T("การ์ดเหตุการณ์","Event card")}</div>`; const e=EV[k], deal=S.deal!==lastDeal;
+  return `<div class="card ${e.cls}${deal?" deal":""}" style="animation-delay:${i*.18}s"><img class="cart" src="${art(k)}" alt=""><div class="ck">${T("เหตุการณ์","Event")}</div><div class="t">${T(e.th,e.en)}</div><div class="b">${T(e.b[0],e.b[1])}</div></div>` }
+const hitTxt=k=>HAZ[k].hits.map(nm).join(T(" และ "," and "));
+function disCard(){
+  const c=S.disCard;
+  if(!c) return `<div class="card empty">${T("การ์ดภัย<br>จั่วเมื่อทอยได้ไม่เกินความเสี่ยง","Disaster card<br>drawn when the roll is at or under the risk")}</div>`;
+  const k=c.k, d=DIS[k], fresh=c!==lastDis;
+  const body=S.blocked?T(`กันได้ด้วย Totem ${TOTEM[TOTEM_OF[k]][0]}`,`Blocked by your ${TOTEM[TOTEM_OF[k]][1]} Totem`)
+    :k==="ffire"?T("สุ่มโรงงาน 1 แห่ง โรงงานและอาคารที่ติดด้านข้างพัง","A random factory: it and every building touching it are damaged")
+    :T(`<b>${hitTxt(k)}</b> ทุกหลังใน<b>${ZONES[c.z].th}</b>พัง`,`Every <b>${HAZ[k].hits.map(t=>nm(t).toLowerCase()).join(" and ")}</b> in <b>${ZONES[c.z].en}</b> is damaged`);
+  return `<div class="card ${S.blocked?"blocked":"dis"}${fresh?" flip":""}"><div class="cartw"><img class="cart" src="${art(k)}" alt="">${S.blocked?`<span class="cstamp">${timg(TOTEM_OF[k])}</span>`:""}</div><div class="ck">${T("ภัยพิบัติ","Disaster")}${k!=="ffire"?` · ${zoneName(c.z)}`:""}</div><div class="row" style="gap:8px">${S.blocked?timg(TOTEM_OF[k],"icon"):img(k==="ffire"?"fire":k,"icon")}<div class="t">${T(d.th,d.en)}</div></div>
+    <div class="b">${body}</div>${S.zone&&!S.busy&&!S.blocked?`<div class="b"><b style="color:var(--ink)">${T(`ผล: พัง ${S.hits.length} หลัง${S.saved.length?` · เสริมแล้วรอด ${S.saved.length}`:""}`,`Result: ${S.hits.length} damaged${S.saved.length?` · ${S.saved.length} saved`:""}`)}</b></div>`:""}
+    <div class="real">${T("เรื่องจริง: ","Real world: ")}${T(d.real[0],d.real[1])}</div></div>`;
+}
+function miniMap(z){ const c=canvasOf(7,7),x=c.getContext("2d"); for(let r=0;r<N;r++)for(let cc=0;cc<N;cc++){ const inz=r>=z.r0&&r<=z.r1&&cc>=z.c0&&cc<=z.c1; x.fillStyle=isRoad(r,cc)?(inz?"#B7615A":PAL.a):inz?PAL.r:PAL.g; x.fillRect(cc,r,1,1)} return c.toDataURL() }
+function zoneCard(){
+  const z=S.zone; if(!z) return "";
+  const fresh=JSON.stringify(z)!==lastLoc, c=S.disCard;
+  const title=z.fac?T("รอบโรงงาน","Around the factory"):zoneName(c.z);
+  return `<div class="card loc${fresh?" flip":""}"><div class="ck">${T("พื้นที่โดนภัย","Area hit")}</div><div class="row"><div class="zt">${title}</div><img class="mini" src="${miniMap(z)}" alt=""></div><div class="b">${S.busy?"…":T(`พัง ${S.hits.length} หลัง${S.saved.length?` · รอด ${S.saved.length}`:""}`,`${S.hits.length} damaged${S.saved.length?` · ${S.saved.length} saved`:""}`)}</div></div>`;
+}
+function renderDesk(){
+  const rk=risk(), lab={ready:T("พร้อมเริ่ม","Ready"),forecast:T("พยากรณ์","Forecast"),roll:T("ทอยความเสี่ยง","Risk roll"),build:T("บริหารเมือง","Build"),over:T("จบวาระ","Term over")}[S.phase];
+  let dice="";
+  if(anim) dice=`<div class="row"><div class="dice">${dieHTML(anim[0],1)}${dieHTML(anim[1],1)}</div></div>`;
+  else if(S.dice){ const s=S.dice[0]+S.dice[1], hit=S.disCard!==null; dice=`<div class="row"><div class="dice">${dieHTML(S.dice[0],0,landed)}${dieHTML(S.dice[1],0,landed)}</div><div class="verdict ${hit?"hit":"safe"}">${hit?T(`${s} ≤ ${rk} เกิดภัย`,`${s} ≤ ${rk} DISASTER`):T(`${s} > ${rk} ปลอดภัย`,`${s} > ${rk} SAFE`)}</div></div>`; landed=false }
+  let fc="";
+  if(S.phase==="forecast"){ const top=S.disDeck[S.disDeck.length-1];
+    fc=`<div class="msg"><b>${T("พยากรณ์อากาศ:","Forecast:")}</b> ${T(`ภัยใบบนสุดคือ <b>${disLabel(top,"th")}</b>${S.totems.includes(TOTEM_OF[top.k])?" (คุณมี Totem กันได้)":""}`,`the top disaster card is <b>${disLabel(top,"en")}</b>${S.totems.includes(TOTEM_OF[top.k])?" (your Totem blocks it)":""}`)}</div>` }
+  const ev=`<div class="cards">${evCard(S.events[0],0)}${evCard(S.events[1],1)}</div>`; lastDeal=S.deal;
+  const dc=S.disCard?`<div class="cards">${disCard()}</div>`:""; lastDis=S.disCard; lastLoc=S.zone?JSON.stringify(S.zone):null;
+  const msg=S.busy&&S.zone?"":(S.msg?T(S.msg.th,S.msg.en):(S.round===0?T("กดเริ่มวาระเพื่อเปิดการ์ดเหตุการณ์ใบแรก","Start your term to open the first event cards."):""));
+  $("desk").innerHTML=`<div class="head"><h2>${T("โต๊ะประชุมสภาเมือง","City council desk")}</h2><span class="tagk">${lab}</span></div>
+    ${ev}${fc}${dice}${dc}<div class="msg">${msg}</div><div class="hint">${advice()}</div>
+    <div class="decks"><span>${T("กองเหตุการณ์","Events")} <b>${S.evDeck.length}</b></span><span>${T("กองภัย","Disasters")} <b>${S.disDeck.length||(12+S.ff)}</b>${S.ff?` · ${T("ไฟไหม้โรงงาน","factory fire")} ${S.ff}`:""}</span></div>`;
+  renderTray();
+}
+function renderTotems(){
+  const b=S.phase==="build"&&!S.busy, p=totemPrice();
+  $("totem-panel").innerHTML=`<div class="head" style="margin-bottom:10px"><h2>Totem</h2><span class="tagk">${S.totems.length<4?T(`อันถัดไป ${p} เหรียญ`,`next one: ${p} coins`):T("ครบ 4 แบบแล้ว","all 4 owned")}</span></div>
+   <div class="tsteps">${TOTEM_STEPS.map((v,i)=>`<i class="${i<S.totems.length?"done":i===S.totems.length?"now":""}">${v}</i>`).join("<b>→</b>")}<span>${T("แพงขึ้นทุกอันที่ซื้อ · กันภัยนั้นได้ทั้งใบตลอดเกม","price rises with each one · blocks that hazard for the rest of the game")}</span></div>
+   <div class="totems">${TOT.map(k=>{const own=S.totems.includes(k), off=!b||own||S.coins<p;
+     return `<button type="button" class="totem${own?" own":""}${gotTotem===k?" got":""}" data-totem="${k}"${off&&!own?" disabled":""}${own?' aria-disabled="true"':""}><span class="tico">${timg(k,"tbig")}${img(k,"hz")}</span><span>${T(TOTEM[k][0],TOTEM[k][1])}</span><span class="p">${own?T("มีแล้ว","OWNED"):T(`กัน${DIS[k].th}`,`vs ${DIS[k].en.toLowerCase()}`)}</span></button>`}).join("")}</div>`;
+  gotTotem=null;
+}
+let PREV=null;
+function renderGoals(){
+  const dm=damaged().length, n=stars(), cur={}; STAR_KEYS.forEach(k=>cur[k]=starOf(k));
+  const gained=PREV&&S.round>0?STAR_KEYS.filter(k=>cur[k]>PREV[k]):[]; PREV=cur;
+  if(gained.length){ setTimeout(()=>{toast(T(`⭐ ได้ดาวเพิ่ม! รวม ${n}/8`,`⭐ Star earned! ${n}/8`),"good"); FX.stars()},350) }
+  const rows=STAR_KEYS.map(k=>{const v=metric(k), t=STAR[k], s=starOf(k), lab=STAR_LAB[k];
+    return `<div class="goal s${s}${gained.includes(k)?" gain":""}"><span class="ck">${s?"★".repeat(s):""}</span><span class="gn">${T(lab[2],lab[3])} <small>· ${T(lab[4],lab[5])}</small></span><span class="gv">${v} <small>/ ${t[0]} · ${t[1]}</small></span><span class="bar"><i style="width:${Math.min(100,v/t[1]*100)}%"></i><b style="left:${t[0]/t[1]*100}%"></b></span></div>`}).join("");
+  $("goal-panel").innerHTML=`<div class="head" style="margin-bottom:10px"><h2>${T("ดาวนายกฯ","Mayor stars")}</h2><span class="tagk">⭐ ${n}/8 · ${T(...rankOf(n))}</span></div>
+   <div class="goals">${rows}
+   <div class="goalnote${dm?" bad":""}">${dm?T(`มีอาคารพัง ${dm} หลัง: ไม่ได้เงินและไม่นับดาวจนกว่าจะซ่อม`,`${dm} damaged: no income and no stars until repaired`):T("นับดาวตอนจบรอบ 12 · 1 ดาวที่ตัวเลขแรก 2 ดาวที่ตัวเลขหลัง · 8 ดาว = Best Mayor","Stars are counted after round 12 · 1 star at the first number, 2 at the second · 8 stars = Best Mayor")}</div></div>`;
+}
+function renderLog(){ const d=$("log"); const open=d.open;
+  d.innerHTML=`<summary>${T("บันทึกเมือง","City log")}</summary>${S.log.length?`<ul>${S.log.slice(0,80).map(l=>`<li class="${l.kind}"><span class="r">R${l.r}</span><span>${T(l.th,l.en)}</span></li>`).join("")}</ul>`:`<p style="margin:8px 0 0;color:var(--muted);font-size:13px">${T("ยังไม่มีเหตุการณ์","Nothing yet")}</p>`}`; d.open=open }
+function renderTray(){
+  const b=S.phase==="build"&&!S.busy, dm=damaged().length, rfOk=S.pieces.some(canRF);
+  const pal=["house","shop","factory","condo","green"].map(t=>{const w=b?why(t):"x";
+    return `<button type="button" data-buy="${t}" aria-pressed="${S.tool===t}"${!b?" disabled":w?' class="off" aria-disabled="true"':""} title="${nm(t)}">${img(t)}<span class="nm">${nm(t)}</span><span class="pr">${b&&priceOf(t)===0?T("ฟรี","FREE"):`${img("coin")}${priceOf(t)}`}</span></button>`}).join("")+
+    `<span class="sep"></span>
+     <button type="button" class="tool" id="reinforce" aria-pressed="${S.tool==="reinforce"}"${!b||!rfOk||S.coins<RF_PRICE?" disabled":""}>${img("shield")}<span class="nm">${T("เสริม","Reinforce")}</span><span class="pr">${img("coin")}${RF_PRICE}</span></button>
+     <button type="button" class="tool" id="repair" aria-pressed="${S.tool==="repair"}"${!b||!dm?" disabled":""}><span class="glyph">✚</span><span class="nm">${T("ซ่อม","Repair")}</span><span class="pr">${dm||"–"}</span></button>
+     <button type="button" class="tool" id="demolish" aria-pressed="${S.tool==="demolish"}"${!b||!S.pieces.length?" disabled":""}><span class="glyph">✖</span><span class="nm">${T("รื้อ","Demolish")}</span><span class="pr">${T("ฟรี","free")}</span></button>
+     <button type="button" class="tool" id="rotate"${!b||!SIZE[S.tool]?" disabled":""}><span class="glyph">${S.orient==="h"?"↔":"↕"}</span><span class="nm">${T("หมุน","Rotate")}</span><span class="pr">&nbsp;</span></button>
+     <button type="button" class="tool" id="undo"${!b||!S.undo.length?" disabled":""}><span class="glyph">↶</span><span class="nm">${T("ย้อน","Undo")}</span><span class="pr">&nbsp;</span></button>`;
+  let act="", dis=S.busy?" disabled":"";
+  switch(S.phase){
+    case "ready": act=`<button class="primary pulse" id="act" type="button">${T("▶ เริ่มวาระ","▶ Start your term")}</button>`; break;
+    case "forecast": act=`<div class="choice"><button type="button" class="main" data-fc="keep">${T("เก็บไว้บนกอง","Keep on top")}</button><button type="button" data-fc="bottom">${T("ส่งไปใต้กอง","Send to bottom")}</button></div>`; break;
+    case "roll": act=`<button class="primary red pulse" id="act" type="button"${dis}>${T(`ทอยลูกเต๋า 2 ลูก (ต้องได้มากกว่า ${risk()})`,`Roll 2 dice (need over ${risk()})`)}</button>`; break;
+    case "build": act=`<button class="primary" id="act" type="button"${dis}>${S.round>=ROUNDS?T("จบวาระ → นับดาว","End term → count stars"):T(`จบรอบ ${S.round} ▶`,`End round ${S.round} ▶`)}</button>`; break;
+    case "over": act=`<button class="primary" id="act" type="button">${T("เล่นใหม่","Play again")}</button>`; break;
+  }
+  let tip="";
+  if(S.phase==="build"&&!S.busy){
+    if(PRICE[S.tool]){ const t=S.tool, w=why(t); const info={house:T("รายได้ 1 · ที่อยู่ 1","income 1 · housing 1"),shop:T("รายได้ 2 · ต้องติดบ้าน/คอนโด","income 2 · must touch a home"),factory:T("รายได้ 4 · ต้องติดบ้าน/คอนโด · เสี่ยง +1 · 2 ช่อง","income 4 · must touch a home · risk +1 · 2 lots"),condo:T("รายได้ 1 · ที่อยู่ 4 · 2 ช่อง","income 1 · housing 4 · 2 lots"),green:T("นับดาวสิ่งแวดล้อม ไม่พัง","counts for park stars, never damaged")}[t];
+      tip=`<b>${nm(t)}</b> · ${info} → ${w?`<span class="w">${w}</span>`:T("แตะช่องว่างบนแผนที่","tap an empty lot on the map")}` }
+    else if(S.tool==="repair") tip=T(`แตะอาคารที่พังเพื่อซ่อม (ราคาเต็ม)${S.mod.freerepair?` · ซ่อมฟรีเหลือ ${S.mod.freerepair}`:""}`,`Tap a damaged building to repair it (full price)${S.mod.freerepair?` · ${S.mod.freerepair} free repair left`:""}`);
+    else if(S.tool==="demolish") tip=T("แตะอาคารเพื่อรื้อทิ้ง (ฟรี ไม่ได้เงินคืน) ใช้ย้ายอาคารที่วางผิดโซน หรือเคลียร์อาคารที่พังแทนการซ่อม · กดย้อนได้","Tap a building to demolish it (free, no refund). Use it to move a badly placed building or clear a damaged one instead of repairing · Undo works");
+    else if(S.tool==="reinforce") tip=T(`แตะอาคารเพื่อเสริมความแข็งแรง (${RF_PRICE} เหรียญ) ถ้าโดนภัยครั้งหน้าจะไม่พัง แล้วโทเคนหายไป`,`Tap a building to reinforce it (${RF_PRICE} coins). The next disaster that would damage it doesn't, then the token is used up.`);
+    else tip=T(`<b>${S.coins} เหรียญ</b> · เลือกอาคารแล้วแตะแผนที่ ซื้อ Totem เสริม หรือซ่อม แล้วกดจบรอบ`,`<b>${S.coins} coins</b> · pick a building and tap the map, buy a Totem, reinforce or repair, then end the round`)
+      +(S.mod.freehouse?` · <span class="w">${T("มีบ้านฟรี 1 หลัง","1 free house")}</span>`:"")+(S.mod.buildcost?` · <span class="w">${T(`ก่อสร้าง +${S.mod.buildcost}`,`build +${S.mod.buildcost}`)}</span>`:"")+(S.mod.totemdisc?` · <span class="w">${T(`Totem ลด ${S.mod.totemdisc}`,`Totem −${S.mod.totemdisc}`)}</span>`:"");
+  } else if(S.busy&&S.zone) tip=T("ภัยกำลังเกิดขึ้น…","Disaster in progress…");
+  else if(S.phase==="roll") tip=T(`ทอยได้ <b>${risk()} หรือน้อยกว่า</b> = เกิดภัย (โอกาส ${chance(risk())}%)`,`Roll <b>${risk()} or less</b> = disaster (${chance(risk())}% chance)`);
+  else if(S.phase==="forecast") tip=T("ระบบเตือนภัยล่วงหน้า: ส่งภัยที่ยังไม่มี Totem กันไปไว้ใต้กอง","Early warning: send a disaster you can't block to the bottom.");
+  else if(S.phase==="ready") tip=T("กดปุ่มเพื่อเริ่มวาระนายกฯ 12 รอบ","Press the button to start your 12-round term.");
+  $("trayin").innerHTML=`<div class="tray-in"><div class="tip">${tip}</div><div class="pal">${pal}</div><div>${act}</div></div>`;
+}
+let introPage=0;
+function showIntroPage(i){ introPage=i; document.querySelectorAll("#overlay .ipg").forEach(el=>el.classList.toggle("on",+el.dataset.pg===i)) }
+function renderModal(){
+  const o=$("overlay"); if(!S.modal){o.innerHTML="";return}
+  if(S.modal==="lang"){
+    o.innerHTML=`<div class="overlay"><div class="box modal start" role="dialog" aria-modal="true"><h3><span>MR.</span>MAYOR</h3>
+      <div class="startart"><img src="${art("quiet")}" alt=""></div>
+      <p class="lead">เลือกภาษา · Choose your language</p>
+      <div class="langpick"><button type="button" data-pick="th"><b>ไทย</b><span>ภาษาไทย</span></button><button type="button" data-pick="en"><b>English</b><span>อังกฤษ</span></button></div></div></div>`; return }
+  if(S.modal==="menu"){
+    o.innerHTML=`<div class="overlay"><div class="box modal start" role="dialog" aria-modal="true"><h3><span>MR.</span>MAYOR</h3>
+      <div class="startart"><img src="${art("quiet")}" alt=""></div>
+      <p class="lead">${T("เป็นนายกฯ 4 ปี สร้างเมืองให้เติบโตและรับมือภัยพิบัติได้","Run a city for 4 years. Grow it and keep it safe from disasters.")}</p>
+      <div class="menu"><button type="button" class="primary" data-menu="rules">📖 ${T("อ่านวิธีเล่น","How to play")} <small>${T("6 หน้าสั้นๆ","6 short pages")}</small></button>
+        <button type="button" class="ghostbtn" data-menu="play">${T("เล่นเป็นแล้ว ไปที่เมืองเลย","I know how to play")}</button></div>
+      <button type="button" class="langsw" data-menu="lang">${lang==="th"?"ภาษา: ไทย · Change to English":"Language: English · เปลี่ยนเป็นไทย"}</button></div></div>`; return }
+  if(S.modal==="intro"){
+    const ib=t=>`<img src="${t==="condo"?URL.condoTall:t==="factory"?URL.factoryWide:URL[t]}" alt="" class="${t==="factory"?"wide":t==="condo"?"tall":""}">`;
+    const pages=[
+     {t:T("เป้าหมาย: เป็นนายกฯ 4 ปี","Your goal: 4 years as mayor"),b:`
+      <p>${T("คุณเป็นนายกเทศมนตรีของเมืองเล็กๆ มีเวลา <b>12 รอบ</b> (ทุก 3 รอบ = 1 ปี รวม 4 ปี) สร้างเมืองให้<b>เติบโต</b>และ<b>รับมือภัยพิบัติได้</b>","You run a small city for <b>12 rounds</b> (3 rounds = 1 year, 4 years in all). Make it <b>grow</b> and <b>survive disasters</b>.")}</p>
+      <p>${T("จบรอบ 12 แล้วนับ<b>ดาว</b> 4 ด้าน ด้านละ 2 ดวง ได้ครบ 8 ดวง = <b>Best Mayor 👑</b>","After round 12 you score <b>stars</b> in 4 areas, 2 stars each. All 8 = <b>Best Mayor 👑</b>")}</p>
+      <div class="ig4">
+       <div>${img("coin")}<b>${T("เศรษฐกิจ","Economy")}</b><span>${T("เมืองได้เงินต่อรอบเท่าไร","coins the city earns each round")}</span></div>
+       <div>${img("house")}<b>${T("ที่อยู่อาศัย","Housing")}</b><span>${T("มีที่ให้กี่ครอบครัวอยู่","how many families can live here")}</span></div>
+       <div>${img("green")}<b>${T("สิ่งแวดล้อม","Environment")}</b><span>${T("มีสวนกี่แห่ง","how many parks")}</span></div>
+       <div>${timg("fire")}<b>${T("พร้อมรับภัย","Disaster-ready")}</b><span>${T("มี Totem ป้องกันภัยกี่แบบ","how many Totems you own")}</span></div></div>`},
+     {t:T("อาคาร 5 แบบ","The 5 buildings"),b:`
+      <p class="sm">${T("<b>ราคา</b> = จ่ายครั้งเดียวตอนสร้าง · <b>ได้เงิน</b> = เหรียญที่อาคารนี้ทำให้ทุกรอบ · <b>ครอบครัว</b> = นับเป็นที่อยู่อาศัย","<b>Cost</b> = paid once to build · <b>Earns</b> = coins it makes every round · <b>Families</b> = counts as housing")}</p>
+      <div class="bt">
+       <div>${ib("house")}<b>${T("บ้าน","House")}</b><span>${T("ราคา 4 · ได้เงิน 1/รอบ · อยู่ได้ <b>1 ครอบครัว</b>","cost 4 · earns 1/round · houses <b>1 family</b>")}</span></div>
+       <div>${ib("condo")}<b>${T("คอนโด","Apartments")}</b><span>${T("ราคา 10 · ได้เงิน 1/รอบ · อยู่ได้ <b>4 ครอบครัว</b> · ใช้ 2 ช่อง","cost 10 · earns 1/round · houses <b>4 families</b> · 2 lots")}</span></div>
+       <div>${ib("shop")}<b>${T("ร้านค้า","Shop")}</b><span>${T("ราคา 7 · ได้เงิน <b>2</b>/รอบ · ต้องวางติดบ้านหรือคอนโด","cost 7 · earns <b>2</b>/round · must touch a home")}</span></div>
+       <div>${ib("factory")}<b>${T("โรงงาน","Factory")}</b><span>${T("ราคา 8 · ได้เงิน <b>4</b>/รอบ · ใช้ 2 ช่อง · ต้องวางติดบ้านหรือคอนโด · ทำให้เมืองเสี่ยงภัยมากขึ้น","cost 8 · earns <b>4</b>/round · 2 lots · must touch a home · raises disaster risk")}</span></div>
+       <div>${ib("green")}<b>${T("สวน","Park")}</b><span>${T("ราคา 4 · ไม่ได้เงิน · นับดาวสิ่งแวดล้อม · <b>ไม่พังจากภัย</b>","cost 4 · earns nothing · counts for environment · <b>never damaged</b>")}</span></div></div>
+      <p class="sm">${T("\"ติด\" = ช่องต่อกันด้านซ้าย ขวา บน หรือล่าง (ทแยงไม่นับ) เพราะร้านและโรงงานต้องมีคนอยู่ใกล้ๆ มาทำงาน","\"Touch\" = sharing a side, not a corner. Shops and factories need people living next door.")}</p>`},
+     {t:T("ในแต่ละรอบ ทำอะไร","What happens each round"),b:`
+      <ol class="flow">
+       <li><b>1</b><div><b>${T("เปิดการ์ดเหตุการณ์ 2 ใบ","2 event cards are drawn")}</b><span>${T("อาจได้เงิน เสียเงิน หรือมีเรื่องพิเศษ เช่น ซ่อมฟรี","you may gain or lose coins, or get something special")}</span></div></li>
+       <li><b>2</b><div><b>${T("รับเงิน","Collect income")}</b><span>${T("ทุกอาคารที่ไม่พังจ่ายเงินให้คุณ เช่น บ้าน 2 หลัง + ร้าน 1 ร้าน = 1+1+2 = 4 เหรียญ","every working building pays you, e.g. 2 houses + 1 shop = 1+1+2 = 4 coins")}</span></div></li>
+       <li><b>3</b><div><b>${T("ทอยลูกเต๋า 2 ลูก","Roll 2 dice")}</b><span>${T("รวมแต้มแล้วเทียบกับ <b>ความเสี่ยง</b> (มุมขวาบน) · ได้<b>เท่ากับหรือน้อยกว่า</b> = เกิดภัย · ได้มากกว่า = ปลอดภัย<br>เช่น ความเสี่ยง 6 ทอยได้ 5 → เกิดภัย · ทอยได้ 9 → รอด","add them up and compare with the <b>risk</b> (top right). <b>Equal or lower</b> = disaster. Higher = safe.<br>e.g. risk 6: roll 5 → disaster, roll 9 → safe")}</span></div></li>
+       <li><b>4</b><div><b>${T("บริหารเมือง","Run your city")}</b><span>${T("ใช้เงินสร้าง ซ่อม ป้องกันภัย ได้กี่อย่างก็ได้ แล้วกด <b>จบรอบ</b>","spend on building, repairing and protection as you like, then press <b>End round</b>")}</span></div></li></ol>
+      <p class="sm">${T("ความเสี่ยงสูงขึ้นทุกปี: ปีที่ 1 = 4 · ปี 2 = 6 · ปี 3 = 8 · ปี 4 = 10 · โรงงาน 1 หลัง +1","Risk rises each year: 4 · 6 · 8 · 10 · +1 per factory")}</p>`},
+     {t:T("ภัยพิบัติลงที่ไหน","Where disasters strike"),b:`
+      <p>${T("เมืองแบ่งเป็น <b>4 โซน</b> แต่ละโซนมีภัยที่เจอบ่อย","The city has <b>4 zones</b>, each with a hazard it gets most")}</p>
+      <div class="ig4 zones">${Object.keys(ZONES).map(z=>`<div class="zc z-${z}">${img(ZONES[z].hz)}<b>${zoneName(z)}</b><span>${T("เสี่ยง","mostly")} ${T(DIS[ZONES[z].hz].th,DIS[ZONES[z].hz].en)}</span></div>`).join("")}</div>
+      <p>${T("การ์ดภัยบอก <b>โซน</b> และ <b>อาคาร 2 แบบ</b> ที่จะพัง เช่น","A disaster card names a <b>zone</b> and <b>2 building types</b>, e.g.")}</p>
+      <div class="exc">${img("flood")}<div><b>${T("น้ำท่วม · ริมแม่น้ำ","Flood · Riverside")}</b><span>${T("บ้านและร้านค้า<b>ทุกหลัง</b>ในโซนริมแม่น้ำพัง · อาคารแบบอื่นและโซนอื่นไม่เป็นอะไร","<b>every</b> house and shop in Riverside is damaged. Other types and zones are fine.")}</span></div></div>
+      <p class="sm">${T("อาคารที่<b>พัง</b> = ไม่ได้เงิน และไม่นับดาว จนกว่าจะซ่อม · ชี้ที่ช่องบนแผนที่เพื่อดูว่าช่องนั้นเสี่ยงอะไร","A <b>damaged</b> building earns nothing and scores nothing until repaired. Point at a lot to see its risks.")}</p>`},
+     {t:T("ป้องกันเมือง","Protect your city"),b:`
+      <div class="bt">
+       <div><span class="tico4">${["flood","quake","storm","fire"].map(k=>timg(k)).join("")}</span><b>Totem</b><span>${T("กันภัยแบบนั้นได้<b>ทั้งใบ ทุกโซน ตลอดเกม</b> มี 4 แบบ (คันกั้นน้ำ · วิศวกร · ไซเรนเตือนพายุ · รถดับเพลิง) · ราคาขึ้นทุกอันที่ซื้อ: 8 → 12 → 16 → 20","blocks that hazard <b>everywhere, for the rest of the game</b>. 4 kinds. Each costs more: 8 → 12 → 16 → 20")}</span></div>
+       <div>${img("shield")}<b>${T("เสริมความแข็งแรง","Reinforce")}</b><span>${T("3 เหรียญ · ใส่บนอาคาร 1 หลัง โดนภัยครั้งหน้าไม่พัง แล้วโทเคนหายไป","3 coins · put on one building; it ignores the next hit, then the token is used up")}</span></div>
+       <div><i class="gl">✚</i><b>${T("ซ่อม","Repair")}</b><span>${T("จ่ายเท่าราคาสร้าง อาคารกลับมาใช้ได้","pay the building's cost to fix it")}</span></div>
+       <div><i class="gl">✖</i><b>${T("รื้อ","Demolish")}</b><span>${T("ฟรี ไม่ได้เงินคืน · ใช้ย้ายอาคารที่วางผิดที่","free, no refund · use it to move a badly placed building")}</span></div></div>`},
+     {t:T("นับดาวตอนจบ","Scoring at the end"),b:`
+      <table class="itab"><tr><th></th><th>⭐</th><th>⭐⭐</th></tr>
+       <tr><td>${img("coin")}${T("เงินต่อรอบ","Income / round")}</td><td>${STAR.income[0]}</td><td>${STAR.income[1]}</td></tr>
+       <tr><td>${img("house")}${T("ครอบครัว (บ้าน 1 · คอนโด 4)","Families (house 1 · block 4)")}</td><td>${STAR.housing[0]}</td><td>${STAR.housing[1]}</td></tr>
+       <tr><td>${img("green")}${T("สวน","Parks")}</td><td>${STAR.green[0]}</td><td>${STAR.green[1]}</td></tr>
+       <tr><td>${timg("fire")}Totem</td><td>${STAR.totems[0]}</td><td>${STAR.totems[1]}</td></tr></table>
+      <p class="sm">${T("เช่น มีบ้าน 6 หลัง + คอนโด 2 ตึก = 6 + 8 = 14 ครอบครัว → ได้ ⭐ ด้านที่อยู่อาศัย · อาคารที่พังอยู่ตอนจบไม่นับ","e.g. 6 houses + 2 blocks = 6 + 8 = 14 families → ⭐ for housing. Damaged buildings at the end don't count.")}</p>
+      <p class="rk"><b>8</b> Best Mayor 👑 · <b>6–7</b> ${T("ฝีมือดี","Skilled")} · <b>4–5</b> ${T("ผ่าน","Pass")} · <b>0–3</b> ${T("ไม่ได้รับเลือกตั้งอีกสมัย","Not re-elected")}</p>`}];
+    const n=pages.length, i=Math.max(0,Math.min(n-1,introPage));
+    const ex=o.querySelector(".modal.intro");
+    if(ex&&ex.dataset.lang===lang){ showIntroPage(i); return }   // pre-rendered: just flip to the page
+    const nav=j=>`<div class="idots">${pages.map((_,q)=>`<button type="button" class="${q===j?"on":""}" data-ipage="${q}" aria-label="${q+1}"></button>`).join("")}</div>
+      <div class="inav">${j>0?`<button type="button" class="ghostbtn" data-ipage="${j-1}">◀ ${T("ก่อนหน้า","Back")}</button>`:`<button type="button" class="ghostbtn" data-close="intro">${T("ข้าม เริ่มเลย","Skip")}</button>`}
+        ${j<n-1?`<button class="primary" type="button" data-ipage="${j+1}">${T("ถัดไป","Next")} ▶</button>`:`<button class="primary pulse" type="button" data-close="intro">▶ ${T("เข้าใจแล้ว เริ่มเลย","Got it, let's play")}</button>`}</div>`;
+    o.innerHTML=`<div class="overlay"><div class="box modal intro" role="dialog" aria-modal="true" data-lang="${lang}"><h3><span>MR.</span>MAYOR</h3>
+      ${pages.map((pg,j)=>`<section class="ipg${j===i?" on":""}" data-pg="${j}"><div class="ihead"><span class="inum">${j+1}/${n}</span><b>${pg.t}</b></div><div class="ibody">${pg.b}</div>${nav(j)}</section>`).join("")}</div></div>`; return }
+  const n=typeof S.result==="number"?S.result:stars(), rk=rankOf(n);
+  const rows=STAR_KEYS.map(k=>{const lab=STAR_LAB[k], s=starOf(k);return `<div><b>${"★".repeat(s)||"–"}</b><span>${T(lab[2],lab[3])} ${metric(k)}</span></div>`}).join("");
+  o.innerHTML=`<div class="overlay"><div class="box modal" role="dialog" aria-modal="true">
+    <div class="big" style="color:${n>=6?"var(--go)":n>=4?"var(--ink)":"var(--red)"};text-shadow:3px 3px 0 ${n>=4&&n<6?"var(--gold)":"var(--ink)"}">⭐ ${n}/8</div>
+    <div class="starrow">${[...Array(8)].map((_,i)=>`<i class="${i<n?"on":""}" style="animation-delay:${.2+i*.14}s">★</i>`).join("")}</div>
+    <p class="lead" style="font-size:20px;font-weight:700;color:var(--ink)">${T(rk[0],rk[1])}</p>
+    <div class="stats3 s4">${rows}</div>
+    <div class="stats3"><div><b>${S.stats.dis}</b><span>${T("ภัยที่เจอ","disasters")}</span></div><div><b>${S.stats.blocked}</b><span>${T("Totem กันได้","blocked")}</span></div><div><b>${S.stats.hits}</b><span>${T("อาคารที่พัง","buildings hit")}</span></div></div>
+    <div class="debrief">${T("SDG 11.5 คือการลดความสูญเสียจากภัยพิบัติในเมือง ในเกมนี้อะไรช่วยเมืองคุณได้มากที่สุด: Totem (การเตรียมพร้อม), การวางผังเมืองให้กระจายโซน, การเสริมความแข็งแรง หรือการซ่อมให้เร็ว?","SDG 11.5 is about cutting city losses from disasters. What helped your city most: Totems (preparation), spreading the city across zones, reinforcing, or fast repairs?")}</div>
+    <button class="primary" type="button" data-close="new">${T("เล่นใหม่","Play again")}</button><button class="ghostbtn" type="button" data-close="view">${T("ดูเมืองของฉัน","See my city")}</button></div></div>`;
+}
+
+/* ======================= EVENTS ======================= */
+function newGame(){ PREV=null; S=fresh(); S.modal="menu"; effects=[]; parts=[]; dmgShow.clear(); drops.clear(); render() }
+document.addEventListener("click",e=>{
+  if(splashDone&&e.target.closest("#splash")){ splashDone(); return }
+  const a=e.target.closest("button"); if(!a) return;
+  if(a.id==="act"&&!S.busy){ if(S.phase==="ready") startRound(); else if(S.phase==="roll") rollRisk(); else if(S.phase==="build") endRound(); else if(S.phase==="over") newGame(); return }
+  if(a.dataset.fc){ forecastChoice(a.dataset.fc==="keep"); return }
+  if(a.dataset.buy){ const w=why(a.dataset.buy); if(w&&S.tool!==a.dataset.buy){ toast(`${nm(a.dataset.buy)}: ${w}`,"bad"); return } S.tool=S.tool===a.dataset.buy?null:a.dataset.buy; render(); return }
+  if(a.dataset.totem){ buyTotem(a.dataset.totem); return }
+  if(a.id==="rotate"){ S.orient=S.orient==="h"?"v":"h"; render(); return }
+  if(a.id==="demolish"){ S.tool=S.tool==="demolish"?null:"demolish"; render(); return }
+  if(a.id==="reinforce"){ S.tool=S.tool==="reinforce"?null:"reinforce"; render(); return }
+  if(a.id==="repair"){ S.tool=S.tool==="repair"?null:"repair"; render(); return }
+  if(a.id==="undo"){ undo(); return }
+  if(a.id==="newgame"){ newGame(); return }
+  if(a.dataset.pick){ lang=a.dataset.pick; try{localStorage.setItem("mm4-lang",lang)}catch(err){} S.modal="menu"; render(); return }
+  if(a.dataset.menu){ const m=a.dataset.menu;
+    if(m==="lang"){ lang=lang==="th"?"en":"th"; try{localStorage.setItem("mm4-lang",lang)}catch(err){} render(); return }
+    if(m==="rules"){ introPage=0; S.modal="intro"; render(); return }
+    if(m==="play"){ S.modal=null; render(); setTimeout(()=>toast(T("พร้อมเมื่อไร กด ▶ เริ่มวาระ ที่มุมขวาล่าง","Ready? Press ▶ Start your term")),250); return } }
+  if(a.dataset.ipage!==undefined){ if(document.querySelector("#overlay .modal.intro")) showIntroPage(+a.dataset.ipage); else { introPage=+a.dataset.ipage; renderModal() } return }
+  if(a.id==="help"){ if(S.phase!=="over"){introPage=0;S.modal="intro"; renderModal()} return }
+  if(a.id==="lang-th"||a.id==="lang-en"){ lang=a.id==="lang-th"?"th":"en"; try{localStorage.setItem("mm4-lang",lang)}catch(err){} render(); return }
+  if(a.dataset.close){ const k=a.dataset.close; S.modal=null; if(k==="new"){ newGame(); S.modal=null; startRound(); return } if(k==="intro"&&S.round===0){ render(); setTimeout(()=>toast(T("พร้อมเมื่อไร กด ▶ เริ่มวาระ ที่มุมขวาล่าง","Ready? Press ▶ Start your term")),250); return } render(); return }
+});
+document.addEventListener("keydown",e=>{ if((e.key==="r"||e.key==="R")&&SIZE[S.tool]){S.orient=S.orient==="h"?"v":"h"; render()} });
+
+function preloadArt(){
+  const urls=[...Object.keys(EV),...Object.keys(DIS)].map(k=>art(k)).concat(Object.values(TURL),Object.values(URL));
+  let i=0; const step=()=>{ const t0=performance.now(); while(i<urls.length&&performance.now()-t0<8){ const im=new Image(); im.src=urls[i++]; if(im.decode) im.decode().catch(()=>{}) } if(i<urls.length) setTimeout(step,16) }; step();
+}
+function start(data){ S=(data&&data.state&&data.state.v===5)?data.state:fresh(); S.busy=false; fitCanvas(); render(); fitCanvas(); requestAnimationFrame(loop); setTimeout(fitCanvas,300); setTimeout(preloadArt,50) }
+try{ window.claude?.hot?.snapshot?.(()=>({state:JSON.parse(JSON.stringify(S))})) }catch(e){}
+window.claude?.hot?.ready ? window.claude.hot.ready(start) : start(window.claude?.hot?.data ?? {});
+window.__mm={get S(){return S},place:(r,c)=>place(r,c),repair:id=>repair(id)};
+})();
+</script>
+
+</body>
+</html>
