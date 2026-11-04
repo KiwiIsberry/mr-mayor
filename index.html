@@ -1201,7 +1201,7 @@ function clipHalf(nx,ny,k){ // unit square points with nx*x+ny*y>=k, as CSS poly
     if(fa>=0) out.push(a); if((fa>=0)!==(fb>=0)){ const t=fa/(fa-fb); out.push([a[0]+(b[0]-a[0])*t,a[1]+(b[1]-a[1])*t]) } }
   return out.length?`polygon(${out.map(p=>`${(p[0]*100).toFixed(2)}% ${(p[1]*100).toFixed(2)}%`).join(",")})`:"polygon(0 0,0 0,0 0)" }
 function run(ms,step){ return new Promise(res=>{ const t0=performance.now(); const f=now=>{ const p=Math.min(1,(now-t0)/ms); step(p,now-t0); if(p<1) requestAnimationFrame(f); else res() }; requestAnimationFrame(f) }) }
-async function destroyCard(dc,k){
+async function destroyCard_v1(dc,k){
   if(reduce()){ dc.style.opacity=0; return }
   SFX.hit(k,false);
   const P=[]; const {c,x,r,pad}=fxCanvas(dc,140); const W=r.width, H=r.height;
@@ -1264,6 +1264,105 @@ async function destroyCard(dc,k){
   c.remove(); dc.style.visibility="hidden";
 }
 
+/* full-viewport effect canvas; (ox,oy) = card's top-left on it */
+function fullFx(dc){ const r=dc.getBoundingClientRect(), c=document.createElement("canvas"); c.className="cardfx";
+  c.width=innerWidth; c.height=innerHeight; Object.assign(c.style,{left:"0px",top:"0px",width:innerWidth+"px",height:innerHeight+"px"});
+  document.body.appendChild(c); return {c,x:c.getContext("2d"),W:r.width,H:r.height,ox:r.left,oy:r.top} }
+/* smooth value noise in 0..1 */
+function noise2(seed){ const g=7, R=[...Array((g+1)*(g+1))].map(()=>Math.random()); const at=(i,j)=>R[j*(g+1)+i];
+  return (u,v)=>{ const x=u*g, y=v*g, i=Math.min(g-1,Math.floor(x)), j=Math.min(g-1,Math.floor(y)), fx=x-i, fy=y-j, sx=fx*fx*(3-2*fx), sy=fy*fy*(3-2*fy);
+    return (at(i,j)*(1-sx)+at(i+1,j)*sx)*(1-sy)+(at(i,j+1)*(1-sx)+at(i+1,j+1)*sx)*sy } }
+/* per-cell dissolve mask: a cell vanishes once progress passes its threshold */
+function cellMask(dc,W,H,thr,block){
+  const cols=Math.ceil(W/block), rows=Math.ceil(H/block), m=document.createElement("canvas"); m.width=cols; m.height=rows; const mx=m.getContext("2d");
+  const T=[]; for(let j=0;j<rows;j++) for(let i=0;i<cols;i++) T.push(thr((i+.5)/cols,(j+.5)/rows)+Math.random()*.04);
+  const dead=new Uint8Array(T.length);
+  return { cols,rows,T,
+    update(p,onDie){ mx.clearRect(0,0,cols,rows); mx.fillStyle="#000";
+      for(let n=0;n<T.length;n++){ if(T[n]>p) mx.fillRect(n%cols,Math.floor(n/cols),1,1); else if(!dead[n]){ dead[n]=1; onDie&&onDie((n%cols+.5)/cols,(Math.floor(n/cols)+.5)/rows) } }
+      const u=`url(${m.toDataURL()})`; dc.style.maskImage=u; dc.style.webkitMaskImage=u;
+      dc.style.maskSize=dc.style.webkitMaskSize="100% 100%"; dc.style.maskRepeat=dc.style.webkitMaskRepeat="no-repeat" } } }
+function boltPath(x0,y0,x1,y1,jag){ const pts=[[x0,y0]], n=Math.max(6,Math.round(Math.hypot(x1-x0,y1-y0)/26));
+  for(let i=1;i<n;i++){ const t=i/n; pts.push([x0+(x1-x0)*t+(Math.random()-.5)*jag,y0+(y1-y0)*t+(Math.random()-.5)*jag*.3]) } pts.push([x1,y1]); return pts }
+function strokePath(x,pts,w,col,a){ x.globalAlpha=a; x.strokeStyle=col; x.lineWidth=w; x.lineJoin="miter"; x.beginPath(); pts.forEach((q,i)=>i?x.lineTo(q[0],q[1]):x.moveTo(q[0],q[1])); x.stroke(); x.globalAlpha=1 }
+function stepParts(x,P){ for(let i=P.length-1;i>=0;i--){ const q=P[i]; q.l++; q.x+=q.vx; q.y+=q.vy; q.vy+=q.g||0; q.vx*=q.fr||1; if(q.l>q.m){P.splice(i,1);continue}
+  x.globalAlpha=Math.max(0,1-q.l/q.m)*(q.a||1); x.fillStyle=q.c; x.fillRect(Math.round(q.x),Math.round(q.y),q.s,q.s) } x.globalAlpha=1 }
+
+async function destroyCard(dc,k){
+  if(reduce()){ dc.style.opacity=0; return }
+  dc.style.animation="none";   // the deal animation would otherwise pin transform
+  const P=[];
+  if(k==="fire"||k==="ffire"){ // ragged flame front from the bottom-left corner; each side burns at its own pace
+    SFX.hit(k,false);
+    const {c,x,W,H,ox,oy}=fullFx(dc), nz=noise2();
+    const M=cellMask(dc,W,H,(u,v)=>((u+(1-v))/2)*.62+nz(u,v)*.38,6);
+    await run(2600,p=>{ const q=-.05+p*1.12; x.clearRect(0,0,c.width,c.height);
+      M.update(q,(u,v)=>{ const px=ox+u*W, py=oy+v*H; P.push({x:px,y:py,vx:(Math.random()-.3)*1.2,vy:-1-Math.random()*1.6,l:0,m:26+Math.random()*24,c:["#F2C230","#E9783A","#D94A3A","#FFE680"][Math.floor(Math.random()*4)],s:Math.random()<.5?4:3});
+        if(Math.random()<.25) P.push({x:px,y:py,vx:.3+Math.random()*.4,vy:-.7,l:0,m:60,c:"#2A2D36",s:7,a:.7}) });
+      for(let n=0;n<M.T.length;n++){ const t=M.T[n]; if(t>q&&t<q+.06){ const px=ox+(n%M.cols)/M.cols*W, py=oy+Math.floor(n/M.cols)/M.rows*H, b=W/M.cols;
+        x.fillStyle=t<q+.02?"#FFE680":t<q+.04?"#E9783A":"#3A1E14"; x.fillRect(px,py,b+1,b+1) } }
+      stepParts(x,P) });
+    await run(600,()=>{ x.clearRect(0,0,c.width,c.height); stepParts(x,P) });
+    c.remove();
+  } else if(k==="storm"){ // a big hard lightning strike, the card is electrocuted and charred, then crumbles to dust unevenly
+    const {c,x,W,H,ox,oy}=fullFx(dc), hitX=ox+W*(.35+Math.random()*.3), hitY=oy+H*.32;
+    const strike=()=>{ const main=boltPath(hitX+(Math.random()-.5)*160,-10,hitX,hitY,70), br=[];
+      for(let b=0;b<3;b++){ const s=main[2+Math.floor(Math.random()*(main.length-4))]; br.push(boltPath(s[0],s[1],s[0]+(Math.random()-.5)*220,s[1]+80+Math.random()*120,40)) } return {main,br} };
+    let bolt=strike(); SFX.hit("storm",false);
+    await run(900,(p,t)=>{ x.clearRect(0,0,c.width,c.height); const on=(t<240)||(t>320&&t<500)||(t>580&&t<820);
+      if(t>300&&!bolt.second){ bolt=strike(); bolt.second=1 } if(t>560&&!bolt.third){ bolt=strike(); bolt.second=1; bolt.third=1; SFX.hit("storm",false) }
+      if(on){ const rg=x.createRadialGradient(hitX,hitY,10,hitX,hitY,Math.max(W,H)*.9); rg.addColorStop(0,"rgba(221,235,255,.55)"); rg.addColorStop(1,"rgba(221,235,255,0)"); x.fillStyle=rg; x.fillRect(hitX-W*1.2,hitY-H*1.2,W*2.4,H*2.4);
+        for(const b of bolt.br){ strokePath(x,b,12,"#7FC1F2",.35); strokePath(x,b,3,"#F4FAFF",1) }
+        strokePath(x,bolt.main,34,"#7FC1F2",.35); strokePath(x,bolt.main,16,"#BFE0FF",.8); strokePath(x,bolt.main,6,"#FFFFFF",1);
+        x.globalAlpha=.6; x.fillStyle="#FFFFFF"; x.beginPath(); x.arc(hitX,hitY,26+Math.random()*10,0,7); x.fill(); x.globalAlpha=1 }
+      dc.style.transform=t>60?`translate(${(Math.random()-.5)*10}px,${(Math.random()-.5)*10}px)`:"" ;
+      dc.style.filter=on?"brightness(2.2) saturate(0)":"brightness(.6) contrast(1.4)" });
+    // electrocuted: arcs crawl over the card while it blackens
+    await run(900,p=>{ x.clearRect(0,0,c.width,c.height);
+      for(let a=0;a<3;a++) if(Math.random()<.8){ const a0=[ox+Math.random()*W,oy+Math.random()*H]; strokePath(x,boltPath(a0[0],a0[1],a0[0]+(Math.random()-.5)*W*.6,a0[1]+(Math.random()-.5)*H*.5,24),4,"#BFE0FF",.9) }
+      dc.style.transform=`translate(${(Math.random()-.5)*6*(1-p)}px,${(Math.random()-.5)*6*(1-p)}px)`;
+      dc.style.filter=`brightness(${(1-p*.78).toFixed(2)}) sepia(${(p*.5).toFixed(2)}) contrast(${(1+p*.5).toFixed(2)})`;
+      if(Math.random()<.5) P.push({x:ox+Math.random()*W,y:oy+Math.random()*H,vx:.2,vy:-.7,l:0,m:40,c:"#5A6270",s:6,a:.6}); stepParts(x,P) });
+    dc.style.transform="";
+    // crumbles: edges and weak spots go first, at different speeds, into falling ash
+    const nz=noise2(); const ed=(u,v)=>Math.min(u,1-u,v,1-v)*2, skew=Math.random()*.25;
+    const M=cellMask(dc,W,H,(u,v)=>nz(u,v)*.55+ed(u,v)*.35+u*skew,5);
+    await run(2400,p=>{ x.clearRect(0,0,c.width,c.height);
+      M.update(-.02+p*1.05,(u,v)=>{ for(let n=0;n<2;n++) P.push({x:ox+u*W+(Math.random()-.5)*4,y:oy+v*H,vx:(Math.random()-.5)*.9,vy:.3+Math.random()*.8,g:.04,fr:.98,l:0,m:50+Math.random()*40,c:["#2A2D36","#3A3F4A","#5A6270","#1B1B2F","#8A8F99"][Math.floor(Math.random()*5)],s:Math.random()<.5?3:4}) });
+      stepParts(x,P) });
+    await run(700,()=>{ x.clearRect(0,0,c.width,c.height); stepParts(x,P) });
+    c.remove();
+  } else if(k==="flood"){ // water rises to half the card, the card tips over and sinks; what goes under fades away
+    SFX.hit("flood",false);
+    const {c,x,W,H,ox,oy}=fullFx(dc), slot=dc.parentElement, top0=dc.offsetTop, wlFinal=.5;
+    const setMask=(wlPx,a)=>{ const g=`linear-gradient(to bottom,#000 0,#000 ${wlPx-4}px,rgba(0,0,0,${a}) ${wlPx+10}px,rgba(0,0,0,${a}) 100%)`; slot.style.maskImage=slot.style.webkitMaskImage=g };
+    const water=(lvl,t,extra)=>{ const wy=oy+H*(1-lvl); x.clearRect(0,0,c.width,c.height);
+      const L=ox-70, R=ox+W+70, bot=oy+H+40;
+      const gr=x.createLinearGradient(0,wy,0,bot); gr.addColorStop(0,"rgba(47,95,158,.55)"); gr.addColorStop(1,"rgba(47,95,158,0)");
+      x.fillStyle=gr; x.beginPath(); x.moveTo(L,bot); for(let px=L;px<=R;px+=6) x.lineTo(px,wy+Math.sin(px/22+t/150)*4); x.lineTo(R,bot); x.fill();
+      x.fillStyle="#C8F2E8"; for(let px=L+4;px<R-4;px+=6){ if((px/6+Math.floor(t/90))%5<2) x.fillRect(px,wy+Math.sin(px/22+t/150)*4-1,4,2) }
+      // fade the water's left/right ends
+      const fl=x.createLinearGradient(L,0,L+60,0); fl.addColorStop(0,"rgba(0,0,0,1)"); fl.addColorStop(1,"rgba(0,0,0,0)");
+      x.globalCompositeOperation="destination-out"; x.fillStyle=fl; x.fillRect(L,wy-10,60,bot-wy+10);
+      const fr=x.createLinearGradient(R-60,0,R,0); fr.addColorStop(0,"rgba(0,0,0,0)"); fr.addColorStop(1,"rgba(0,0,0,1)"); x.fillStyle=fr; x.fillRect(R-60,wy-10,60,bot-wy+10);
+      x.globalCompositeOperation="source-over"; extra&&extra(wy); stepParts(x,P); return wy };
+    await run(1500,(p,t)=>{ const lvl=wlFinal*(1-Math.pow(1-p,2)), wy=water(lvl,t);
+      setMask(top0+H*(1-lvl),(1-p*.5).toFixed(2));
+      if(Math.random()<.5) P.push({x:ox+Math.random()*W,y:oy+H-4,vx:0,vy:-1,l:0,m:Math.max(4,(oy+H-wy)/1),c:"#C8F2E8",s:3}) });
+    const wlPx=top0+H*(1-wlFinal), dir=Math.random()<.5?-1:1;
+    dc.style.transformOrigin=dir<0?"left bottom":"right bottom";
+    await run(2200,(p,t)=>{ const e=p*p; water(wlFinal,t+1500,wy=>{ if(Math.random()<.35) for(let r=0;r<2;r++){ x.strokeStyle="rgba(200,242,232,.7)"; x.lineWidth=2; const rx=ox+W*(.2+Math.random()*.6); x.beginPath(); x.ellipse(rx,wy,10+p*30,3+p*4,0,0,7); x.stroke() } });
+      dc.style.transform=`translateY(${(e*H*1.15).toFixed(1)}px) rotate(${(dir*Math.min(1,p*1.6)*16).toFixed(2)}deg)`;
+      setMask(wlPx,Math.max(0,.5-p*1.2).toFixed(2));
+      if(Math.random()<.7) P.push({x:ox+Math.random()*W,y:oy+H*(1-wlFinal)+20+Math.random()*30,vx:(Math.random()-.5)*.3,vy:-.9-Math.random()*.6,l:0,m:26,c:"#E6FAF6",s:Math.random()<.5?3:4}) });
+    await run(600,(p,t)=>{ water(wlFinal*(1-p),t+3700); c.style.opacity=String(1-p) });
+    c.remove(); slot.style.maskImage=slot.style.webkitMaskImage="";
+  } else { // quake (unchanged)
+    await destroyQuake(dc);
+  }
+  dc.style.visibility="hidden";
+}
+const destroyQuake=dc=>destroyCard_v1(dc,"quake");
 /* resume a saved game in the right place */
 function resumeFlow(){
   if(S.modal||OV().className.includes("show")) return;
