@@ -609,7 +609,6 @@ const SCENE={
  wastewater:(p,x)=>{p("factory",2);x.fillStyle=PAL.S;x.fillRect(34,24,12,3);x.fillStyle=PAL.k;x.fillRect(34,23,12,1);[48,53,58].forEach((v,i)=>p("drop",v,SGY-1-i*3))},
  road:(p,x)=>{x.fillStyle=PAL.a;x.fillRect(0,25,SW,5);for(let i=2;i<SW;i+=8){x.fillStyle=PAL.m;x.fillRect(i,27,4,1)}[8,22,36].forEach(v=>p("cone",v,25));p("person",48,25);p("hammer",54,19)},
  power:(p)=>{p("factory",2);p("bolt",40,26,2);p("shop",48)},
- forecast:(p)=>{p("sun",4,14);p("cloud",12,16,2);p("sign",44,SGY);p("person",54)},
  drill:(p)=>{p("flag",4,SGY,2);[18,26,34,42,50].forEach((v,i)=>p(i%2?"person2":"person",v));p("up",56,12)},
  volunteers:(p)=>{p("house",4);[24,32,40].forEach((v,i)=>p(i%2?"person2":"person",v));p("hammer",48,18,2)},
  material:(p)=>{p("bricks",4,SGY,2);p("bricks",8,SGY-10,2);p("crane",30,SGY);p("up",44,20,2);p("coin",56,24)},
@@ -689,7 +688,6 @@ const EV={
  wastewater:{n:2,cls:"minus",th:"ค่าบำบัดน้ำเสีย",en:"Wastewater bill",b:["−2 ต่อโรงงาน","−2 per factory"]},
  road:{n:3,cls:"minus",th:"ซ่อมถนน",en:"Road repairs",b:["−3 เหรียญ","−3 coins"]},
  power:{n:1,cls:"minus",th:"ค่าไฟพุ่ง",en:"Power prices spike",b:["−1 ต่อร้านค้าและโรงงาน","−1 per shop and factory"]},
- forecast:{n:3,cls:"special",th:"พยากรณ์อากาศ",en:"Weather forecast",b:["ดูการ์ดภัยใบบนสุด แล้วเลือกเก็บไว้หรือส่งไปใต้กอง","Peek at the top disaster card; keep it or send it to the bottom"]},
  drill:{n:2,cls:"special",th:"ซ้อมอพยพ",en:"Evacuation drill",b:["รอบนี้ไม่ต้องทอยความเสี่ยง","No risk roll this round"]},
  volunteers:{n:2,cls:"special",th:"อาสาสมัครซ่อมเมือง",en:"Repair volunteers",b:["ซ่อมฟรี 1 ชิ้นในรอบนี้","Repair 1 building free this round"]},
  material:{n:2,cls:"minus",th:"วัสดุก่อสร้างขึ้นราคา",en:"Material costs rise",b:["รอบนี้สร้างอาคารแพงขึ้น 2","Buildings cost 2 more this round"]},
@@ -720,7 +718,7 @@ const START_MAPS=[
 ];
 let S;
 function fresh(){
-  const s={v:5,round:0,coins:6,pieces:[],nextId:1,totems:[],ff:0,evDeck:[],disDeck:[],
+  const s={v:6,round:0,coins:6,pieces:[],nextId:1,totems:[],ff:0,evDeck:[],disDeck:[],
     phase:"ready",events:[],disCard:null,blocked:false,zone:null,dice:null,hits:[],saved:[],mod:{},pending:[],
     tool:null,orient:"h",undo:[],log:[],msg:null,stats:{dis:0,blocked:0,hits:0,saved:0},result:null,modal:"lang",deal:0};
   const add=(type,cells)=>s.pieces.push({id:s.nextId++,type,cells,dmg:false,rf:false});
@@ -763,6 +761,7 @@ function startRound(){
   bump(S.coins-c0); FX.coins(inc);
   toast(T(`รอบ ${S.round} · ปีที่ ${year(S.round)} · รายได้ +${inc}`,`Round ${S.round} · year ${year(S.round)} · income +${inc}`));
   try{$("side").scrollTo({top:0,behavior:"smooth"})}catch(e){}
+  S.phase="events"; saveNow();
   eventSplash(S.events.slice(),evd,inc,()=>nextStep());
 }
 function applyEvent(k){
@@ -774,7 +773,6 @@ function applyEvent(k){
     case "wastewater": d=-2*f; break; case "road": d=-3; break;
     case "power": d=-(count("shop")+f); break;
     case "parkdemand": d=count("green")<f?-3:0; break;
-    case "forecast": S.pending.push("forecast"); break;
     case "drill": S.mod.noroll=true; break;
     case "volunteers": S.mod.freerepair=(S.mod.freerepair||0)+1; break;
     case "material": S.mod.buildcost=(S.mod.buildcost||0)+2; break;
@@ -789,17 +787,10 @@ function applyEvent(k){
   return d;
 }
 function nextStep(){
-  if(S.pending.length){ S.phase="forecast"; if(!S.disDeck.length) refillDis(); render(); return }
   if(S.round===1){ S.phase="build"; S.msg={th:"รอบแรกยังไม่ต้องทอยความเสี่ยง วางรากฐานเมืองก่อน",en:"No risk roll in round 1. Build your foundations."} }
   else if(S.mod.noroll){ S.phase="build"; S.msg={th:"ซ้อมอพยพ: รอบนี้ไม่ต้องทอยความเสี่ยง",en:"Evacuation drill: no risk roll this round."} }
   else S.phase="roll";
   render();
-}
-function forecastChoice(keep){
-  const top=S.disDeck[S.disDeck.length-1];
-  if(!keep){ S.disDeck.unshift(S.disDeck.pop()); log(`พยากรณ์: ส่ง${disLabel(top,"th")}ไปใต้กอง`,`Forecast: sent ${disLabel(top,"en")} to the bottom`,"good") }
-  else log(`พยากรณ์: เก็บ${disLabel(top,"th")}ไว้บนกอง`,`Forecast: kept ${disLabel(top,"en")} on top`);
-  S.pending.shift(); nextStep();
 }
 let anim=null, landed=false;
 function rollRisk(){
@@ -811,7 +802,7 @@ function rollRisk(){
   tick();
 }
 function zoneBox(z){const Z=ZONES[z];return {r0:Z.r[0],r1:Z.r[1],c0:Z.c[0],c1:Z.c[1]}}
-function drawDisaster(){ const card=drawDis(); S.busy=true; render(); splash(card,S.totems.includes(TOTEM_OF[card.k]),()=>{S.busy=false;resolveDisaster(card);setTimeout(()=>{const c=document.querySelector(".desk .card.dis,.desk .card.blocked");const sd=$("side");if(c&&sd&&sd.scrollHeight>sd.clientHeight){sd.scrollTo({top:c.getBoundingClientRect().top-sd.getBoundingClientRect().top+sd.scrollTop-60,behavior:"smooth"})}},60)}) }
+function drawDisaster(){ const card=drawDis(); S.phase="strike"; S.curDis=card; saveNow(); S.busy=true; render(); splash(card,S.totems.includes(TOTEM_OF[card.k]),()=>{S.busy=false;resolveDisaster(card);setTimeout(()=>{const c=document.querySelector(".desk .card.dis,.desk .card.blocked");const sd=$("side");if(c&&sd&&sd.scrollHeight>sd.clientHeight){sd.scrollTo({top:c.getBoundingClientRect().top-sd.getBoundingClientRect().top+sd.scrollTop-60,behavior:"smooth"})}},60)}) }
 let splashDone=null;
 function eventSplash(keys,ds,inc,cb){
   const el=$("splash"); let fired=false; const go=()=>{ if(fired) return; fired=true; splashDone=null; el.className=""; el.innerHTML=""; S.busy=false; cb() };
@@ -839,7 +830,7 @@ function splash(card,blocked,cb){
   setTimeout(()=>{ if(!fired&&splashDone) splashDone() }, blocked?2100:1750);
 }
 function resolveDisaster(card){
-  const k=card.k; S.disCard=card; S.stats.dis++;
+  const k=card.k; S.disCard=card; S.curDis=null; S.stats.dis++;
   if(S.totems.includes(TOTEM_OF[k])){ const tk=TOTEM_OF[k]; S.blocked=true; S.stats.blocked++; log(`${disLabel(card,"th")}: ${TOTEM[tk][0]}กันได้ทั้งใบ`,`${disLabel(card,"en")}: blocked by ${TOTEM[tk][1]}`,"good");
     let box; if(k==="ffire"){ const fs=S.pieces.filter(p=>p.type==="factory"), f=fs.length?fs[rnd(fs.length)]:null;
       if(f){ const rs=f.cells.map(x=>x[0]), cs=f.cells.map(x=>x[1]); box={r0:Math.max(0,Math.min(...rs)-1),r1:Math.min(N-1,Math.max(...rs)+1),c0:Math.max(0,Math.min(...cs)-1),c1:Math.min(N-1,Math.max(...cs)+1),fac:true} } }
@@ -907,8 +898,8 @@ function place(r,c){
   const cost=priceOf(t), free=(t==="house"&&S.mod.freehouse>0);
   const p={id:S.nextId++,type:t,cells:cellsFor(t,r,c,S.orient),dmg:false,rf:false}; S.pieces.push(p); S.coins-=cost; bump(-cost); FX.build(p);
   if(free) S.mod.freehouse--;
-  if(t==="factory"){ S.ff++; if(S.disDeck.length){S.disDeck.splice(rnd(S.disDeck.length+1),0,{k:"ffire"})} }
-  S.undo.push({kind:"piece",id:p.id,cost,free});
+  let ffCard=false; if(t==="factory"){ S.ff++; if(S.disDeck.length){S.disDeck.splice(rnd(S.disDeck.length+1),0,{k:"ffire"}); ffCard=true} }
+  S.undo.push({kind:"piece",id:p.id,cost,free,ffCard});
   log(`สร้าง${nm(t)} ที่ ${code(r,c)}${cost?` (−${cost})`:" (ฟรี)"}`,`Built ${nm(t).toLowerCase()} at ${code(r,c)}${cost?` (−${cost})`:" (free)"}`);
   if(why(t)) S.tool=null; render();
 }
@@ -934,8 +925,12 @@ function reinforce(id){
   S.undo.push({kind:"rf",id,cost:RF_PRICE}); log(`เสริมความแข็งแรง${nm(p.type)} (−${RF_PRICE})`,`Reinforced ${nm(p.type).toLowerCase()} (−${RF_PRICE})`);
   if(S.coins<RF_PRICE||!S.pieces.some(canRF)) S.tool=null; render();
 }
+function strands(p){ if(p.type!=="house"&&p.type!=="condo") return null;
+  const rest=S.pieces.filter(q=>q!==p);
+  return rest.find(q=>NEEDS_HOME[q.type]&&!rest.some(h=>(h.type==="house"||h.type==="condo")&&touches(q,h)))||null }
 function demolish(id){
   const p=S.pieces.find(x=>x.id===id); if(!p) return;
+  const lone=strands(p); if(lone){ toast(T(`รื้อไม่ได้: ${nm(lone.type)}ที่ ${code(...lone.cells[0])} จะไม่มีบ้านหรือคอนโดติดอยู่ รื้อ${nm(lone.type)}ก่อน`,`Can't demolish: the ${nm(lone.type).toLowerCase()} at ${code(...lone.cells[0])} would have no home next to it. Demolish it first.`),"bad"); return }
   const i=S.pieces.indexOf(p); S.pieces.splice(i,1);
   let ffCard=false; if(p.type==="factory"){ S.ff--; let j=-1; S.disDeck.forEach((c,k)=>{if(c.k==="ffire")j=k}); if(j>=0){S.disDeck.splice(j,1);ffCard=true} }
   FX.demolish(p);
@@ -946,7 +941,7 @@ function demolish(id){
 function undo(){
   const u=S.undo.pop(); if(!u) return;
   if(u.kind==="piece"){ const p=S.pieces.find(x=>x.id===u.id); S.pieces=S.pieces.filter(x=>x.id!==u.id);
-    if(p&&p.type==="factory"){ S.ff--; let i=-1; S.disDeck.forEach((c,j)=>{if(c.k==="ffire")i=j}); if(i>=0) S.disDeck.splice(i,1) }
+    if(p&&p.type==="factory"){ S.ff--; if(u.ffCard){ let i=-1; S.disDeck.forEach((c,j)=>{if(c.k==="ffire")i=j}); if(i>=0) S.disDeck.splice(i,1) } }
     if(u.free) S.mod.freehouse=(S.mod.freehouse||0)+1 }
   if(u.kind==="totem") S.totems=S.totems.filter(t=>t!==u.k);
   if(u.kind==="repair"){ const p=S.pieces.find(x=>x.id===u.id); if(p) p.dmg=true; if(u.free) S.mod.freerepair=(S.mod.freerepair||0)+1 }
@@ -1179,7 +1174,7 @@ function render(){
   $("lang-th").setAttribute("aria-pressed",lang==="th"); $("lang-en").setAttribute("aria-pressed",lang==="en");
   $("newgame").textContent=T("เกมใหม่","New game");
   renderStatus(); renderAxes(); renderDesk(); renderTotems(); renderGoals(); renderLog(); renderTray(); renderModal();
-  renderZones(); hoverInfo();
+  renderZones(); hoverInfo(); if(!S.busy) saveNow();
   $("legend").innerHTML=`<div>${["house","shop","factory","condo","green"].map(t=>`<span>${img(t)}${nm(t)}</span>`).join("")}<span>${img("shield")}${T("เสริมแล้ว","reinforced")}</span></div>`;
 }
 function renderZones(){
@@ -1237,13 +1232,11 @@ function zoneCard(){
   return `<div class="card loc${fresh?" flip":""}"><div class="ck">${T("พื้นที่โดนภัย","Area hit")}</div><div class="row"><div class="zt">${title}</div><img class="mini" src="${miniMap(z)}" alt=""></div><div class="b">${S.busy?"…":T(`พัง ${S.hits.length} หลัง${S.saved.length?` · รอด ${S.saved.length}`:""}`,`${S.hits.length} damaged${S.saved.length?` · ${S.saved.length} saved`:""}`)}</div></div>`;
 }
 function renderDesk(){
-  const rk=risk(), lab={ready:T("พร้อมเริ่ม","Ready"),forecast:T("พยากรณ์","Forecast"),roll:T("ทอยความเสี่ยง","Risk roll"),build:T("บริหารเมือง","Build"),over:T("จบวาระ","Term over")}[S.phase];
+  const rk=risk(), lab={ready:T("พร้อมเริ่ม","Ready"),events:T("เหตุการณ์","Events"),strike:T("ภัยพิบัติ","Disaster"),roll:T("ทอยความเสี่ยง","Risk roll"),build:T("บริหารเมือง","Build"),over:T("จบวาระ","Term over")}[S.phase];
   let dice="";
   if(anim) dice=`<div class="row"><div class="dice">${dieHTML(anim[0],1)}${dieHTML(anim[1],1)}</div></div>`;
   else if(S.dice){ const s=S.dice[0]+S.dice[1], hit=S.disCard!==null; dice=`<div class="row"><div class="dice">${dieHTML(S.dice[0],0,landed)}${dieHTML(S.dice[1],0,landed)}</div><div class="verdict ${hit?"hit":"safe"}">${hit?T(`${s} ≤ ${rk} เกิดภัย`,`${s} ≤ ${rk} DISASTER`):T(`${s} > ${rk} ปลอดภัย`,`${s} > ${rk} SAFE`)}</div></div>`; landed=false }
   let fc="";
-  if(S.phase==="forecast"){ const top=S.disDeck[S.disDeck.length-1];
-    fc=`<div class="msg"><b>${T("พยากรณ์อากาศ:","Forecast:")}</b> ${T(`ภัยใบบนสุดคือ <b>${disLabel(top,"th")}</b>${S.totems.includes(TOTEM_OF[top.k])?" (คุณมี Totem กันได้)":""}`,`the top disaster card is <b>${disLabel(top,"en")}</b>${S.totems.includes(TOTEM_OF[top.k])?" (your Totem blocks it)":""}`)}</div>` }
   const ev=`<div class="cards">${evCard(S.events[0],0)}${evCard(S.events[1],1)}</div>`; lastDeal=S.deal;
   const dc=S.disCard?`<div class="cards">${disCard()}</div>`:""; lastDis=S.disCard; lastLoc=S.zone?JSON.stringify(S.zone):null;
   const msg=S.busy&&S.zone?"":(S.msg?T(S.msg.th,S.msg.en):(S.round===0?T("กดเริ่มวาระเพื่อเปิดการ์ดเหตุการณ์ใบแรก","Start your term to open the first event cards."):""));
@@ -1286,7 +1279,6 @@ function renderTray(){
   let act="", dis=S.busy?" disabled":"";
   switch(S.phase){
     case "ready": act=`<button class="primary pulse" id="act" type="button">${T("▶ เริ่มวาระ","▶ Start your term")}</button>`; break;
-    case "forecast": act=`<div class="choice"><button type="button" class="main" data-fc="keep">${T("เก็บไว้บนกอง","Keep on top")}</button><button type="button" data-fc="bottom">${T("ส่งไปใต้กอง","Send to bottom")}</button></div>`; break;
     case "roll": act=`<button class="primary red pulse" id="act" type="button"${dis}>${T(`ทอยลูกเต๋า 2 ลูก (ต้องได้มากกว่า ${risk()})`,`Roll 2 dice (need over ${risk()})`)}</button>`; break;
     case "build": act=`<button class="primary" id="act" type="button"${dis}>${S.round>=ROUNDS?T("จบวาระ → นับดาว","End term → count stars"):T(`จบรอบ ${S.round} ▶`,`End round ${S.round} ▶`)}</button>`; break;
     case "over": act=`<button class="primary" id="act" type="button">${T("เล่นใหม่","Play again")}</button>`; break;
@@ -1302,7 +1294,6 @@ function renderTray(){
       +(S.mod.freehouse?` · <span class="w">${T("มีบ้านฟรี 1 หลัง","1 free house")}</span>`:"")+(S.mod.buildcost?` · <span class="w">${T(`ก่อสร้าง +${S.mod.buildcost}`,`build +${S.mod.buildcost}`)}</span>`:"")+(S.mod.totemdisc?` · <span class="w">${T(`Totem ลด ${S.mod.totemdisc}`,`Totem −${S.mod.totemdisc}`)}</span>`:"");
   } else if(S.busy&&S.zone) tip=T("ภัยกำลังเกิดขึ้น…","Disaster in progress…");
   else if(S.phase==="roll") tip=T(`ทอยได้ <b>${risk()} หรือน้อยกว่า</b> = เกิดภัย (โอกาส ${chance(risk())}%)`,`Roll <b>${risk()} or less</b> = disaster (${chance(risk())}% chance)`);
-  else if(S.phase==="forecast") tip=T("ระบบเตือนภัยล่วงหน้า: ส่งภัยที่ยังไม่มี Totem กันไปไว้ใต้กอง","Early warning: send a disaster you can't block to the bottom.");
   else if(S.phase==="ready") tip=T("กดปุ่มเพื่อเริ่มวาระนายกฯ 12 รอบ","Press the button to start your 12-round term.");
   $("trayin").innerHTML=`<div class="tray-in"><div class="tip">${tip}</div><div class="pal">${pal}</div><div>${act}</div></div>`;
 }
@@ -1315,6 +1306,11 @@ function renderModal(){
       <div class="startart"><img src="${art("quiet")}" alt=""></div>
       <p class="lead">เลือกภาษา · Choose your language</p>
       <div class="langpick"><button type="button" data-pick="th"><b>ไทย</b><span>ภาษาไทย</span></button><button type="button" data-pick="en"><b>English</b><span>อังกฤษ</span></button></div></div></div>`; return }
+  if(S.modal==="confirm"){
+    o.innerHTML=`<div class="overlay"><div class="box modal start" role="dialog" aria-modal="true"><h3>${T("เริ่มเกมใหม่?","Start a new game?")}</h3>
+      <p class="lead">${T(`เมืองที่สร้างมาถึงรอบ ${S.round} จะหายไป`,`Your city (round ${S.round}) will be lost.`)}</p>
+      <div class="menu"><button type="button" class="primary" data-confirm="no">${T("เล่นต่อ","Keep playing")}</button>
+        <button type="button" class="ghostbtn" data-confirm="yes">${T("เริ่มใหม่","Start over")}</button></div></div></div>`; return }
   if(S.modal==="menu"){
     o.innerHTML=`<div class="overlay"><div class="box modal start" role="dialog" aria-modal="true"><h3><span>MR.</span>MAYOR</h3>
       <div class="startart"><img src="${art("quiet")}" alt=""></div>
@@ -1397,7 +1393,6 @@ document.addEventListener("click",e=>{
   if(splashDone&&e.target.closest("#splash")){ splashDone(); return }
   const a=e.target.closest("button"); if(!a) return;
   if(a.id==="act"&&!S.busy){ if(S.phase==="ready") startRound(); else if(S.phase==="roll") rollRisk(); else if(S.phase==="build") endRound(); else if(S.phase==="over") newGame(); return }
-  if(a.dataset.fc){ forecastChoice(a.dataset.fc==="keep"); return }
   if(a.dataset.buy){ const w=why(a.dataset.buy); if(w&&S.tool!==a.dataset.buy){ toast(`${nm(a.dataset.buy)}: ${w}`,"bad"); return } S.tool=S.tool===a.dataset.buy?null:a.dataset.buy; render(); return }
   if(a.dataset.totem){ buyTotem(a.dataset.totem); return }
   if(a.id==="rotate"){ S.orient=S.orient==="h"?"v":"h"; render(); return }
@@ -1405,7 +1400,8 @@ document.addEventListener("click",e=>{
   if(a.id==="reinforce"){ S.tool=S.tool==="reinforce"?null:"reinforce"; render(); return }
   if(a.id==="repair"){ S.tool=S.tool==="repair"?null:"repair"; render(); return }
   if(a.id==="undo"){ undo(); return }
-  if(a.id==="newgame"){ newGame(); return }
+  if(a.id==="newgame"){ if(S.round>0&&S.phase!=="over"){ S.modal="confirm"; renderModal() } else newGame(); return }
+  if(a.dataset.confirm){ if(a.dataset.confirm==="yes"){ try{localStorage.removeItem(SAVE_KEY)}catch(err){} newGame() } else { S.modal=null; renderModal() } return }
   if(a.dataset.pick){ lang=a.dataset.pick; try{localStorage.setItem("mm4-lang",lang)}catch(err){} S.modal="menu"; render(); return }
   if(a.dataset.menu){ const m=a.dataset.menu;
     if(m==="lang"){ lang=lang==="th"?"en":"th"; try{localStorage.setItem("mm4-lang",lang)}catch(err){} render(); return }
@@ -1422,7 +1418,20 @@ function preloadArt(){
   const urls=[...Object.keys(EV),...Object.keys(DIS)].map(k=>art(k)).concat(Object.values(TURL),Object.values(URL));
   let i=0; const step=()=>{ const t0=performance.now(); while(i<urls.length&&performance.now()-t0<8){ const im=new Image(); im.src=urls[i++]; if(im.decode) im.decode().catch(()=>{}) } if(i<urls.length) setTimeout(step,16) }; step();
 }
-function start(data){ S=(data&&data.state&&data.state.v===5)?data.state:fresh(); S.busy=false; fitCanvas(); render(); fitCanvas(); requestAnimationFrame(loop); setTimeout(fitCanvas,300); setTimeout(preloadArt,50) }
+const SAVE_KEY="mm-save-v6";
+function saveNow(){ try{ if(S&&S.round>0&&S.phase!=="over") localStorage.setItem(SAVE_KEY,JSON.stringify(S)); else localStorage.removeItem(SAVE_KEY) }catch(e){} }
+function loadSave(){ try{ const d=JSON.parse(localStorage.getItem(SAVE_KEY)||"null"); return d&&d.v===6&&d.round>0&&d.phase!=="over"?d:null }catch(e){ return null } }
+function start(data){
+  let resumed=false;
+  if(data&&data.state&&data.state.v===6) S=data.state;
+  else { const sv=loadSave(); if(sv){ S=sv; S.modal=null; S.tool=null; S.zone=null; resumed=true } else S=fresh() }
+  S.busy=false; fitCanvas(); render(); fitCanvas(); requestAnimationFrame(loop); setTimeout(fitCanvas,300); setTimeout(preloadArt,50);
+  if(resumed){
+    if(S.phase==="events") nextStep();
+    else if(S.phase==="strike"&&S.curDis) resolveDisaster(S.curDis);
+    setTimeout(()=>toast(T(`โหลดเมืองเดิมกลับมาแล้ว · รอบ ${S.round}`,`Your city is back · round ${S.round}`),"good"),300);
+  }
+}
 try{ window.claude?.hot?.snapshot?.(()=>({state:JSON.parse(JSON.stringify(S))})) }catch(e){}
 window.claude?.hot?.ready ? window.claude.hot.ready(start) : start(window.claude?.hot?.data ?? {});
 window.__mm={get S(){return S},place:(r,c)=>place(r,c),repair:id=>repair(id)};
