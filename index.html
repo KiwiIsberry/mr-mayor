@@ -558,6 +558,25 @@ details.log summary{cursor:pointer;font-weight:700}
   #log summary{pointer-events:none;list-style:none} #log summary::-webkit-details-marker{display:none}
   #logbtn[aria-expanded="true"]{background:var(--gold)}
 }
+
+/* v4.8 event deal: a deck that cards are drawn from, one at a time */
+#splash .edeck{position:relative;width:96px;height:132px;margin:2px 0 6px}
+#splash .edeck i{position:absolute;inset:0;border:4px solid var(--ink);box-shadow:4px 4px 0 var(--ink);background:var(--cab);background-image:repeating-linear-gradient(45deg,#2E3356 0 6px,#262A48 6px 12px);display:flex;align-items:center;justify-content:center}
+#splash .edeck i span{font-family:var(--f-pix);font-weight:700;font-size:12px;color:var(--panel);text-align:center;line-height:1.1}
+#splash .edeck i span b{display:block;color:var(--gold)}
+#splash .edeck .dk0{transform:rotate(-8deg) translate(-4px,3px)} #splash .edeck .dk1{transform:rotate(5deg) translate(3px,1px)}
+#splash .edeck .dk2,#splash .edeck .dk3{transform:rotate(-2deg);animation:deckoff .35s ease-in var(--d) both}
+#splash .edeck .dk3{transform:rotate(1deg)}
+#splash .edeck{animation:deckin .4s cubic-bezier(.2,1.3,.4,1) both}
+@keyframes deckin{0%{transform:translateY(-40px) scale(.7);opacity:0}100%{transform:none;opacity:1}}
+@keyframes deckoff{0%{opacity:1}30%{transform:translateY(-10px) rotate(0)}100%{transform:translateY(10px);opacity:0;visibility:hidden}}
+#splash .ecard{animation:ecdeal2 .6s cubic-bezier(.25,1.15,.4,1) var(--d) both}
+@keyframes ecdeal2{0%{transform:translate(var(--fx),-205px) rotate(var(--fr)) scale(.36);opacity:0}12%{opacity:1}100%{transform:none;opacity:1}}
+#splash .eback{animation:ecback .25s ease-in calc(var(--d) + .62s) both}
+#splash .efront{animation:ecfront .25s ease-out calc(var(--d) + .87s) both}
+#splash .delta{animation-delay:calc(var(--d) + 1.15s)}
+#splash.fast .ecard,#splash.fast .eback,#splash.fast .efront,#splash.fast .delta,#splash.fast .evinc,#splash.fast .edeck i{animation-delay:0s!important;animation-duration:.15s!important}
+@media (max-width:560px){#splash .edeck{width:64px;height:88px}#splash .edeck i span{font-size:9px}@keyframes ecdeal2{0%{transform:translate(var(--fx),-140px) rotate(var(--fr)) scale(.36);opacity:0}12%{opacity:1}100%{transform:none;opacity:1}}}
 </style>
 
 <div class="wrap">
@@ -979,11 +998,17 @@ function eventSplash(keys,ds,inc,cb){
     if(k==="movein") return `<div class="delta plus">${img("house")}${T("บ้านฟรี","FREE HOUSE")}</div>`;
     if(["strike","holiday","material","tide"].includes(k)) return `<div class="delta minus">⚠ ${T("รอบนี้","THIS ROUND")}</div>`;
     return `<div class="delta none">${T("รอดไป ไม่มีผล","NO EFFECT")}</div>`};
+  const D0=.6, GAP=2.1, dealt=D0+(keys.length-1)*GAP+1.4;   // seconds: first card leaves the deck, gap to the next, last card fully readable
   el.innerHTML=`<div class="sp-bg"></div><div class="evsplash"><div class="evhead">${T(`รอบ ${S.round} · ปีที่ ${year(S.round)}`,`Round ${S.round} · Year ${year(S.round)}`)}</div>
-    <div class="ecards">${keys.map((k,i)=>{const e=EV[k];return `<div class="ecard ${e.cls}" style="--d:${.15+i*.45}s"><div class="eback"><span>MR.<b>MAYOR</b></span><i>${T("เหตุการณ์","EVENT")}</i></div><div class="efront"><div class="sk2">${T("เหตุการณ์","EVENT")}</div><img class="sart" src="${art(k)}" alt=""><div class="et">${T(e.th,e.en)}</div><div class="eb">${T(e.b[0],e.b[1])}</div>${badge(k,ds[i])}</div></div>`}).join("")}</div>
-    <div class="evinc" style="--d:${.15+keys.length*.45+.2}s">${img("coin")}${T(`รายได้จากเมือง +${inc}`,`City income +${inc}`)}</div><div class="skip">${T("แตะเพื่อข้าม","tap to skip")}</div></div>`;
-  el.className="show"; SFX.cards(keys.length); splashDone=()=>{ el.className="out"; setTimeout(go,260) };
-  setTimeout(()=>{ if(!fired&&splashDone) splashDone() }, 1000+keys.length*450+1500);
+    <div class="edeck">${[0,1,2,3].map(i=>`<i class="dk${i}" style="--d:${i===3?D0:i===2?D0+GAP:0}s"><span>MR.<b>MAYOR</b></span></i>`).join("")}</div>
+    <div class="ecards">${keys.map((k,i)=>{const e=EV[k];return `<div class="ecard ${e.cls}" style="--d:${D0+i*GAP}s;--fx:${i===0?"calc(50% + 8px)":"calc(-50% - 8px)"};--fr:${i===0?-9:7}deg"><div class="eback"><span>MR.<b>MAYOR</b></span><i>${T("เหตุการณ์","EVENT")}</i></div><div class="efront"><div class="sk2">${T("เหตุการณ์","EVENT")}</div><img class="sart" src="${art(k)}" alt=""><div class="et">${T(e.th,e.en)}</div><div class="eb">${T(e.b[0],e.b[1])}</div>${badge(k,ds[i])}</div></div>`}).join("")}</div>
+    <div class="evinc" style="--d:${D0+(keys.length-1)*GAP+1.2}s">${img("coin")}${T(`รายได้จากเมือง +${inc}`,`City income +${inc}`)}</div><div class="skip">${T("แตะเพื่อดูการ์ดทั้งหมด · แตะอีกครั้งเพื่อไปต่อ","tap to reveal all · tap again to continue")}</div></div>`;
+  el.className="show"; SFX.cards(keys.length,D0,GAP);
+  let fast=false, auto=null; const close=()=>{ el.className="out"; setTimeout(go,260) };
+  const arm=ms=>{ clearTimeout(auto); auto=setTimeout(()=>{ if(!fired) close() },ms) };
+  const t0=performance.now();
+  splashDone=()=>{ if(!fast&&performance.now()-t0<dealt*1000){ fast=true; el.classList.add("fast"); arm(4500); return } close() };
+  arm(dealt*1000+3000);
 }
 function splash(card,blocked,cb){
   const el=$("splash"); let fired=false; const go=()=>{ if(fired) return; fired=true; splashDone=null; el.className=""; el.innerHTML=""; cb() };
@@ -1765,7 +1790,7 @@ document.addEventListener("click",e=>{
   if(a.dataset.ipage!==undefined){ if(document.querySelector("#overlay .modal.intro")) showIntroPage(+a.dataset.ipage); else { introPage=+a.dataset.ipage; renderModal() } return }
   if(a.id==="help"){ if(S.phase!=="over"){introPage=0;S.modal="intro"; renderModal()} return }
   if(a.id==="lang-th"||a.id==="lang-en"){ lang=a.id==="lang-th"?"th":"en"; try{localStorage.setItem("mm4-lang",lang)}catch(err){} render(); return }
-  if(a.dataset.close){ const k=a.dataset.close; S.modal=null; if(k==="new"){ newGame(); S.modal=null; startRound(); return } if(k==="intro"&&S.round===0){ render(); setTimeout(()=>toast(startTip()),250); return } render(); return }
+  if(a.dataset.close){ const k=a.dataset.close; S.modal=null; if(k==="new"){ try{localStorage.removeItem(SAVE_KEY)}catch(err){} newGame(); return } if(k==="intro"&&S.round===0){ render(); setTimeout(()=>toast(startTip()),250); return } render(); return }
 });
 document.addEventListener("keydown",e=>{ if((e.key==="r"||e.key==="R")&&SIZE[S.tool]){S.orient=S.orient==="h"?"v":"h"; render()} });
 
@@ -1799,7 +1824,7 @@ const SFX={
   coin(){ tone(988,.05,{vol:.04}); tone(1319,.12,{at:.05,vol:.04}) },
   bad(){ tone(196,.22,{type:"sawtooth",to:110,vol:.04}) },
   dice(){ noise(.03,{f:3000,ftype:"highpass",vol:.05}) },
-  cards(n){ for(let i=0;i<n;i++) noise(.08,{at:.15+i*.45,f:2500,ftype:"bandpass",vol:.07}) },
+  cards(n,d0,gap){ d0=d0||.15; gap=gap||.45; for(let i=0;i<n;i++){ noise(.1,{at:d0+i*gap,f:2500,ftype:"bandpass",vol:.07}); noise(.05,{at:d0+i*gap+.62,f:4200,ftype:"highpass",vol:.05}) } },
   alarm(){ seq([880,660,880,660],.14,{type:"square",vol:.035}) },
   disaster(k){ SFX.alarm();
     if(k==="flood"){ noise(1.6,{at:.5,f:500,fto:150,vol:.14}); noise(1.2,{at:.7,f:1800,ftype:"bandpass",vol:.04}) }
