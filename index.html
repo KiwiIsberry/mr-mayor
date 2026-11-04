@@ -1306,6 +1306,11 @@ function renderModal(){
       <div class="startart"><img src="${art("quiet")}" alt=""></div>
       <p class="lead">เลือกภาษา · Choose your language</p>
       <div class="langpick"><button type="button" data-pick="th"><b>ไทย</b><span>ภาษาไทย</span></button><button type="button" data-pick="en"><b>English</b><span>อังกฤษ</span></button></div></div></div>`; return }
+  if(S.modal==="resume"){
+    o.innerHTML=`<div class="overlay"><div class="box modal start" role="dialog" aria-modal="true"><h3><span>MR.</span>MAYOR</h3>
+      <p class="lead">${T(`มีเมืองที่เล่นค้างไว้ถึงรอบ ${S.round} จาก 12`,`There's a city left unfinished at round ${S.round} of 12`)}</p>
+      <div class="menu"><button type="button" class="primary" data-confirm="no">${T("เล่นต่อ","Continue")}</button>
+        <button type="button" class="ghostbtn" data-confirm="yes">${T("เริ่มเกมใหม่","New game")}</button></div></div></div>`; return }
   if(S.modal==="confirm"){
     o.innerHTML=`<div class="overlay"><div class="box modal start" role="dialog" aria-modal="true"><h3>${T("เริ่มเกมใหม่?","Start a new game?")}</h3>
       <p class="lead">${T(`เมืองที่สร้างมาถึงรอบ ${S.round} จะหายไป`,`Your city (round ${S.round}) will be lost.`)}</p>
@@ -1429,7 +1434,7 @@ function start(data){
   if(resumed){
     if(S.phase==="events") nextStep();
     else if(S.phase==="strike"&&S.curDis) resolveDisaster(S.curDis);
-    setTimeout(()=>toast(T(`โหลดเมืองเดิมกลับมาแล้ว · รอบ ${S.round}`,`Your city is back · round ${S.round}`),"good"),300);
+    S.modal="resume"; renderModal();
   }
 }
 try{ window.claude?.hot?.snapshot?.(()=>({state:JSON.parse(JSON.stringify(S))})) }catch(e){}
