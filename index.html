@@ -510,6 +510,47 @@ details.log summary{cursor:pointer;font-weight:700}
   .brand p{display:none}
   .totem .p{display:none} .tsteps{margin-bottom:4px}
 }
+
+/* ===== v4.7 interactive look: buttons that look pressable ===== */
+.pal button{position:relative;background:linear-gradient(#FFFDF4 0 45%,var(--panel) 45%);box-shadow:inset 0 -3px 0 #E3D6B4,0 4px 0 #0E0F22;border-radius:0;transition:transform .08s steps(2)}
+.pal button .pr{margin-top:2px;background:#FFE680;border:2px solid var(--ink);padding:0 4px;color:var(--ink);font-weight:700}
+.pal button.tool{background:linear-gradient(#EEF6FC 0 45%,#DCEAF6 45%);box-shadow:inset 0 -3px 0 #B9CFE3,0 4px 0 #0E0F22}
+.pal button.tool .pr{background:#fff}
+.pal button:not(:disabled):not(.off):hover{transform:translateY(-2px);box-shadow:inset 0 -3px 0 #E3D6B4,0 6px 0 #0E0F22;outline:3px solid var(--gold);outline-offset:-1px}
+.pal button[aria-pressed="true"]{background:var(--gold);box-shadow:inset 0 -3px 0 #C99A1C,0 7px 0 #0E0F22;transform:translateY(-4px);outline:3px solid #fff;outline-offset:-1px}
+.pal button:disabled,.pal button.off{opacity:1;background:repeating-linear-gradient(135deg,#8E8AA6 0 4px,#837F9C 4px 8px);box-shadow:0 2px 0 #0E0F22;color:#2A2840;filter:none}
+.pal button:disabled img,.pal button.off img{opacity:.45;filter:grayscale(1)}
+.pal button:disabled .pr,.pal button.off .pr{background:#B9B5CC;color:#4A4766}
+/* Totem shop cards */
+.totem{position:relative;background:var(--panel);box-shadow:0 4px 0 var(--ink);border-top-width:7px;transition:transform .08s steps(2)}
+.totem.t-flood{border-top-color:#2F5F9E} .totem.t-quake{border-top-color:#8A5A2B} .totem.t-storm{border-top-color:#5B4E8F} .totem.t-fire{border-top-color:var(--red)}
+.totem .buy{white-space:nowrap;display:flex;align-items:center;justify-content:center;gap:3px;width:100%;margin-top:4px;padding:3px 4px;border:2px solid var(--ink);font-family:var(--f-body);font-weight:700;font-size:13px;line-height:1.2;background:#CFC8B4;color:#4A4766}
+.totem .buy img{width:13px;height:13px}
+.totem.can{background:#FFFDF4;cursor:pointer}
+.totem.can .buy{background:var(--go);color:#fff;text-shadow:1px 1px 0 var(--go-dk);box-shadow:inset 0 -2px 0 var(--go-dk)}
+.totem.can:hover{transform:translateY(-3px);box-shadow:0 7px 0 var(--ink);outline:3px solid var(--gold);outline-offset:-1px}
+.totem.can:hover .buy{background:#4CC46A}
+.totem:disabled{opacity:1;box-shadow:0 2px 0 var(--ink)} .totem:disabled .tico,.totem:disabled .tn,.totem:disabled .p{opacity:.55}
+.totem.own{background:#BFE6C2;box-shadow:0 2px 0 var(--ink)} .totem.own .buy{background:var(--go-dk);color:#fff}
+/* risk overview (laptop, when there is room) */
+.riskov{display:none;border:2px solid var(--ink);background:#fff;padding:8px 10px}
+.desk.roomy .riskov{display:block}
+.desk.tight .riskov{padding:5px 8px} .desk.tight .riskov .rt{display:none} .desk.tight .rrow{padding:0;font-size:13.5px}
+.riskov .rt{font-weight:700;font-size:14px;margin-bottom:2px}
+.rrow{display:grid;grid-template-columns:18px 98px minmax(0,1fr) 64px;gap:8px;align-items:center;font-size:14px;padding:1px 0}
+.rrow img{width:16px;height:16px;image-rendering:pixelated}
+.rrow .rb{height:10px;border:2px solid var(--ink);background:#EFE7D2} .rrow .rb i{display:block;height:100%;background:repeating-linear-gradient(90deg,var(--red) 0 6px,#B23A2C 6px 8px)}
+.rrow .rv{text-align:right;font-family:var(--f-pix);font-size:13px} .rrow.safe .rv{color:var(--go-dk);font-family:var(--f-body);font-weight:700}
+.riskov .rnote{display:none}
+.pal .pr.blank{visibility:hidden}
+/* goals: roomy mode shows the detail line and both thresholds */
+#goal-panel.roomy .goals{gap:12px 14px}
+#goal-panel.roomy .goal .gv small{display:inline}
+#goal-panel.roomy .goal .bar{height:12px}
+#goal-panel.roomy .goal .ck{min-width:22px;height:22px;font-size:11px}
+@media (min-width:1240px) and (orientation:landscape){
+  .totem{grid-template-rows:auto auto auto} .totem .buy{grid-column:1 / -1}
+}
 </style>
 
 <div class="wrap">
@@ -1528,12 +1569,31 @@ function renderDesk(){
     <div class="decks"><span>${T("กองเหตุการณ์","Events")} <b>${S.evDeck.length}</b></span><span>${T("กองภัย","Disasters")} <b>${S.disDeck.length||(12+S.ff)}</b>${S.ff?` · ${T("ไฟไหม้โรงงาน","factory fire")} ${S.ff}`:""}</span></div>`;
   renderTray();
 }
+function riskOverview(){
+  const blds=S.pieces.filter(p=>p.type!=="green"&&!p.dmg);
+  const rows=TOT.map(k=>{ const n=blds.filter(p=>HAZ[k].hits.includes(p.type)&&HAZ[k].zones.includes(zoneOf(p.cells[0][0],p.cells[0][1]))).length, own=S.totems.includes(k);
+    return {k,n,own} });
+  const fac=S.pieces.filter(p=>p.type==="factory"), ffn=blds.filter(q=>fac.some(f=>f!==q&&touches(f,q))).length+fac.filter(f=>!f.dmg).length;
+  const max=Math.max(1,...rows.map(r=>r.n),ffn);
+  const line=(icon,name,n,own)=>`<div class="rrow${own?" safe":""}">${icon}<span class="rn">${name}</span><span class="rb"><i style="width:${own?0:Math.round(n/max*100)}%"></i></span><span class="rv">${own?T("✓ กันแล้ว","✓ blocked"):T(`${n} หลัง`,`${n}`)}</span></div>`;
+  return `<div class="riskov"><div class="rt">${T("อาคารที่ภัยแต่ละแบบทำให้พังได้","Buildings each hazard could hit")}</div>
+    ${rows.map(r=>line(img(r.k),T(DIS[r.k].th,DIS[r.k].en),r.n,r.own)).join("")}
+    ${fac.length?line(img("fire"),T("ไฟไหม้โรงงาน","Factory fire"),ffn,S.totems.includes("fire")):""}
+    <div class="rnote">${T("นับเฉพาะอาคารที่ยังไม่พัง · Totem กันภัยนั้นได้ทั้งใบ","Undamaged buildings only · a Totem blocks that whole hazard")}</div></div>`;
+}
+function fitPanels(){
+  if(!matchMedia("(min-width:1240px) and (orientation:landscape)").matches) return;
+  const over=el=>el.scrollHeight>el.clientHeight+1;
+  for(const id of ["desk","goal-panel"]){ const el=$(id); if(!el) continue; el.classList.remove("tight"); el.classList.add("roomy");
+    if(over(el)){ el.classList.add("tight"); if(over(el)) el.classList.remove("roomy","tight") } }
+}
 function renderTotems(){
   const b=S.phase==="build"&&!S.busy, p=totemPrice();
   $("totem-panel").innerHTML=`<div class="head" style="margin-bottom:10px"><h2>Totem</h2><span class="tagk">${S.totems.length<4?T(`อันถัดไป ${p} เหรียญ`,`next one: ${p} coins`):T("ครบ 4 แบบแล้ว","all 4 owned")}</span></div>
    <div class="tsteps">${TOTEM_STEPS.map((v,i)=>`<i class="${i<S.totems.length?"done":i===S.totems.length?"now":""}">${v}</i>`).join("<b>→</b>")}<span>${T("แพงขึ้นทุกอันที่ซื้อ · กันภัยนั้นได้ทั้งใบตลอดเกม","price rises with each one · blocks that hazard for the rest of the game")}</span></div>
    <div class="totems">${TOT.map(k=>{const own=S.totems.includes(k), off=!b||own||S.coins<p;
-     return `<button type="button" class="totem${own?" own":""}${gotTotem===k?" got":""}" data-totem="${k}"${off&&!own?" disabled":""}${own?' aria-disabled="true"':""}><span class="tico">${timg(k,"tbig")}${img(k,"hz")}</span><span>${T(TOTEM[k][0],TOTEM[k][1])}</span><span class="p">${own?T("มีแล้ว","OWNED"):T(`กัน${DIS[k].th}`,`vs ${DIS[k].en.toLowerCase()}`)}</span></button>`}).join("")}</div>`;
+     const buy=own?`✓ ${T("มีแล้ว","Owned")}`:!b?T("รอช่วงบริหาร","Build phase only"):S.coins<p?T(`ขาดอีก ${p-S.coins}`,`need ${p-S.coins} more`):`${T("ซื้อ","Buy")} ${img("coin")}${p}`;
+     return `<button type="button" class="totem t-${k}${own?" own":""}${!own&&!off?" can":""}${gotTotem===k?" got":""}" data-totem="${k}"${off&&!own?" disabled":""}${own?' aria-disabled="true"':""}><span class="tico">${timg(k,"tbig")}${img(k,"hz")}</span><span class="tn">${T(TOTEM[k][0],TOTEM[k][1])}</span><span class="p">${T(`กัน${DIS[k].th}`,`vs ${DIS[k].en.toLowerCase()}`)}</span><span class="buy">${buy}</span></button>`}).join("")}</div>`;
   gotTotem=null;
 }
 let PREV=null;
@@ -1557,8 +1617,8 @@ function renderTray(){
      <button type="button" class="tool" id="reinforce" aria-pressed="${S.tool==="reinforce"}"${!b||!rfOk||S.coins<RF_PRICE?" disabled":""}>${img("shield")}<span class="nm">${T("เสริม","Reinforce")}</span><span class="pr">${img("coin")}${RF_PRICE}</span></button>
      <button type="button" class="tool" id="repair" aria-pressed="${S.tool==="repair"}"${!b||!dm?" disabled":""}><span class="glyph">✚</span><span class="nm">${T("ซ่อม","Repair")}</span><span class="pr">${dm||"–"}</span></button>
      <button type="button" class="tool" id="demolish" aria-pressed="${S.tool==="demolish"}"${!b||!S.pieces.length?" disabled":""}><span class="glyph">✖</span><span class="nm">${T("รื้อ","Demolish")}</span><span class="pr">${T("ฟรี","free")}</span></button>
-     <button type="button" class="tool" id="rotate"${!b||!SIZE[S.tool]?" disabled":""}><span class="glyph">${S.orient==="h"?"↔":"↕"}</span><span class="nm">${T("หมุน","Rotate")}</span><span class="pr">&nbsp;</span></button>
-     <button type="button" class="tool" id="undo"${!b||!S.undo.length?" disabled":""}><span class="glyph">↶</span><span class="nm">${T("ย้อน","Undo")}</span><span class="pr">&nbsp;</span></button>`;
+     <button type="button" class="tool" id="rotate"${!b||!SIZE[S.tool]?" disabled":""}><span class="glyph">${S.orient==="h"?"↔":"↕"}</span><span class="nm">${T("หมุน","Rotate")}</span><span class="pr blank">&nbsp;</span></button>
+     <button type="button" class="tool" id="undo"${!b||!S.undo.length?" disabled":""}><span class="glyph">↶</span><span class="nm">${T("ย้อน","Undo")}</span><span class="pr blank">&nbsp;</span></button>`;
   let act="", dis=S.busy?" disabled":"";
   switch(S.phase){
     case "ready": act=`<button class="primary pulse" id="act" type="button">${T("▶ เริ่มวาระ","▶ Start your term")}</button>`; break;
