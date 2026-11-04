@@ -1362,7 +1362,49 @@ async function destroyCard(dc,k){
   }
   dc.style.visibility="hidden";
 }
-const destroyQuake=dc=>destroyCard_v1(dc,"quake");
+/* quake: the card shakes, jagged cracks spread, then it breaks along those same cracks */
+function jagLine(a,b,n,amp){ const pts=[a], dx=b[0]-a[0], dy=b[1]-a[1], L=Math.hypot(dx,dy)||1, nx=-dy/L, ny=dx/L;
+  for(let i=1;i<n;i++){ const t=i/n+(Math.random()-.5)*.04, o=(Math.random()-.5)*amp*(i%2?1:.6); pts.push([a[0]+dx*t+nx*o,a[1]+dy*t+ny*o]) } pts.push(b); return pts }
+async function destroyQuake(dc){
+  dc.style.animation="none";
+  const {c,x,W,H,ox,oy}=fullFx(dc), P=[];
+  const J=()=>(Math.random()-.5)*.08;
+  const gx=[0,.34+J(),.66+J(),1], gy=[0,.36+J(),.68+J(),1];
+  const pts=gy.map((yy,j)=>gx.map((xx,i)=>[i&&i<3?xx+J():xx,j&&j<3?yy+J():yy]));
+  const Hs=[], Vs=[];
+  for(let j=0;j<4;j++){ Hs[j]=[]; for(let i=0;i<3;i++){ const a=pts[j][i], b=pts[j][i+1]; Hs[j][i]=(j===0||j===3)?[a,b]:jagLine(a,b,10,.07) } }
+  for(let j=0;j<3;j++){ Vs[j]=[]; for(let i=0;i<4;i++){ const a=pts[j][i], b=pts[j+1][i]; Vs[j][i]=(i===0||i===3)?[a,b]:jagLine(a,b,10,.08) } }
+  const inner=[]; for(let j=1;j<3;j++) for(let i=0;i<3;i++) inner.push(Hs[j][i]); for(let j=0;j<3;j++) for(let i=1;i<3;i++) inner.push(Vs[j][i]);
+  // cracks grow out from the middle of the card
+  const order=inner.map(l=>{ const m=l[Math.floor(l.length/2)]; return {l,d:Math.hypot(m[0]-.5,m[1]-.5)} }).sort((a,b)=>a.d-b.d);
+  SFX.hit("quake",false);
+  await run(1150,p=>{ const amp=2+p*8; dc.style.transform=`translate(${(Math.random()-.5)*amp}px,${(Math.random()-.5)*amp}px) rotate(${(Math.random()-.5)*p*2.4}deg)`;
+    x.clearRect(0,0,c.width,c.height); const r=dc.getBoundingClientRect(), X0=r.left, Y0=r.top;
+    order.forEach((o,idx)=>{ const start=idx/order.length*.55, f=Math.max(0,Math.min(1,(p-start)/.45)); if(!f) return;
+      const n=Math.max(2,Math.ceil(o.l.length*f)), seg=o.l.slice(0,n), mid=Math.floor(o.l.length/2);
+      // grow from the line's middle outwards in both directions
+      const a=Math.max(0,mid-Math.ceil(mid*f)), b=Math.min(o.l.length,mid+Math.ceil((o.l.length-mid)*f)+1), part=o.l.slice(a,b);
+      x.lineJoin="miter"; x.strokeStyle="#1B1B2F"; x.lineWidth=3.5; x.beginPath(); part.forEach((q,i)=>i?x.lineTo(X0+q[0]*W,Y0+q[1]*H):x.moveTo(X0+q[0]*W,Y0+q[1]*H)); x.stroke();
+      x.strokeStyle="rgba(255,255,255,.55)"; x.lineWidth=1; x.beginPath(); part.forEach((q,i)=>i?x.lineTo(X0+q[0]*W+1.5,Y0+q[1]*H+1.5):x.moveTo(X0+q[0]*W+1.5,Y0+q[1]*H+1.5)); x.stroke() });
+    if(Math.random()<.4) P.push({x:X0+Math.random()*W,y:Y0+H-4,vx:(Math.random()-.5),vy:-.5,l:0,m:30,c:"#D4BB8A",s:4,a:.8}); stepParts(x,P) });
+  dc.style.transform="";
+  // pieces = the cells between the cracks
+  const host=dc.parentElement; host.style.position="relative"; const frags=[];
+  for(let j=0;j<3;j++) for(let i=0;i<3;i++){
+    const top=Hs[j][i], right=Vs[j][i+1], bot=Hs[j+1][i].slice().reverse(), left=Vs[j][i].slice().reverse();
+    const poly=[...top,...right.slice(1),...bot.slice(1),...left.slice(1,-1)];
+    const f=dc.cloneNode(true); f.classList.add("frag"); f.style.animation="none";
+    f.querySelectorAll("*").forEach(n=>n.style.animation="none"); const bk=f.querySelector(".eback"); if(bk) bk.remove(); const fc=f.querySelector(".dface"); if(fc) fc.style.transform="none";
+    f.style.clipPath=`polygon(${poly.map(v=>`${(v[0]*100).toFixed(2)}% ${(v[1]*100).toFixed(2)}%`).join(",")})`;
+    Object.assign(f.style,{position:"absolute",left:dc.offsetLeft+"px",top:dc.offsetTop+"px",width:dc.offsetWidth+"px",height:dc.offsetHeight+"px",margin:0,transformOrigin:`${(gx[i]+gx[i+1])*50}% ${(gy[j]+gy[j+1])*50}%`});
+    host.appendChild(f); frags.push({f,vx:(i-1)*2+(Math.random()-.5)*1.6,vy:-1.6-Math.random()*2.2+(j-1)*.6,rv:(Math.random()-.5)*16,delay:Math.random()*.18}) }
+  dc.style.visibility="hidden"; SFX.hit("quake",false);
+  for(let n=0;n<50;n++){ const q=order[Math.floor(Math.random()*order.length)].l, pt=q[Math.floor(Math.random()*q.length)];
+    P.push({x:ox+pt[0]*W,y:oy+pt[1]*H,vx:(Math.random()-.5)*2.4,vy:-Math.random()*2,g:.06,l:0,m:36+Math.random()*20,c:["#D4BB8A","#A0A8B0","#C9A97A","#5A6270"][n%4],s:Math.random()<.5?4:5}) }
+  await run(1500,(p,t)=>{ for(const q of frags){ const tt=Math.max(0,t/16-q.delay*90); q.f.style.transform=`translate(${q.vx*tt}px,${q.vy*tt+.15*tt*tt}px) rotate(${q.rv*tt*.45}deg)`; q.f.style.opacity=String(1-Math.max(0,p-.45)*1.8) }
+    x.clearRect(0,0,c.width,c.height); stepParts(x,P) });
+  frags.forEach(q=>q.f.remove()); c.remove();
+}
 /* resume a saved game in the right place */
 function resumeFlow(){
   if(S.modal||OV().className.includes("show")) return;
