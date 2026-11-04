@@ -394,6 +394,43 @@ details.log summary{cursor:pointer;font-weight:700}
   .status .track,.status .gauge{display:none}
 }
 @media (min-width:821px) and (orientation:landscape) and (max-width:1199px){ .brand p{display:none} }
+/* v4.3 extras */
+#coach{position:fixed;z-index:65;display:none;background:var(--panel);border:3px solid var(--ink);box-shadow:5px 5px 0 var(--ink);padding:10px 12px;font-size:14.5px;line-height:1.45}
+#coach.on{display:block;animation:pop .2s ease-out}
+#coach p{margin:4px 0 8px} #coach .cstep{font-family:var(--f-pix);font-size:11px;color:var(--muted);letter-spacing:.08em}
+#coach .cbtn{display:flex;gap:8px;flex-wrap:wrap} #coach .cbtn button{padding:6px 12px;font-size:13px;min-height:0}
+#coachring{position:fixed;z-index:64;pointer-events:none;display:none;border:3px solid var(--gold);box-shadow:0 0 0 4px var(--ink),0 0 0 9999px rgba(14,15,34,.35);animation:ringblink 1s steps(2) infinite}
+#coachring.on{display:block}
+@keyframes ringblink{50%{border-color:#fff}}
+.endm{max-height:94vh} .endm h4.sumh{margin:6px 0 -4px;font-family:var(--f-pix);font-size:13px;letter-spacing:.06em}
+.lessons{margin:0;padding:10px 12px 10px 28px;background:#FFF0B8;border:2px solid var(--ink);font-size:14px;display:flex;flex-direction:column;gap:6px}
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.lbin{display:flex;gap:8px;align-items:stretch} .lbin button{flex:0 0 auto;width:auto;padding-left:18px;padding-right:18px} .lbin input{flex:1 1 auto;width:100%;min-width:0;font:inherit;font-size:16px;padding:8px 10px;border:3px solid var(--ink);background:#fff}
+.lb{list-style:none;margin:0;padding:0;border:3px solid var(--ink);background:#fff}
+.lb li{display:grid;grid-template-columns:34px 1fr auto;gap:8px;align-items:center;padding:6px 10px;border-bottom:2px dotted #CBBF9F;font-size:15px}
+.lb li:last-child{border-bottom:0} .lb li.me{background:#FFF0B8;font-weight:700}
+.lb .lr{font-family:var(--f-pix);text-align:center} .lb .ln{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.lb .ls{color:var(--gold);text-shadow:1px 1px 0 var(--ink);letter-spacing:-1px;white-space:nowrap} .lb .ls small{color:var(--ink);text-shadow:none;margin-left:6px;font-weight:700;letter-spacing:0}
+.lbnote{margin:2px 0 0;font-size:12px;color:var(--muted);text-align:center} .lbdone{margin:0;font-weight:700;text-align:center}
+.endm.gold{border-color:#F2C230;box-shadow:0 0 0 3px var(--ink),0 0 40px 8px rgba(242,194,48,.7);animation:pop .25s ease-out,goldglow 1.6s ease-in-out infinite}
+@keyframes goldglow{50%{box-shadow:0 0 0 3px var(--ink),0 0 70px 18px rgba(242,194,48,.9)}}
+.crownhead{font-size:56px;text-align:center;line-height:1;margin-bottom:-8px;animation:bob 1.2s ease-in-out infinite}
+@keyframes bob{50%{transform:translateY(-6px) rotate(-4deg)}}
+#party{position:fixed;inset:0;z-index:90;background:radial-gradient(circle at 50% 45%,#3B2A6B 0,#140F2A 70%);display:flex;flex-direction:column;align-items:center;justify-content:center;overflow:hidden;cursor:pointer;transition:opacity .45s}
+#party.out{opacity:0}
+#party canvas{position:absolute;inset:0;width:100%;height:100%;image-rendering:pixelated}
+#party .rays{position:absolute;left:50%;top:45%;width:240vmax;height:240vmax;margin:-120vmax 0 0 -120vmax;background:repeating-conic-gradient(rgba(242,194,48,.22) 0 9deg,transparent 9deg 18deg);animation:spin 14s linear infinite,fadein .8s ease-out}
+#party .flash{position:absolute;inset:0;background:#fff;animation:flash .7s ease-out forwards;pointer-events:none}
+@keyframes flash{0%{opacity:.95}100%{opacity:0}}
+@keyframes spin{to{transform:rotate(360deg)}} @keyframes fadein{from{opacity:0}}
+#party .pcrown{position:relative;font-size:min(30vw,170px);line-height:1;animation:crowndrop 1s cubic-bezier(.3,1.6,.5,1) both;filter:drop-shadow(0 8px 0 rgba(0,0,0,.35))}
+@keyframes crowndrop{0%{transform:translateY(-120vh) rotate(-30deg)}100%{transform:none}}
+#party .ptitle{position:relative;display:flex;gap:.4em;font-family:var(--f-pix);font-weight:700;font-size:min(12vw,78px);color:#F2C230;text-shadow:4px 4px 0 #8A5A00,8px 8px 0 #1B1B2F;letter-spacing:.04em}
+#party .ptitle span{display:inline-block;animation:slam .5s cubic-bezier(.2,1.8,.4,1) both} #party .ptitle span:first-child{animation-delay:.55s} #party .ptitle span:last-child{animation-delay:.75s}
+@keyframes slam{0%{transform:scale(4);opacity:0}100%{transform:none;opacity:1}}
+#party .psub{position:relative;color:#fff;font-size:min(5vw,22px);font-weight:700;margin-top:8px;animation:fadein .5s 1s both}
+#party .pstars{position:relative;margin-top:10px;font-size:min(8vw,40px);letter-spacing:4px}
+#party .pstars i{font-style:normal;color:#F2C230;text-shadow:3px 3px 0 #1B1B2F;display:inline-block;animation:slam .35s both}
 </style>
 
 <div class="wrap">
@@ -402,6 +439,7 @@ details.log summary{cursor:pointer;font-weight:700}
     <div class="tools">
       <div class="seg" role="group" aria-label="Language"><button class="btn" id="lang-th" type="button">TH</button><button class="btn" id="lang-en" type="button">EN</button></div>
       <button class="btn" id="newgame" type="button"></button>
+      <button class="btn" id="mute" type="button" aria-label="Sound">🔊</button>
       <button class="btn" id="help" type="button" aria-label="How to play">?</button>
     </div>
   </header>
@@ -795,7 +833,7 @@ function nextStep(){
 let anim=null, landed=false;
 function rollRisk(){
   S.busy=true; const r=risk(); let n=0;
-  const tick=()=>{ anim=[1+rnd(6),1+rnd(6)]; renderDesk(); if(++n<(reduce()?1:9)) setTimeout(tick,90); else done() };
+  const tick=()=>{ anim=[1+rnd(6),1+rnd(6)]; renderDesk(); SFX.dice(); if(++n<(reduce()?1:9)) setTimeout(tick,90); else done() };
   const done=()=>{ anim=null; landed=true; const a=1+rnd(6), b=1+rnd(6); S.dice=[a,b]; S.busy=false;
     if(a+b<=r){ log(`ทอยได้ ${a+b} ≤ ${r}: เกิดภัย`,`Rolled ${a+b} ≤ ${r}: disaster`,"bad"); toast(T(`ทอยได้ ${a+b} · เกิดภัย!`,`Rolled ${a+b} · disaster!`),"bad"); drawDisaster() }
     else { log(`ทอยได้ ${a+b} > ${r}: ปลอดภัย`,`Rolled ${a+b} > ${r}: safe`,"good"); toast(T(`ทอยได้ ${a+b} · ปลอดภัย`,`Rolled ${a+b} · safe`),"good"); S.phase="build"; render() } };
@@ -816,7 +854,7 @@ function eventSplash(keys,ds,inc,cb){
   el.innerHTML=`<div class="sp-bg"></div><div class="evsplash"><div class="evhead">${T(`รอบ ${S.round} · ปีที่ ${year(S.round)}`,`Round ${S.round} · Year ${year(S.round)}`)}</div>
     <div class="ecards">${keys.map((k,i)=>{const e=EV[k];return `<div class="ecard ${e.cls}" style="--d:${.15+i*.45}s"><div class="eback"><span>MR.<b>MAYOR</b></span><i>${T("เหตุการณ์","EVENT")}</i></div><div class="efront"><div class="sk2">${T("เหตุการณ์","EVENT")}</div><img class="sart" src="${art(k)}" alt=""><div class="et">${T(e.th,e.en)}</div><div class="eb">${T(e.b[0],e.b[1])}</div>${badge(k,ds[i])}</div></div>`}).join("")}</div>
     <div class="evinc" style="--d:${.15+keys.length*.45+.2}s">${img("coin")}${T(`รายได้จากเมือง +${inc}`,`City income +${inc}`)}</div><div class="skip">${T("แตะเพื่อข้าม","tap to skip")}</div></div>`;
-  el.className="show"; splashDone=()=>{ el.className="out"; setTimeout(go,260) };
+  el.className="show"; SFX.cards(keys.length); splashDone=()=>{ el.className="out"; setTimeout(go,260) };
   setTimeout(()=>{ if(!fired&&splashDone) splashDone() }, 1000+keys.length*450+1500);
 }
 function splash(card,blocked,cb){
@@ -830,7 +868,7 @@ function splash(card,blocked,cb){
   setTimeout(()=>{ if(!fired&&splashDone) splashDone() }, blocked?2100:1750);
 }
 function resolveDisaster(card){
-  const k=card.k; S.disCard=card; S.curDis=null; S.stats.dis++;
+  const k=card.k; S.disCard=card; S.curDis=null; S.stats.dis++; S.stats.hz=S.stats.hz||{}; S.stats.hz[k]=(S.stats.hz[k]||0)+1;
   if(S.totems.includes(TOTEM_OF[k])){ const tk=TOTEM_OF[k]; S.blocked=true; S.stats.blocked++; log(`${disLabel(card,"th")}: ${TOTEM[tk][0]}กันได้ทั้งใบ`,`${disLabel(card,"en")}: blocked by ${TOTEM[tk][1]}`,"good");
     let box; if(k==="ffire"){ const fs=S.pieces.filter(p=>p.type==="factory"), f=fs.length?fs[rnd(fs.length)]:null;
       if(f){ const rs=f.cells.map(x=>x[0]), cs=f.cells.map(x=>x[1]); box={r0:Math.max(0,Math.min(...rs)-1),r1:Math.min(N-1,Math.max(...rs)+1),c0:Math.max(0,Math.min(...cs)-1),c1:Math.min(N-1,Math.max(...cs)+1),fac:true} } }
@@ -857,7 +895,8 @@ function resolveDisaster(card){
 function strike(k,box,targets){
   S.zone=box; S.hits=[]; S.saved=[];
   for(const p of targets){ if(p.dmg) continue; if(p.rf){ p.rf=false; S.saved.push(p.id); continue } p.dmg=true; S.hits.push(p.id) }
-  S.stats.hits+=S.hits.length; S.stats.saved+=S.saved.length;
+  S.stats.hits+=S.hits.length; S.stats.saved+=S.saved.length; S.stats.zhit=S.stats.zhit||{};
+  S.hits.forEach(id=>{const q=S.pieces.find(x=>x.id===id); const z=q&&zoneOf(q.cells[0][0],q.cells[0][1]); if(z) S.stats.zhit[z]=(S.stats.zhit[z]||0)+1});
   const card=S.disCard, names=S.hits.map(id=>nm(S.pieces.find(p=>p.id===id).type));
   log(`${disLabel(card,"th")}: พัง ${S.hits.length} หลัง${S.saved.length?` · เสริมแล้วรอด ${S.saved.length}`:""}`,`${disLabel(card,"en")}: ${S.hits.length} damaged${S.saved.length?` · ${S.saved.length} saved by reinforcement`:""}`,S.hits.length?"bad":"good");
   const svt=S.saved.length?` · เสริมความแข็งแรงช่วยไว้ ${S.saved.length} หลัง`:"", sve=S.saved.length?` · reinforcement saved ${S.saved.length}`:"";
@@ -871,7 +910,10 @@ function strike(k,box,targets){
 function endRound(){
   S.tool=null;
   if(S.round>=ROUNDS){ const n=stars(); S.result=n; S.phase="over"; log(`จบวาระ: ${n} ดาว · ${rankOf(n)[0]}`,`Term over: ${n} stars · ${rankOf(n)[1]}`,n>=4?"good":"bad");
-    if(n>=6) FX.confetti(); render(); setTimeout(()=>{S.modal="end";renderModal()},reduce()||n<6?0:1300); return }
+    LB.list=null; render(); const show=()=>{S.modal="end";renderModal()};
+    if(n>=8){ celebrate(show); return }
+    if(n>=6){ FX.confetti(); SFX.win() } else if(n>=4) SFX.good(); else SFX.lose();
+    setTimeout(show,reduce()||n<6?0:1300); return }
   startRound();
 }
 
@@ -913,7 +955,7 @@ function repair(id){
   const p=S.pieces.find(x=>x.id===id); if(!p||!p.dmg) return;
   const free=(S.mod.freerepair||0)>0, cost=free?0:PRICE[p.type];
   if(S.coins<cost){toast(T("เงินไม่พอซ่อม","Not enough coins to repair"),"bad");return}
-  p.dmg=false; S.coins-=cost; bump(-cost); if(free) S.mod.freerepair--; FX.sparkle(p);
+  p.dmg=false; S.coins-=cost; bump(-cost); if(free) S.mod.freerepair--; S.stats.rep=(S.stats.rep||0)+cost; FX.sparkle(p);
   S.undo.push({kind:"repair",id,cost,free}); log(`ซ่อม${nm(p.type)}${cost?` (−${cost})`:" (ฟรี)"}`,`Repaired ${nm(p.type).toLowerCase()}${cost?` (−${cost})`:" (free)"}`);
   if(!damaged().length) S.tool=null; render();
 }
@@ -944,7 +986,7 @@ function undo(){
     if(p&&p.type==="factory"){ S.ff--; if(u.ffCard){ let i=-1; S.disDeck.forEach((c,j)=>{if(c.k==="ffire")i=j}); if(i>=0) S.disDeck.splice(i,1) } }
     if(u.free) S.mod.freehouse=(S.mod.freehouse||0)+1 }
   if(u.kind==="totem") S.totems=S.totems.filter(t=>t!==u.k);
-  if(u.kind==="repair"){ const p=S.pieces.find(x=>x.id===u.id); if(p) p.dmg=true; if(u.free) S.mod.freerepair=(S.mod.freerepair||0)+1 }
+  if(u.kind==="repair"){ const p=S.pieces.find(x=>x.id===u.id); if(p) p.dmg=true; S.stats.rep=(S.stats.rep||0)-u.cost; if(u.free) S.mod.freerepair=(S.mod.freerepair||0)+1 }
   if(u.kind==="rf"){ const p=S.pieces.find(x=>x.id===u.id); if(p) p.rf=false }
   if(u.kind==="demolish"){ S.pieces.splice(u.idx,0,u.piece); if(u.piece.type==="factory"){ S.ff++; if(u.ffCard) S.disDeck.splice(rnd(S.disDeck.length+1),0,{k:"ffire"}) } }
   S.coins+=u.cost; bump(u.cost); S.log.shift(); render();
@@ -1174,7 +1216,7 @@ function render(){
   $("lang-th").setAttribute("aria-pressed",lang==="th"); $("lang-en").setAttribute("aria-pressed",lang==="en");
   $("newgame").textContent=T("เกมใหม่","New game");
   renderStatus(); renderAxes(); renderDesk(); renderTotems(); renderGoals(); renderLog(); renderTray(); renderModal();
-  renderZones(); hoverInfo(); if(!S.busy) saveNow();
+  renderZones(); hoverInfo(); if(!S.busy) saveNow(); muteBtn(); tutTick();
   $("legend").innerHTML=`<div>${["house","shop","factory","condo","green"].map(t=>`<span>${img(t)}${nm(t)}</span>`).join("")}<span>${img("shield")}${T("เสริมแล้ว","reinforced")}</span></div>`;
 }
 function renderZones(){
@@ -1306,6 +1348,7 @@ function renderModal(){
       <div class="startart"><img src="${art("quiet")}" alt=""></div>
       <p class="lead">เลือกภาษา · Choose your language</p>
       <div class="langpick"><button type="button" data-pick="th"><b>ไทย</b><span>ภาษาไทย</span></button><button type="button" data-pick="en"><b>English</b><span>อังกฤษ</span></button></div></div></div>`; return }
+  if(S.modal==="board"){ o.innerHTML=boardModal(); return }
   if(S.modal==="resume"){
     o.innerHTML=`<div class="overlay"><div class="box modal start" role="dialog" aria-modal="true"><h3><span>MR.</span>MAYOR</h3>
       <p class="lead">${T(`มีเมืองที่เล่นค้างไว้ถึงรอบ ${S.round} จาก 12`,`There's a city left unfinished at round ${S.round} of 12`)}</p>
@@ -1320,8 +1363,10 @@ function renderModal(){
     o.innerHTML=`<div class="overlay"><div class="box modal start" role="dialog" aria-modal="true"><h3><span>MR.</span>MAYOR</h3>
       <div class="startart"><img src="${art("quiet")}" alt=""></div>
       <p class="lead">${T("เป็นนายกฯ 4 ปี สร้างเมืองให้เติบโตและรับมือภัยพิบัติได้","Run a city for 4 years. Grow it and keep it safe from disasters.")}</p>
-      <div class="menu"><button type="button" class="primary" data-menu="rules">📖 ${T("อ่านวิธีเล่น","How to play")} <small>${T("6 หน้าสั้นๆ","6 short pages")}</small></button>
-        <button type="button" class="ghostbtn" data-menu="play">${T("เล่นเป็นแล้ว ไปที่เมืองเลย","I know how to play")}</button></div>
+      <div class="menu"><button type="button" class="primary pulse" data-menu="tut">▶ ${T("เล่นพร้อมสอน","Play with a guide")} <small>${T("แนะนำสำหรับครั้งแรก","best for first-timers")}</small></button>
+        <button type="button" class="ghostbtn" data-menu="rules">📖 ${T("อ่านวิธีเล่นแบบเต็ม","Read the full rules")}</button>
+        <button type="button" class="ghostbtn" data-menu="play">${T("เล่นเป็นแล้ว ไปที่เมืองเลย","I know how to play")}</button>
+        <button type="button" class="ghostbtn" data-menu="board">🏆 ${T("ตารางนายกฯ","Leaderboard")}</button></div>
       <button type="button" class="langsw" data-menu="lang">${lang==="th"?"ภาษา: ไทย · Change to English":"Language: English · เปลี่ยนเป็นไทย"}</button></div></div>`; return }
   if(S.modal==="intro"){
     const ib=t=>`<img src="${t==="condo"?URL.condoTall:t==="factory"?URL.factoryWide:URL[t]}" alt="" class="${t==="factory"?"wide":t==="condo"?"tall":""}">`;
@@ -1378,16 +1423,8 @@ function renderModal(){
         ${j<n-1?`<button class="primary" type="button" data-ipage="${j+1}">${T("ถัดไป","Next")} ▶</button>`:`<button class="primary pulse" type="button" data-close="intro">▶ ${T("เข้าใจแล้ว เริ่มเลย","Got it, let's play")}</button>`}</div>`;
     o.innerHTML=`<div class="overlay"><div class="box modal intro" role="dialog" aria-modal="true" data-lang="${lang}"><h3><span>MR.</span>MAYOR</h3>
       ${pages.map((pg,j)=>`<section class="ipg${j===i?" on":""}" data-pg="${j}"><div class="ihead"><span class="inum">${j+1}/${n}</span><b>${pg.t}</b></div><div class="ibody">${pg.b}</div>${nav(j)}</section>`).join("")}</div></div>`; return }
-  const n=typeof S.result==="number"?S.result:stars(), rk=rankOf(n);
-  const rows=STAR_KEYS.map(k=>{const lab=STAR_LAB[k], s=starOf(k);return `<div><b>${"★".repeat(s)||"–"}</b><span>${T(lab[2],lab[3])} ${metric(k)}</span></div>`}).join("");
-  o.innerHTML=`<div class="overlay"><div class="box modal" role="dialog" aria-modal="true">
-    <div class="big" style="color:${n>=6?"var(--go)":n>=4?"var(--ink)":"var(--red)"};text-shadow:3px 3px 0 ${n>=4&&n<6?"var(--gold)":"var(--ink)"}">⭐ ${n}/8</div>
-    <div class="starrow">${[...Array(8)].map((_,i)=>`<i class="${i<n?"on":""}" style="animation-delay:${.2+i*.14}s">★</i>`).join("")}</div>
-    <p class="lead" style="font-size:20px;font-weight:700;color:var(--ink)">${T(rk[0],rk[1])}</p>
-    <div class="stats3 s4">${rows}</div>
-    <div class="stats3"><div><b>${S.stats.dis}</b><span>${T("ภัยที่เจอ","disasters")}</span></div><div><b>${S.stats.blocked}</b><span>${T("Totem กันได้","blocked")}</span></div><div><b>${S.stats.hits}</b><span>${T("อาคารที่พัง","buildings hit")}</span></div></div>
-    <div class="debrief">${T("SDG 11.5 คือการลดความสูญเสียจากภัยพิบัติในเมือง ในเกมนี้อะไรช่วยเมืองคุณได้มากที่สุด: Totem (การเตรียมพร้อม), การวางผังเมืองให้กระจายโซน, การเสริมความแข็งแรง หรือการซ่อมให้เร็ว?","SDG 11.5 is about cutting city losses from disasters. What helped your city most: Totems (preparation), spreading the city across zones, reinforcing, or fast repairs?")}</div>
-    <button class="primary" type="button" data-close="new">${T("เล่นใหม่","Play again")}</button><button class="ghostbtn" type="button" data-close="view">${T("ดูเมืองของฉัน","See my city")}</button></div></div>`;
+  if(!LB.list&&!LB.loading) setTimeout(()=>lbFetch(),0);
+  o.innerHTML=endModal();
 }
 
 /* ======================= EVENTS ======================= */
@@ -1411,6 +1448,9 @@ document.addEventListener("click",e=>{
   if(a.dataset.menu){ const m=a.dataset.menu;
     if(m==="lang"){ lang=lang==="th"?"en":"th"; try{localStorage.setItem("mm4-lang",lang)}catch(err){} render(); return }
     if(m==="rules"){ introPage=0; S.modal="intro"; render(); return }
+    if(m==="tut"){ tutStart(); return }
+    if(m==="board"){ S.modal="board"; renderModal(); lbFetch(); return }
+    if(m==="back"){ S.modal="menu"; renderModal(); return }
     if(m==="play"){ S.modal=null; render(); setTimeout(()=>toast(startTip()),250); return } }
   if(a.dataset.ipage!==undefined){ if(document.querySelector("#overlay .modal.intro")) showIntroPage(+a.dataset.ipage); else { introPage=+a.dataset.ipage; renderModal() } return }
   if(a.id==="help"){ if(S.phase!=="over"){introPage=0;S.modal="intro"; renderModal()} return }
@@ -1423,6 +1463,232 @@ function preloadArt(){
   const urls=[...Object.keys(EV),...Object.keys(DIS)].map(k=>art(k)).concat(Object.values(TURL),Object.values(URL));
   let i=0; const step=()=>{ const t0=performance.now(); while(i<urls.length&&performance.now()-t0<8){ const im=new Image(); im.src=urls[i++]; if(im.decode) im.decode().catch(()=>{}) } if(i<urls.length) setTimeout(step,16) }; step();
 }
+/* ======================= v4.3 EXTRAS: sound · tutorial · summary · image · leaderboard · Best Mayor ======================= */
+const esc=s=>String(s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+
+/* ---------- sound (8-bit, WebAudio, no files) ---------- */
+let AC=null, MUTED=false; try{MUTED=localStorage.getItem("mm-mute")==="1"}catch(e){}
+function ac(){ if(!AC){ try{AC=new (window.AudioContext||window.webkitAudioContext)()}catch(e){AC=null} } if(AC&&AC.state==="suspended") AC.resume().catch(()=>{}); return AC }
+document.addEventListener("pointerdown",()=>{ if(!MUTED) ac() },{passive:true});
+function tone(f,d,o){ o=o||{}; const a=ac(); if(!a||MUTED) return; const t=a.currentTime+(o.at||0);
+  const osc=a.createOscillator(), g=a.createGain(); osc.type=o.type||"square"; osc.frequency.setValueAtTime(f,t);
+  if(o.to) osc.frequency.exponentialRampToValueAtTime(o.to,t+d);
+  const v=o.vol||.05; g.gain.setValueAtTime(v,t); g.gain.exponentialRampToValueAtTime(.0001,t+d);
+  osc.connect(g); g.connect(a.destination); osc.start(t); osc.stop(t+d+.02) }
+function noise(d,o){ o=o||{}; const a=ac(); if(!a||MUTED) return; const t=a.currentTime+(o.at||0);
+  const len=Math.max(1,Math.floor(a.sampleRate*d)), buf=a.createBuffer(1,len,a.sampleRate), ch=buf.getChannelData(0);
+  for(let i=0;i<len;i++) ch[i]=(Math.random()*2-1)*(o.crackle?(Math.random()<.08?1:.15):1);
+  const src=a.createBufferSource(); src.buffer=buf; const fl=a.createBiquadFilter(); fl.type=o.ftype||"lowpass"; fl.frequency.setValueAtTime(o.f||1200,t);
+  if(o.fto) fl.frequency.exponentialRampToValueAtTime(o.fto,t+d);
+  const g=a.createGain(), v=o.vol||.08; g.gain.setValueAtTime(v,t); g.gain.exponentialRampToValueAtTime(.0001,t+d);
+  src.connect(fl); fl.connect(g); g.connect(a.destination); src.start(t); src.stop(t+d+.02) }
+const seq=(notes,step,o)=>notes.forEach((f,i)=>f&&tone(f,(o&&o.len)||step*.9,Object.assign({},o,{at:((o&&o.at)||0)+i*step})));
+const SFX={
+  click(){ tone(880,.03,{vol:.025}) },
+  build(){ tone(392,.06,{at:.2}); tone(587,.09,{at:.27}) },
+  coin(){ tone(988,.05,{vol:.04}); tone(1319,.12,{at:.05,vol:.04}) },
+  bad(){ tone(196,.22,{type:"sawtooth",to:110,vol:.04}) },
+  dice(){ noise(.03,{f:3000,ftype:"highpass",vol:.05}) },
+  cards(n){ for(let i=0;i<n;i++) noise(.08,{at:.15+i*.45,f:2500,ftype:"bandpass",vol:.07}) },
+  alarm(){ seq([880,660,880,660],.14,{type:"square",vol:.035}) },
+  disaster(k){ SFX.alarm();
+    if(k==="flood"){ noise(1.6,{at:.5,f:500,fto:150,vol:.14}); noise(1.2,{at:.7,f:1800,ftype:"bandpass",vol:.04}) }
+    else if(k==="quake"){ tone(45,1.4,{at:.5,type:"sawtooth",vol:.12,to:30}); noise(1.4,{at:.5,f:180,vol:.18}) }
+    else if(k==="storm"){ noise(1.6,{at:.5,f:400,fto:2400,ftype:"bandpass",vol:.12}); noise(.25,{at:1.3,f:120,vol:.2}) }
+    else { noise(1.5,{at:.5,f:2600,crackle:1,vol:.12}); noise(1,{at:.6,f:300,vol:.06}) } },
+  blocked(){ seq([523,659,784,1047],.08,{type:"triangle",vol:.06}); tone(1568,.35,{at:.32,type:"triangle",vol:.04}) },
+  repair(){ tone(660,.05); tone(880,.08,{at:.06}) },
+  demolish(){ noise(.3,{f:400,vol:.12}) },
+  totem(){ seq([392,523,659,784],.06,{type:"triangle",vol:.06}) },
+  good(){ seq([659,880],.08,{vol:.035}) },
+  win(){ seq([523,659,784,1047],.12,{vol:.05}); tone(1047,.5,{at:.48,type:"triangle",vol:.05}) },
+  lose(){ seq([392,330,262,196],.18,{type:"triangle",vol:.05}) },
+  fanfare(){ const s=.13; seq([523,523,523,698,0,880,0,784,880,1047],s,{vol:.055,len:s*.85});
+    seq([131,0,175,0,220,0,196,0,262],s*1.1,{type:"triangle",vol:.07,len:s});
+    tone(1047,1.1,{at:s*10,vol:.05}); tone(1319,1.1,{at:s*10,vol:.04}); tone(1568,1.1,{at:s*10,type:"triangle",vol:.05});
+    for(let i=0;i<6;i++) noise(.35,{at:1.6+i*.38,f:900,crackle:1,vol:.07}) },
+};
+{ const w=(k,f)=>{ const o=FX[k]; FX[k]=function(){ try{f.apply(null,arguments)}catch(e){} return o.apply(FX,arguments) } };
+  w("build",()=>SFX.build()); w("coins",n=>{ if(n) SFX.coin() }); w("disaster",k=>SFX.disaster(k)); w("blocked",()=>SFX.blocked());
+  w("shield",()=>SFX.blocked()); w("sparkle",()=>SFX.repair()); w("demolish",()=>SFX.demolish()); w("shieldSmall",()=>SFX.totem()); }
+{ const _t=toast; toast=function(m,k){ if(k==="bad") SFX.bad(); else if(k==="good") SFX.good(); return _t(m,k) } }
+function muteBtn(){ const b=$("mute"); if(b){ b.textContent=MUTED?"🔇":"🔊"; b.setAttribute("aria-label",MUTED?T("เปิดเสียง","Sound on"):T("ปิดเสียง","Sound off")) } }
+
+/* ---------- guided first round (coach marks) ---------- */
+const TUT={on:false,step:0};
+const TSTEPS=[
+ {sel:"#act",show:()=>S.phase==="ready",th:"เริ่มกันเลย กดปุ่มนี้เพื่อเริ่มวาระนายกฯ 12 รอบ",en:"Let's go. Press this to start your 12-round term.",done:()=>S.round>=1},
+ {sel:"#desk",th:"ทุกต้นรอบจะเปิด <b>การ์ดเหตุการณ์ 2 ใบ</b> บางใบให้เงิน บางใบหักเงิน บางใบเปลี่ยนกติกาเฉพาะรอบนั้น",en:"Every round opens <b>2 event cards</b>. Some give coins, some take coins, some change a rule for that round.",next:1},
+ {sel:"#status .stat:nth-child(2)",th:"นี่คือ <b>เหรียญ</b> ของคุณ อาคารทุกหลังที่ไม่พังให้รายได้ทุกต้นรอบ",en:"These are your <b>coins</b>. Every undamaged building pays you at the start of each round.",next:1},
+ {sel:'[data-buy="house"]',th:"มาสร้างเมืองกัน แตะปุ่ม <b>บ้าน</b>",en:"Let's build. Tap <b>House</b>.",done:()=>S.tool==="house"||built(),skip:()=>!!why("house")},
+ {sel:"#stage",th:"แตะช่องว่างบนแผนที่เพื่อวางบ้าน (ถนนวางไม่ได้) ร้านค้าและโรงงานต้องวางติดบ้านหรือคอนโด",en:"Tap an empty lot to place it (not on a road). Shops and factories must touch a house or block.",done:()=>built(),skip:()=>!!why("house")&&!built()},
+ {sel:"#zbar-top",th:"เมืองมี <b>4 โซน</b> แต่ละโซนเจอภัยคนละแบบ แตะช่องไหนบนแผนที่ก็ได้ เพื่อดูว่าอาคารตรงนั้นโดนภัยอะไรได้บ้าง",en:"The city has <b>4 zones</b>, each with its own hazards. Tap any lot to see what could hit a building there.",next:1},
+ {sel:"#totem-panel",th:"<b>Totem</b> กันภัยหนึ่งแบบได้ทั้งใบไปตลอดเกม แต่ราคาแพงขึ้นทุกอันที่ซื้อ",en:"A <b>Totem</b> blocks one disaster type for the rest of the game, but each one costs more.",next:1},
+ {sel:"#reinforce",th:"<b>เสริมความแข็งแรง</b> 3 เหรียญ อาคารนั้นจะรอดจากภัยได้ 1 ครั้ง ถูกกว่าซ่อมมาก",en:"<b>Reinforce</b> for 3 coins and that building survives one hit. Much cheaper than repairing.",next:1},
+ {sel:"#act",th:"พร้อมแล้วกด <b>จบรอบ</b> ตั้งแต่รอบ 2 จะทอยลูกเต๋า 2 ลูก ถ้าได้ไม่เกินค่าความเสี่ยง ภัยพิบัติจะมา",en:"When you're ready, <b>end the round</b>. From round 2 you roll 2 dice: at or under the risk number, a disaster strikes.",done:()=>S.round>=2},
+];
+const built=()=>S.undo.some(u=>u.kind==="piece");
+function tutStart(){ TUT.on=true; TUT.step=0; S.modal=null; render() }
+function tutEnd(done){ TUT.on=false; coach(); if(done) setTimeout(()=>toast(T("จบการสอนแล้ว ขอให้เป็นนายกฯ ที่ดีที่สุด!","Tutorial done. Go be the best mayor!"),"good"),400) }
+function tutTick(){
+  if(!TUT.on) return;
+  let st=TSTEPS[TUT.step];
+  while(st&&((st.done&&st.done())||(st.skip&&st.skip()))){ TUT.step++; st=TSTEPS[TUT.step] }
+  if(!st){ tutEnd(true); return }
+  coach();
+}
+function coach(){
+  let el=$("coach"), ring=$("coachring");
+  if(!el){ el=document.createElement("div"); el.id="coach"; document.body.appendChild(el); ring=document.createElement("div"); ring.id="coachring"; document.body.appendChild(ring) }
+  const st=TUT.on&&TSTEPS[TUT.step];
+  const blocked=!st||S.modal||S.busy||$("splash").className.includes("show")||(st.show&&!st.show())||(!st.show&&S.phase!=="build");
+  const tgt=st&&!blocked&&document.querySelector(st.sel);
+  if(!tgt){ el.className=""; ring.className=""; return }
+  if(el.dataset.k!==String(TUT.step)){ el.dataset.k=TUT.step; try{tgt.scrollIntoView({block:"center",behavior:"smooth"})}catch(e){}
+    el.innerHTML=`<div class="cstep">${T("สอนเล่น","Tutorial")} ${TUT.step+1}/${TSTEPS.length}</div><p>${T(st.th,st.en)}</p><div class="cbtn">${st.next?`<button type="button" class="primary" data-tut="next">${T("ถัดไป ▶","Next ▶")}</button>`:""}<button type="button" class="ghostbtn" data-tut="skip">${T("ข้ามการสอน","Skip tutorial")}</button></div>` }
+  const r=tgt.getBoundingClientRect(), vw=innerWidth, vh=innerHeight;
+  ring.className="on"; Object.assign(ring.style,{left:r.left-6+"px",top:r.top-6+"px",width:r.width+12+"px",height:r.height+12+"px"});
+  el.className="on"; const w=Math.min(320,vw-24); el.style.width=w+"px"; const h=el.offsetHeight;
+  let left=Math.max(12,Math.min(vw-w-12,r.left+r.width/2-w/2)), top=r.bottom+14;
+  if(top+h>vh-8) top=r.top-h-14;
+  if(top<8){ // big target (the map): put the bubble beside it, or pinned to the bottom edge
+    if(vw-r.right>=w+24){ left=r.right+14; top=Math.max(8,Math.min(vh-h-8,r.top+r.height/2-h/2)) }
+    else if(r.left>=w+24){ left=r.left-w-14; top=Math.max(8,Math.min(vh-h-8,r.top+r.height/2-h/2)) }
+    else top=Math.max(8,Math.min(vh-h-8,r.bottom-h-10)) }
+  el.style.left=left+"px"; el.style.top=top+"px";
+}
+addEventListener("resize",()=>TUT.on&&coach()); setInterval(()=>{ if(TUT.on) coach() },300);
+
+/* ---------- end-of-term summary ---------- */
+function lessons(){
+  const st=S.stats, L=[], blds=S.pieces.filter(p=>p.type!=="green"), zc={};
+  blds.forEach(p=>{const z=zoneOf(p.cells[0][0],p.cells[0][1]); zc[z]=(zc[z]||0)+1});
+  const zTop=Object.keys(zc).sort((a,b)=>zc[b]-zc[a])[0], share=zTop&&blds.length?zc[zTop]/blds.length:0, zh=(st.zhit||{})[zTop]||0;
+  if(!st.dis) L.push(["เมืองคุณไม่เจอภัยเลยตลอดวาระ ถือว่าโชคดีมาก แต่ในชีวิตจริงเราไม่รู้ว่าภัยจะมาเมื่อไร จึงต้องเตรียมพร้อมไว้เสมอ","No disaster hit your city all term. Lucky! In real life nobody knows when one will come, so cities prepare anyway."]);
+  if(st.blocked) L.push([`Totem กันภัยไว้ได้ทั้งใบ ${st.blocked} ครั้ง การเตรียมพร้อมก่อนภัยมา คุ้มกว่าตามซ่อมทีหลัง`,`Your Totems blocked ${st.blocked} whole disaster card(s). Preparing before a disaster beats repairing after it.`]);
+  if(st.saved) L.push([`การเสริมความแข็งแรงช่วยอาคารไว้ ${st.saved} หลัง ใช้เงินน้อยกว่าสร้างใหม่มาก`,`Reinforcing saved ${st.saved} building(s), far cheaper than rebuilding.`]);
+  if(blds.length>=4&&share>=.6&&zh>=2) L.push([`อาคาร ${Math.round(share*100)}% ของเมืองอยู่ใน${ZONES[zTop].th} และโดนภัยในโซนนี้ ${zh} หลัง การกระจายเมืองไปหลายโซนช่วยไม่ให้ภัยครั้งเดียวทำลายเมืองทั้งหมด`,`${Math.round(share*100)}% of your buildings were in ${ZONES[zTop].en}, and ${zh} were hit there. Spreading out keeps one disaster from wrecking the whole city.`]);
+  if((st.rep||0)>=10) L.push([`คุณจ่ายค่าซ่อมไป ${st.rep} เหรียญ ถ้าเสริมความแข็งแรงไว้ก่อน (หลังละ 3) จะถูกกว่ามาก`,`You spent ${st.rep} coins on repairs. Reinforcing first (3 each) would have cost much less.`]);
+  if(st.hits>=5&&S.totems.length<2) L.push([`อาคารพังรวม ${st.hits} หลัง แต่มี Totem แค่ ${S.totems.length} อัน การลงทุนป้องกันภัยเร็วขึ้นอาจช่วยได้มาก`,`${st.hits} buildings were hit, but you had only ${S.totems.length} Totem(s). Investing in protection earlier could have helped.`]);
+  if(((st.hz||{}).ffire||0)>0&&st.hits) L.push(["ไฟไหม้โรงงานลามไปถึงอาคารที่อยู่ติดกัน ในชีวิตจริงผังเมืองจึงแยกโรงงานออกจากบ้านคน","A factory fire spread to the buildings touching it. That is why real cities zone factories away from homes."]);
+  if(!L.length) L.push(["เมืองที่รับมือภัยได้ดี ต้องเติบโตไปพร้อมกับการป้องกัน ไม่ใช่เลือกอย่างใดอย่างหนึ่ง","A resilient city grows and protects itself at the same time, not one or the other."]);
+  return L.slice(0,3);
+}
+function realFact(){ const hz=S.stats.hz||{}; const ks=Object.keys(hz).filter(k=>hz[k]); const k=ks.length?ks.sort((a,b)=>hz[b]-hz[a])[0]:TOT[rnd(TOT.length)]; return {k,f:DIS[k].real} }
+
+/* ---------- Best Mayor celebration ---------- */
+function celebrate(cb){
+  SFX.fanfare();
+  if(reduce()){ setTimeout(cb,600); return }
+  const o=document.createElement("div"); o.id="party";
+  o.innerHTML=`<canvas></canvas><div class="rays"></div><div class="flash"></div><div class="pcrown">👑</div><div class="ptitle"><span>BEST</span><span>MAYOR</span></div><div class="psub">${T("นายกฯ ที่ดีที่สุด · ครบ 8 ดาว","A perfect 8-star term")}</div><div class="pstars">${[...Array(8)].map((_,i)=>`<i style="animation-delay:${1.1+i*.12}s">★</i>`).join("")}</div>`;
+  document.body.appendChild(o);
+  const cvs=o.querySelector("canvas"), x=cvs.getContext("2d"); let W,H; const fit=()=>{W=cvs.width=Math.ceil(innerWidth/4);H=cvs.height=Math.ceil(innerHeight/4)}; fit();
+  const P=[], cols=["#F2C230","#FFE680","#D94A3A","#7FC1F2","#5CB85C","#F4F4F4","#C58CF2"];
+  const burst=()=>{ const cx=W*(.15+Math.random()*.7), cy=H*(.12+Math.random()*.45), c=cols[rnd(cols.length)], c2=cols[rnd(cols.length)];
+    for(let i=0;i<46;i++){ const a=i/46*Math.PI*2, s=.6+Math.random()*1.3; P.push({x:cx,y:cy,vx:Math.cos(a)*s,vy:Math.sin(a)*s,l:0,m:55+rnd(30),c:i%3?c:c2}) } };
+  for(let i=0;i<60;i++) P.push({x:Math.random()*W,y:-Math.random()*H,vx:(Math.random()-.5)*.3,vy:.4+Math.random()*.6,l:0,m:400,c:cols[rnd(cols.length)],conf:1});
+  const t0=performance.now(); let lastB=0, done=false;
+  const end=()=>{ if(done) return; done=true; o.classList.add("out"); setTimeout(()=>{o.remove();cb()},450) };
+  o.addEventListener("click",end);
+  const frame=now=>{ if(done) return; const t=now-t0; if(t-lastB>380&&t<4200){ burst(); lastB=t }
+    x.clearRect(0,0,W,H);
+    for(let i=P.length-1;i>=0;i--){ const p=P[i]; p.l++; p.x+=p.vx; p.y+=p.vy; if(!p.conf){p.vy+=.025;p.vx*=.985} else p.x+=Math.sin((p.l+i)/12)*.2;
+      if(p.l>p.m||p.y>H+4){P.splice(i,1);continue} x.globalAlpha=p.conf?1:Math.max(0,1-p.l/p.m); x.fillStyle=p.c; x.fillRect(Math.round(p.x),Math.round(p.y),p.conf?2:1,p.conf?1+(p.l>>3)%2:1) }
+    x.globalAlpha=1; if(t>5600) end(); else requestAnimationFrame(frame) };
+  requestAnimationFrame(frame);
+}
+
+/* ---------- city image to keep ---------- */
+async function cityImage(name){
+  try{ await document.fonts.ready }catch(e){}
+  const W=480,H=720,c=document.createElement("canvas"); c.width=W; c.height=H; const x=c.getContext("2d"); x.imageSmoothingEnabled=false;
+  const n=typeof S.result==="number"?S.result:stars(), rk=rankOf(n), best=n>=8;
+  x.fillStyle=best?"#2A2140":"#FBF5E6"; x.fillRect(0,0,W,H);
+  x.fillStyle=best?"#F2C230":"#1B1B2F"; x.fillRect(0,0,W,8); x.fillRect(0,H-8,W,8); x.fillRect(0,0,8,H); x.fillRect(W-8,0,8,H);
+  x.textAlign="center"; x.fillStyle=best?"#F2C230":"#1B1B2F"; x.font="700 40px Silkscreen, 'Chakra Petch', monospace"; x.fillText("MR.MAYOR",W/2,62);
+  x.fillStyle="#1B1B2F"; x.fillRect(20,80,440,440); x.drawImage(cv,0,0,112,112,24,84,432,432);
+  x.font="34px Silkscreen, monospace"; for(let i=0;i<8;i++){ x.fillStyle=i<n?"#F2C230":(best?"#4A4064":"#D8CFB8"); x.fillText("★",W/2-147+i*42,568) }
+  x.fillStyle=best?"#FFE680":"#1B1B2F"; x.font="700 30px 'Chakra Petch', sans-serif"; x.fillText(`${n}/8 · ${T(rk[0],rk[1]).replace(" 👑","")}${best?" 👑":""}`,W/2,612);
+  if(name){ x.fillStyle=best?"#F4F4F4":"#6A6478"; x.font="600 22px 'Chakra Petch', sans-serif"; x.fillText(T(`นายกฯ ${name}`,`Mayor ${name}`),W/2,646) }
+  x.fillStyle=best?"#B9AEDB":"#6A6478"; x.font="500 16px 'Chakra Petch', sans-serif"; x.fillText("SDG 11.5 · Bangkok University · 17.11.2026",W/2,688);
+  return c;
+}
+async function saveCity(){
+  const c=await cityImage(S.lbName||""), blob=await new Promise(r=>c.toBlob(r,"image/png")); if(!blob){ toast(T("สร้างรูปไม่สำเร็จ","Couldn't make the image"),"bad"); return }
+  const file=new File([blob],"mr-mayor-city.png",{type:"image/png"});
+  try{ if(navigator.canShare&&navigator.canShare({files:[file]})){ await navigator.share({files:[file],title:"Mr. Mayor"}); return } }catch(e){ if(e&&e.name==="AbortError") return }
+  const a=document.createElement("a"); a.href=URL_.createObjectURL(blob); a.download="mr-mayor-city.png"; document.body.appendChild(a); a.click(); setTimeout(()=>{URL_.revokeObjectURL(a.href);a.remove()},2000);
+  toast(T("บันทึกรูปเมืองแล้ว","City image saved"),"good");
+}
+const URL_=window.URL;
+
+/* ---------- leaderboard (shared across devices via LB_URL, local fallback) ---------- */
+const LB_URL="";   // Google Apps Script web-app URL goes here
+const LB={list:null,global:false,loading:false,err:false};
+const lbLocal=()=>{ try{return JSON.parse(localStorage.getItem("mm-lb")||"[]")}catch(e){return []} };
+function lbSort(a){ return a.sort((p,q)=>q.stars-p.stars||q.pts-p.pts||(p.t||0)-(q.t||0)).slice(0,10) }
+async function lbFetch(entry){
+  LB.loading=true; LB.err=false; lbPaint();
+  if(entry){ try{ const l=lbLocal(); l.push(entry); localStorage.setItem("mm-lb",JSON.stringify(lbSort(l).concat([]).slice(0,10))) }catch(e){} }
+  if(LB_URL){ try{
+      const ctl=new AbortController(), to=setTimeout(()=>ctl.abort(),8000);
+      const r=entry?await fetch(LB_URL,{method:"POST",headers:{"Content-Type":"text/plain;charset=utf-8"},body:JSON.stringify(entry),signal:ctl.signal})
+                   :await fetch(LB_URL+"?a=top&_="+Date.now(),{cache:"no-store",signal:ctl.signal});
+      clearTimeout(to); const j=await r.json(); if(Array.isArray(j.top)){ LB.list=j.top; LB.global=true; LB.loading=false; lbPaint(); return } }catch(e){ LB.err=true } }
+  LB.list=lbSort(lbLocal()); LB.global=false; LB.loading=false; lbPaint();
+}
+function lbRows(){
+  if(LB.loading&&!LB.list) return `<p class="lbnote">${T("กำลังโหลด…","Loading…")}</p>`;
+  if(!LB.list||!LB.list.length) return `<p class="lbnote">${T("ยังไม่มีใครส่งคะแนน เป็นคนแรกเลย!","No scores yet. Be the first!")}</p>`;
+  return `<ol class="lb">${LB.list.map((e,i)=>`<li class="${e.id&&e.id===S.lbId?"me":""}"><span class="lr">${i===0?"👑":i+1}</span><span class="ln">${esc(e.name)}</span><span class="ls">${"★".repeat(Math.min(8,e.stars|0))}<small>${e.stars|0}</small></span></li>`).join("")}</ol>
+    <p class="lbnote">${LB.global?T("ตารางรวมทุกเครื่อง","All devices"):T("คะแนนในเครื่องนี้","This device only")}${LB.err?T(" · เชื่อมต่อตารางรวมไม่ได้",""+" · couldn't reach the shared board"):""}</p>`;
+}
+function lbPaint(){ const el=$("lbbox"); if(el) el.innerHTML=lbRows() }
+function lbSubmit(){
+  const inp=$("lbname"); const name=(inp&&inp.value||"").replace(/[<>]/g,"").trim().slice(0,16);
+  if(!name){ toast(T("ใส่ชื่อก่อนนะครับ","Type a name first"),"bad"); inp&&inp.focus(); return }
+  if(S.lbId){ return }
+  S.lbName=name; S.lbId=Math.random().toString(36).slice(2,10);
+  const n=typeof S.result==="number"?S.result:stars();
+  lbFetch({name,stars:n,pts:income()+housing(),id:S.lbId,t:Date.now(),map:S.startMap});
+  const f=$("lbform"); if(f) f.innerHTML=`<p class="lbdone">${T(`ส่งคะแนนแล้ว · นายกฯ ${esc(name)}`,`Score sent · Mayor ${esc(name)}`)}</p>`;
+}
+function boardModal(){
+  return `<div class="overlay"><div class="box modal start" role="dialog" aria-modal="true"><h3>🏆 ${T("ตารางนายกฯ","Mayor leaderboard")}</h3>
+    <div id="lbbox">${lbRows()}</div><button type="button" class="primary" data-menu="back">${T("กลับ","Back")}</button></div></div>`;
+}
+function endModal(){
+  const n=typeof S.result==="number"?S.result:stars(), rk=rankOf(n), best=n>=8;
+  const rows=STAR_KEYS.map(k=>{const lab=STAR_LAB[k], s=starOf(k);return `<div><b>${"★".repeat(s)||"–"}</b><span>${T(lab[2],lab[3])} ${metric(k)}</span></div>`}).join("");
+  const rf=realFact(), st=S.stats;
+  return `<div class="overlay"><div class="box modal endm${best?" gold":""}" role="dialog" aria-modal="true">
+    ${best?`<div class="crownhead">👑</div>`:""}
+    <div class="big" style="color:${n>=6?"var(--go)":n>=4?"var(--ink)":"var(--red)"};text-shadow:3px 3px 0 ${n>=4&&n<6?"var(--gold)":"var(--ink)"}">⭐ ${n}/8</div>
+    <div class="starrow">${[...Array(8)].map((_,i)=>`<i class="${i<n?"on":""}" style="animation-delay:${.2+i*.14}s">★</i>`).join("")}</div>
+    <p class="lead" style="font-size:20px;font-weight:700;color:var(--ink)">${T(rk[0],rk[1])}</p>
+    <div class="stats3 s4">${rows}</div>
+    <h4 class="sumh">${T("วาระของคุณ","Your term")}</h4>
+    <div class="stats3 s4"><div><b>${st.dis}</b><span>${T("ภัยที่เจอ","disasters")}</span></div><div><b>${st.blocked}</b><span>${T("Totem กันได้","blocked")}</span></div><div><b>${st.saved}</b><span>${T("เสริมแล้วรอด","saved")}</span></div><div><b>${st.hits}</b><span>${T("อาคารที่พัง","hit")}</span></div></div>
+    <ul class="lessons">${lessons().map(l=>`<li>${T(l[0],l[1])}</li>`).join("")}</ul>
+    <div class="debrief"><b>${T("เรื่องจริง","Real world")} · ${T(DIS[rf.k].th,DIS[rf.k].en)}:</b> ${T(rf.f[0],rf.f[1])}<br><small>${T("SDG 11.5 คือการลดความสูญเสียจากภัยพิบัติในเมือง","SDG 11.5 is about cutting city losses from disasters.")}</small></div>
+    <h4 class="sumh">🏆 ${T("ตารางนายกฯ","Leaderboard")}</h4>
+    <div id="lbform">${S.lbId?`<p class="lbdone">${T(`ส่งคะแนนแล้ว · นายกฯ ${esc(S.lbName)}`,`Score sent · Mayor ${esc(S.lbName)}`)}</p>`:`<div class="lbin"><input id="lbname" maxlength="16" autocomplete="off" placeholder="${T("ชื่อนายกฯ","Mayor's name")}"><button type="button" class="primary" id="lbsend">${T("ส่งคะแนน","Submit")}</button></div>`}</div>
+    <div id="lbbox">${lbRows()}</div>
+    <button class="primary" type="button" id="saveimg">📸 ${T("บันทึกรูปเมืองของฉัน","Save my city image")}</button>
+    <div class="row2"><button class="ghostbtn" type="button" data-close="view">${T("ดูเมืองของฉัน","See my city")}</button><button class="ghostbtn" type="button" data-close="new">${T("เล่นใหม่","Play again")}</button></div></div></div>`;
+}
+
+document.addEventListener("click",e=>{
+  const a=e.target.closest("button"); if(!a) return;
+  if(!MUTED&&a.id!=="mute") SFX.click();
+  if(a.id==="mute"){ MUTED=!MUTED; try{localStorage.setItem("mm-mute",MUTED?"1":"0")}catch(err){} if(!MUTED){ ac(); SFX.coin() } muteBtn(); return }
+  if(a.dataset.tut){ if(a.dataset.tut==="skip") tutEnd(false); else { TUT.step++; tutTick() } return }
+  if(a.id==="lbsend"){ lbSubmit(); return }
+  if(a.id==="saveimg"){ saveCity(); return }
+},true);
+document.addEventListener("keydown",e=>{ if(e.key==="Enter"&&e.target&&e.target.id==="lbname") lbSubmit() });
+
 const SAVE_KEY="mm-save-v6";
 function saveNow(){ try{ if(S&&S.round>0&&S.phase!=="over") localStorage.setItem(SAVE_KEY,JSON.stringify(S)); else localStorage.removeItem(SAVE_KEY) }catch(e){} }
 function loadSave(){ try{ const d=JSON.parse(localStorage.getItem(SAVE_KEY)||"null"); return d&&d.v===6&&d.round>0&&d.phase!=="over"?d:null }catch(e){ return null } }
@@ -1439,7 +1705,7 @@ function start(data){
 }
 try{ window.claude?.hot?.snapshot?.(()=>({state:JSON.parse(JSON.stringify(S))})) }catch(e){}
 window.claude?.hot?.ready ? window.claude.hot.ready(start) : start(window.claude?.hot?.data ?? {});
-window.__mm={get S(){return S},place:(r,c)=>place(r,c),repair:id=>repair(id)};
+window.__mm={get S(){return S},place:(r,c)=>place(r,c),repair:id=>repair(id),cityImage:n=>cityImage(n)};
 })();
 </script>
 
