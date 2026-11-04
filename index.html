@@ -442,13 +442,9 @@ details.log summary{cursor:pointer;font-weight:700}
   .side{display:grid;grid-template-columns:minmax(0,1.08fr) minmax(0,1fr);grid-template-rows:auto auto minmax(0,1fr) auto auto;
     grid-template-areas:"st st" "desk tot" "desk goal" "desk log" "tray tray";align-content:start;gap:10px 12px;overflow:hidden;padding:0 6px 6px 0}
   #status{grid-area:st} #desk{grid-area:desk;min-height:0;overflow:auto;align-self:stretch} #totem-panel{grid-area:tot}
-  #goal-panel{grid-area:goal;min-height:0;overflow:auto} #log{grid-area:log;min-height:0;align-self:end;max-height:40vh;overflow:auto}
+  #goal-panel{grid-area:goal;min-height:0;overflow:auto} .side .tray{grid-area:tray;margin-top:0}
   #log[open]{position:relative;z-index:6}
-  .desk:has(.card.dis,.card.blocked) .hint{display:none}
-  /* once a disaster card is on the desk, the two event cards shrink to one line each */
-  .desk:has(.card.dis,.card.blocked) .card:not(.dis):not(.blocked):not(.empty){min-height:0;padding:5px 8px;display:flex;flex-direction:row;align-items:baseline;gap:8px}
-  .desk:has(.card.dis,.card.blocked) .card:not(.dis):not(.blocked):not(.empty)>.cartw,.desk:has(.card.dis,.card.blocked) .card:not(.dis):not(.blocked):not(.empty)>.cart,.desk:has(.card.dis,.card.blocked) .card:not(.dis):not(.blocked):not(.empty) .ck{display:none}
-  .desk:has(.card.dis,.card.blocked) .card:not(.dis):not(.blocked):not(.empty) .t{font-size:15px;flex:none} .desk:has(.card.dis,.card.blocked) .card:not(.dis):not(.blocked):not(.empty) .b{font-size:13.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis} .side .tray{grid-area:tray;margin-top:0}
+  .desk:has(.card.dis,.card.blocked) .hint,.desk:has(.card.dis,.card.blocked) .msg{display:none}
   /* status */
   .status .stat{padding:6px 10px} .status .stat .k{font-size:11.5px} .status .stat .v{font-size:24px} .status .stat .s{font-size:13.5px}
   .status .stat .v small{font-size:13px}
@@ -467,7 +463,7 @@ details.log summary{cursor:pointer;font-weight:700}
   .totem .p{font-size:12px} .tsteps{margin:-4px 0 6px;font-size:12.5px} .tsteps span{display:none}
   .card .ck{font-size:12px}
   /* goals */
-  .goals{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px 12px} .goals .goalnote{grid-column:1 / -1}
+  .goals{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px 12px} .goals .goalnote{grid-column:1 / -1}
   .goal{grid-template-columns:auto minmax(0,1fr) auto;gap:2px 6px} .goal .ck{grid-row:auto;width:auto;min-width:18px;height:18px;border-width:2px;font-size:10px}
   .goal .gn small{display:none} .goal .gv small{display:none} .goal .bar{grid-column:1 / -1;height:9px}
   #goal-panel .head{margin-bottom:6px!important}
@@ -498,7 +494,7 @@ details.log summary{cursor:pointer;font-weight:700}
 @media (min-width:1240px) and (max-width:1399px) and (orientation:landscape){
   .side .pal .nm{font-size:12.5px} .side .tray-in{grid-template-columns:minmax(0,1fr) minmax(150px,24%)}
 }
-@media (min-width:1240px) and (orientation:landscape) and (max-height:940px){ .goalnote:not(.bad){display:none} }
+@media (min-width:1240px) and (orientation:landscape) and (max-height:940px){ .goalnote:not(.bad){display:none} .card .real{display:none} .totem .p{display:none} }
 @media (min-width:1240px) and (orientation:landscape) and (max-height:830px){
   .side .pal{grid-template-columns:repeat(10,minmax(0,1fr));gap:4px} .side .pal .nm{display:none}
   .side .pal button>img,.side .pal .tool .glyph{width:28px;height:28px}
@@ -551,6 +547,17 @@ details.log summary{cursor:pointer;font-weight:700}
 @media (min-width:1240px) and (orientation:landscape){
   .totem{grid-template-rows:auto auto auto} .totem .buy{grid-column:1 / -1}
 }
+
+/* city log: header button on laptops, normal panel elsewhere */
+#logbtn{display:none}
+@media (min-width:1240px) and (orientation:landscape){
+  #logbtn{display:inline-block}
+  .side{grid-template-areas:"st st" "desk tot" "desk goal" "desk goal" "tray tray"}
+  #log{display:none;position:fixed;top:58px;right:20px;width:min(460px,42vw);max-height:72vh;overflow:auto;z-index:45;box-shadow:6px 6px 0 var(--ink)}
+  #log.show{display:block}
+  #log summary{pointer-events:none;list-style:none} #log summary::-webkit-details-marker{display:none}
+  #logbtn[aria-expanded="true"]{background:var(--gold)}
+}
 </style>
 
 <div class="wrap">
@@ -560,6 +567,7 @@ details.log summary{cursor:pointer;font-weight:700}
       <div class="seg" role="group" aria-label="Language"><button class="btn" id="lang-th" type="button">TH</button><button class="btn" id="lang-en" type="button">EN</button></div>
       <button class="btn" id="newgame" type="button"></button>
       <button class="btn" id="mute" type="button" aria-label="Sound">🔊</button>
+      <button class="btn" id="logbtn" type="button" aria-expanded="false">📜</button>
       <button class="btn" id="help" type="button" aria-label="How to play">?</button>
     </div>
   </header>
@@ -1565,8 +1573,7 @@ function renderDesk(){
   const dc=S.disCard?`<div class="cards">${disCard()}</div>`:""; lastDis=S.disCard; lastLoc=S.zone?JSON.stringify(S.zone):null;
   const msg=S.busy&&S.zone?"":(S.msg?T(S.msg.th,S.msg.en):(S.round===0?T("กดเริ่มวาระเพื่อเปิดการ์ดเหตุการณ์ใบแรก","Start your term to open the first event cards."):""));
   $("desk").innerHTML=`<div class="head"><h2>${T("โต๊ะประชุมสภาเมือง","City council desk")}</h2><span class="tagk">${lab}</span></div>
-    ${ev}${fc}${dice}${dc}<div class="msg">${msg}</div><div class="hint">${advice()}</div>
-    <div class="decks"><span>${T("กองเหตุการณ์","Events")} <b>${S.evDeck.length}</b></span><span>${T("กองภัย","Disasters")} <b>${S.disDeck.length||(12+S.ff)}</b>${S.ff?` · ${T("ไฟไหม้โรงงาน","factory fire")} ${S.ff}`:""}</span></div>`;
+    ${ev}${fc}${dice}${dc}<div class="msg">${msg}</div><div class="hint">${advice()}</div>`;
   renderTray();
 }
 function riskOverview(){
@@ -1824,7 +1831,8 @@ const SFX={
   w("build",()=>SFX.build()); w("coins",n=>{ if(n) SFX.coin() }); w("blocked",()=>SFX.blocked());
   w("shield",()=>SFX.blocked()); w("sparkle",()=>SFX.repair()); w("demolish",()=>SFX.demolish()); w("shieldSmall",()=>SFX.totem()); }
 { const _t=toast; toast=function(m,k){ if(k==="bad") SFX.bad(); else if(k==="good") SFX.good(); return _t(m,k) } }
-function muteBtn(){ const b=$("mute"); if(b){ b.textContent=MUTED?"🔇":"🔊"; b.setAttribute("aria-label",MUTED?T("เปิดเสียง","Sound on"):T("ปิดเสียง","Sound off")) } }
+function logBtn(){ const b=$("logbtn"); if(b){ b.textContent="📜 "+T("บันทึก","Log"); b.title=T("บันทึกเมือง","City log") } }
+function muteBtn(){ logBtn(); const b=$("mute"); if(b){ b.textContent=MUTED?"🔇":"🔊"; b.setAttribute("aria-label",MUTED?T("เปิดเสียง","Sound on"):T("ปิดเสียง","Sound off")) } }
 
 /* ---------- guided first round (coach marks) ---------- */
 const TUT={on:false,step:0};
@@ -1998,6 +2006,7 @@ document.addEventListener("click",e=>{
   if(a.id==="mute"){ MUTED=!MUTED; try{localStorage.setItem("mm-mute",MUTED?"1":"0")}catch(err){} if(!MUTED){ ac(); SFX.coin() } muteBtn(); return }
   if(a.dataset.tut){ if(a.dataset.tut==="skip") tutEnd(false); else { TUT.step++; tutTick() } return }
   if(a.id==="lbsend"){ lbSubmit(); return }
+  if(a.id==="logbtn"){ const d=$("log"), on=!d.classList.contains("show"); d.classList.toggle("show",on); d.open=on; a.setAttribute("aria-expanded",on); return }
   if(a.id==="saveimg"){ saveCity(); return }
 },true);
 document.addEventListener("keydown",e=>{ if(e.key==="Enter"&&e.target&&e.target.id==="lbname") lbSubmit() });
