@@ -621,6 +621,16 @@ details.log summary{cursor:pointer;font-weight:700}
 #splash.fast .dcard,#splash.fast .dcard>*{animation-delay:0s!important}
 .cardfx{position:fixed;z-index:95;pointer-events:none;image-rendering:pixelated}
 #splash .frag{z-index:2}
+
+/* phones and portrait tablets: build row + tool row, every button labelled */
+@media (max-width:820px), (orientation:portrait){
+  body{padding-bottom:calc(210px + env(safe-area-inset-bottom,0px))}
+  .pal{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:6px}
+  .pal .sep{display:none}
+  .pal .nm{display:block;font-size:12px}
+  .pal button img,.pal .tool .glyph{width:26px;height:26px;font-size:16px}
+  .pal button{padding:4px 2px 4px}
+}
 </style>
 
 <div class="wrap">
@@ -1297,16 +1307,24 @@ async function destroyCard(dc,k){
   const P=[];
   if(k==="fire"||k==="ffire"){ // ragged flame front from the bottom-left corner; each part burns at its own pace
     SFX.hit(k,false);
-    const {c,x,W,H}=fullFx(dc), nz=noise2(), NU=60, field=(u,v)=>((u+(1-v))/2)*.62+nz(u,v)*.38;
+    // the burn field is linear down each column (so a clip path can follow it exactly) with a wavy, uneven front across the card
+    const {c,x,W,H}=fullFx(dc), nz=noise2(), NU=96, fine=[...Array(NU+1)].map(()=>Math.random()), sm=fine.map((_,i)=>(fine[Math.max(0,i-1)]+fine[i]*2+fine[Math.min(NU,i+1)])/4);
+    const N1=u=>nz(u,.5)*.3+sm[Math.round(u*NU)]*.09, field=(u,v)=>((u+(1-v))/2)*.62+N1(u);
     const pct=v=>(v*100).toFixed(2)+"%";
-    await run(2700,p=>{ const q=-.06+p*1.12; x.clearRect(0,0,c.width,c.height); const r=dc.getBoundingClientRect(), front=[];
-      for(let i=0;i<=NU;i++){ const u=i/NU; let v=1; while(v>0&&field(u,v)<=q) v-=.01; front.push([u,Math.max(0,v)]) }
+    await run(2700,p=>{ const q=.02+p*1.0; x.clearRect(0,0,c.width,c.height); const r=dc.getBoundingClientRect(), front=[];
+      for(let i=0;i<=NU;i++){ const u=i/NU; front.push([u,Math.max(0,Math.min(1,u+1-2*(q-N1(u))/.62))]) }   // exactly where field = q
       dc.style.clipPath=dc.style.webkitClipPath=`polygon(0% 0%,100% 0%,${front.slice().reverse().map(f=>pct(f[0])+" "+pct(f[1])).join(",")})`;
-      for(const [u,v] of front){ if(v<=.004||v>=.995) continue; const px=r.left+u*W, py=r.top+v*H;
-        x.fillStyle="#2A140C"; x.fillRect(px-4,py-1,9,5); x.fillStyle="#D94A3A"; x.fillRect(px-4,py-4,9,3); x.fillStyle="#F2C230"; x.fillRect(px-3,py-6,7,2);
-        if(Math.random()<.5){ x.fillStyle="#FFE680"; x.fillRect(px-1,py-9-Math.random()*6,3,3) }
-        if(Math.random()<.22) P.push({x:px,y:py-4,vx:(Math.random()-.3)*1.2,vy:-1-Math.random()*1.6,l:0,m:24+Math.random()*24,c:["#F2C230","#E9783A","#D94A3A","#FFE680"][Math.floor(Math.random()*4)],s:Math.random()<.5?4:3});
-        if(Math.random()<.04) P.push({x:px,y:py-6,vx:.3+Math.random()*.4,vy:-.7,l:0,m:60,c:"#2A2D36",s:7,a:.7}) }
+      // scorch + flame drawn from the burn field itself, so they follow the front in every direction and hide the clip edge
+      const BS=5, nx=Math.ceil(W/BS), ny=Math.ceil(H/BS);
+      for(let j=0;j<ny;j++) for(let i=0;i<nx;i++){ const u=(i+.5)/nx, v=(j+.5)/ny, d=field(u,v)-q; if(d<-.012||d>.085) continue;
+        const px=r.left+i*BS, py=r.top+j*BS;
+        if(d<.006){ x.fillStyle=Math.random()<.5?"#F2C230":"#FFE680"; x.fillRect(px,py,BS,BS) }
+        else if(d<.016){ x.fillStyle=Math.random()<.6?"#E9783A":"#D94A3A"; x.fillRect(px,py,BS,BS) }
+        else if(d<.03){ x.fillStyle="#1B0F0A"; x.globalAlpha=.92; x.fillRect(px,py,BS,BS) }
+        else { x.fillStyle=d<.055?"#3A2214":"#6B4A2E"; x.globalAlpha=Math.max(0,.75-(d-.03)*12); x.fillRect(px,py,BS,BS) }
+        x.globalAlpha=1;
+        if(d<.012&&Math.random()<.03) P.push({x:px,y:py,vx:(Math.random()-.3)*1.2,vy:-1-Math.random()*1.6,l:0,m:24+Math.random()*24,c:["#F2C230","#E9783A","#D94A3A","#FFE680"][Math.floor(Math.random()*4)],s:Math.random()<.5?4:3});
+        if(d<.012&&Math.random()<.004) P.push({x:px,y:py,vx:.3+Math.random()*.4,vy:-.7,l:0,m:60,c:"#2A2D36",s:7,a:.7}) }
       stepParts(x,P) });
     dc.style.visibility="hidden";
     await run(600,()=>{ x.clearRect(0,0,c.width,c.height); stepParts(x,P) });
@@ -1927,9 +1945,19 @@ function drawEffect(e,now){
 }
 function tileAt(ev){ const r=cv.getBoundingClientRect(); const x=(ev.clientX-r.left)/r.width*112, y=(ev.clientY-r.top)/r.height*112; const c=Math.floor(x/TILE), rr=Math.floor(y/TILE); return (c>=0&&rr>=0&&c<N&&rr<N)?[rr,c]:null }
 cv.addEventListener("pointermove",e=>{hover=tileAt(e);hoverInfo()});
-cv.addEventListener("pointerleave",()=>{hover=null;hoverInfo()});
+let lastPtr=(window.matchMedia&&matchMedia("(pointer:coarse)").matches)?"touch":"mouse", pendingAt=null;
+const isTouch=()=>lastPtr!=="mouse";
+cv.addEventListener("pointerdown",e=>{ lastPtr=e.pointerType||"mouse" },{passive:true});
+cv.addEventListener("pointerleave",()=>{ if(isTouch()) return; hover=null; hoverInfo() });
+function whyNot(t,r,c,o){ if(why(t)) return why(t); if(!fits(t,r,c,o)) return SIZE[t]?T("ต้องมี 2 ช่องว่างติดกัน และข้ามถนนไม่ได้ กดหมุนเพื่อเปลี่ยนทิศ","Needs 2 free lots side by side, not across a road. Rotate to turn it."):T("ช่องนี้วางไม่ได้","You can't build here");
+  if(!nearHome(t,r,c,o)) return T(`${nm(t)}ต้องวางติดด้านข้างกับบ้านหรือคอนโด`,`A ${nm(t).toLowerCase()} must share a side with a house or apartment block`); return "" }
 cv.addEventListener("click",e=>{ const t=tileAt(e); if(!t) return; hover=t;
-  if(S.phase==="build"&&!S.busy&&PRICE[S.tool]){ if(isRoad(t[0],t[1])){toast(T("สร้างบนถนนไม่ได้","You can't build on a road"),"bad");return} place(t[0],t[1]); return }
+  if(S.phase==="build"&&!S.busy&&PRICE[S.tool]){ if(isRoad(t[0],t[1])){toast(T("สร้างบนถนนไม่ได้","You can't build on a road"),"bad");return}
+    if(isTouch()){ const same=pendingAt&&pendingAt[0]===t[0]&&pendingAt[1]===t[1]&&pendingAt[2]===S.tool;
+      if(!same){ pendingAt=[t[0],t[1],S.tool]; hoverInfo(); const w=whyNot(S.tool,t[0],t[1],S.orient);
+        toast(w||T(`แตะ ${code(t[0],t[1])} อีกครั้งเพื่อวาง${SIZE[S.tool]?" · กดหมุนเพื่อเปลี่ยนทิศ":""}`,`Tap ${code(t[0],t[1])} again to build${SIZE[S.tool]?" · Rotate to turn it":""}`),w?"bad":""); return }
+      pendingAt=null }
+    place(t[0],t[1]); return }
   if(S.phase==="build"&&!S.busy&&S.tool==="repair"){ const p=occ()[t[0]+","+t[1]]; if(p&&p.dmg) repair(p.id); return }
   if(S.phase==="build"&&!S.busy&&S.tool==="reinforce"){ const p=occ()[t[0]+","+t[1]]; if(p) reinforce(p.id); return }
   if(S.phase==="build"&&!S.busy&&S.tool==="demolish"){ const p=occ()[t[0]+","+t[1]]; if(p) demolish(p.id); return }
@@ -2081,7 +2109,7 @@ function renderTray(){
   let tip="";
   if(S.phase==="build"&&!S.busy){
     if(PRICE[S.tool]){ const t=S.tool, w=why(t); const info={house:T("รายได้ 1 · ที่อยู่ 1","income 1 · housing 1"),shop:T("รายได้ 2 · ต้องติดบ้าน/คอนโด","income 2 · must touch a home"),factory:T("รายได้ 4 · ต้องติดบ้าน/คอนโด · เสี่ยง +1 · 2 ช่อง","income 4 · must touch a home · risk +1 · 2 lots"),condo:T("รายได้ 1 · ที่อยู่ 4 · 2 ช่อง","income 1 · housing 4 · 2 lots"),green:T("นับดาวสิ่งแวดล้อม ไม่พัง","counts for park stars, never damaged")}[t];
-      tip=`<b>${nm(t)}</b> · ${info} → ${w?`<span class="w">${w}</span>`:T("แตะช่องว่างบนแผนที่","tap an empty lot on the map")}` }
+      tip=`<b>${nm(t)}</b> · ${info} → ${w?`<span class="w">${w}</span>`:(isTouch()?T("แตะช่องเพื่อดูตัวอย่าง แตะซ้ำเพื่อวาง","tap a lot to preview, tap again to build"):T("แตะช่องว่างบนแผนที่","tap an empty lot on the map"))}` }
     else if(S.tool==="repair") tip=T(`แตะอาคารที่พังเพื่อซ่อม (ราคาเต็ม)${S.mod.freerepair?` · ซ่อมฟรีเหลือ ${S.mod.freerepair}`:""}`,`Tap a damaged building to repair it (full price)${S.mod.freerepair?` · ${S.mod.freerepair} free repair left`:""}`);
     else if(S.tool==="demolish") tip=T("แตะอาคารเพื่อรื้อทิ้ง (ฟรี ไม่ได้เงินคืน) ใช้ย้ายอาคารที่วางผิดโซน หรือเคลียร์อาคารที่พังแทนการซ่อม · กดย้อนได้","Tap a building to demolish it (free, no refund). Use it to move a badly placed building or clear a damaged one instead of repairing · Undo works");
     else if(S.tool==="reinforce") tip=T(`แตะอาคารเพื่อเสริมความแข็งแรง (${RF_PRICE} เหรียญ) ถ้าโดนภัยครั้งหน้าจะไม่พัง แล้วโทเคนหายไป`,`Tap a building to reinforce it (${RF_PRICE} coins). The next disaster that would damage it doesn't, then the token is used up.`);
