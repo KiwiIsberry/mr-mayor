@@ -434,6 +434,82 @@ details.log summary{cursor:pointer;font-weight:700}
 .hitlab{position:absolute;transform:translate(-50%,-100%);font:700 15px/1 var(--f-pix),"Chakra Petch",sans-serif;padding:3px 6px;border:2px solid var(--ink);pointer-events:none;z-index:3;white-space:nowrap;animation:hitpop 1.4s ease-out forwards}
 .hitlab.bad{background:var(--red);color:#fff} .hitlab.ok{background:#7FC1F2;color:var(--ink)}
 @keyframes hitpop{0%{opacity:0;transform:translate(-50%,-60%) scale(.5)}12%{opacity:1;transform:translate(-50%,-110%) scale(1.15)}22%{transform:translate(-50%,-110%) scale(1)}75%{opacity:1}100%{opacity:0;transform:translate(-50%,-190%)}}
+/* ===== laptop / wide landscape (v4.6): bigger type, everything on one screen ===== */
+@media (min-width:1240px) and (orientation:landscape){
+  body{font-size:16px}
+  .brand h1{font-size:28px} .brand p{font-size:15px}
+  .btn{font-size:15px} .seg .btn{font-size:13px}
+  .side{display:grid;grid-template-columns:minmax(0,1.08fr) minmax(0,1fr);grid-template-rows:auto auto minmax(0,1fr) auto auto;
+    grid-template-areas:"st st" "desk tot" "desk goal" "desk log" "tray tray";align-content:start;gap:10px 12px;overflow:hidden;padding:0 6px 6px 0}
+  #status{grid-area:st} #desk{grid-area:desk;min-height:0;overflow:auto;align-self:stretch} #totem-panel{grid-area:tot}
+  #goal-panel{grid-area:goal;min-height:0;overflow:auto} #log{grid-area:log;min-height:0;align-self:end;max-height:40vh;overflow:auto}
+  #log[open]{position:relative;z-index:6}
+  .desk:has(.card.dis,.card.blocked) .hint{display:none}
+  /* once a disaster card is on the desk, the two event cards shrink to one line each */
+  .desk:has(.card.dis,.card.blocked) .card:not(.dis):not(.blocked):not(.empty){min-height:0;padding:5px 8px;display:flex;flex-direction:row;align-items:baseline;gap:8px}
+  .desk:has(.card.dis,.card.blocked) .card:not(.dis):not(.blocked):not(.empty)>.cartw,.desk:has(.card.dis,.card.blocked) .card:not(.dis):not(.blocked):not(.empty)>.cart,.desk:has(.card.dis,.card.blocked) .card:not(.dis):not(.blocked):not(.empty) .ck{display:none}
+  .desk:has(.card.dis,.card.blocked) .card:not(.dis):not(.blocked):not(.empty) .t{font-size:15px;flex:none} .desk:has(.card.dis,.card.blocked) .card:not(.dis):not(.blocked):not(.empty) .b{font-size:13.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis} .side .tray{grid-area:tray;margin-top:0}
+  /* status */
+  .status .stat{padding:6px 10px} .status .stat .k{font-size:11.5px} .status .stat .v{font-size:24px} .status .stat .s{font-size:13.5px}
+  .status .stat .v small{font-size:13px}
+  /* desk */
+  .head h2{font-size:19px} .tagk{font-size:11.5px;padding:3px 7px}
+  .card{padding:8px 9px} .card .ck{font-size:11px} .card .t{font-size:17px} .card .b{font-size:14.5px}
+  .card .cart,.card .cartw .cart{width:104px;height:58.5px}
+  .card .real{font-size:13px}
+  .msg{font-size:15px;padding:6px 9px} .hint{font-size:14.5px;padding:6px 9px} .decks{font-size:13.5px}
+  .verdict{font-size:16px}
+  /* totems */
+  .totems{grid-template-columns:repeat(2,minmax(0,1fr));gap:7px}
+  .totem{display:grid;grid-template-columns:36px minmax(0,1fr);grid-template-rows:auto auto;column-gap:8px;row-gap:0;align-items:center;justify-items:start;text-align:left;padding:5px 8px;font-size:14px}
+  .totem .tico{grid-row:1 / 3;height:30px;width:34px} .totem .tico .tbig{height:28px}
+  .totem .tico .hz{display:none} .totem .tico .tbig{height:26px}
+  .totem .p{font-size:12px} .tsteps{margin:-4px 0 6px;font-size:12.5px} .tsteps span{display:none}
+  .card .ck{font-size:12px}
+  /* goals */
+  .goals{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px 12px} .goals .goalnote{grid-column:1 / -1}
+  .goal{grid-template-columns:auto minmax(0,1fr) auto;gap:2px 6px} .goal .ck{grid-row:auto;width:auto;min-width:18px;height:18px;border-width:2px;font-size:10px}
+  .goal .gn small{display:none} .goal .gv small{display:none} .goal .bar{grid-column:1 / -1;height:9px}
+  #goal-panel .head{margin-bottom:6px!important}
+  .goal .gn{font-size:15.5px} .goal .gv{font-size:14px} .goal .gv small{font-size:12.5px} .goalnote{font-size:13.5px}
+  .log summary{font-size:15px} .log ul{font-size:14px;max-height:none} .log li .r{font-size:12px}
+  /* tray: one wide strip under both columns */
+  .side .tray{padding:8px 10px}
+  .side .tray-in{grid-template-columns:minmax(0,1fr) minmax(190px,26%);column-gap:12px;row-gap:6px;align-items:end}
+  .side .tray .tip{grid-column:1 / -1;font-size:14.5px}
+  .tray .h2{font-size:14.5px;min-height:0;margin:0 0 4px}
+  .side .pal{grid-template-columns:repeat(5,minmax(0,1fr));gap:6px}
+  .side .pal button{padding:4px 2px 3px}
+  .side .pal button>img,.side .pal .tool .glyph{width:24px;height:24px;font-size:16px}
+  .side .pal .nm{font-size:13.5px} .pal .pr{font-size:12px}
+  .side .primary{font-size:17px;padding:14px 8px;height:100%}
+  .side .tray-in>div:last-child{align-self:stretch;display:flex;flex-direction:column;justify-content:flex-end}
+  /* zone bars and map labels */
+  .zb b{font-size:15px} .zb span{font-size:12.5px} .zb img{width:20px;height:20px}
+  .lx,.ly{font-size:12.5px}
+}
+/* shorter laptop screens: trim the least useful lines first */
+@media (min-width:1240px) and (orientation:landscape) and (max-height:860px){
+  .status .track,.status .gauge{display:none}
+  .card .real{display:none}
+  .decks{display:none}
+  .side .tray .tip{display:none}
+}
+@media (min-width:1240px) and (max-width:1399px) and (orientation:landscape){
+  .side .pal .nm{font-size:12.5px} .side .tray-in{grid-template-columns:minmax(0,1fr) minmax(150px,24%)}
+}
+@media (min-width:1240px) and (orientation:landscape) and (max-height:940px){ .goalnote:not(.bad){display:none} }
+@media (min-width:1240px) and (orientation:landscape) and (max-height:830px){
+  .side .pal{grid-template-columns:repeat(10,minmax(0,1fr));gap:4px} .side .pal .nm{display:none}
+  .side .pal button>img,.side .pal .tool .glyph{width:28px;height:28px}
+  .desk .hint{display:none}
+}
+@media (min-width:1240px) and (orientation:landscape) and (max-height:760px){
+  .side .pal .nm{display:none}
+  .card .cart,.card .cartw .cart{width:84px;height:47px}
+  .brand p{display:none}
+  .totem .p{display:none} .tsteps{margin-bottom:4px}
+}
 </style>
 
 <div class="wrap">
@@ -1021,8 +1097,9 @@ function fitCanvas(){
   let px;
   if(app){ const main=document.querySelector(".main"), zt=$("zbar-top").offsetHeight||34, zb=$("zbar-bot").offsetHeight||34, hi=0;
     const chrome=14+24+26+(18+4)+16, availH=main.clientHeight-(16+6+6)-zt-zb-4-22-4-6;
-    px=Math.max(224,Math.floor(Math.min(availH,innerWidth-360-chrome)));
-    const sideW=Math.max(360,Math.min(560,innerWidth-px-chrome)); main.style.gridTemplateColumns=`minmax(0,1fr) ${sideW}px` }
+    const wide=innerWidth>=1240, sideMin=wide?Math.min(700,Math.max(590,innerWidth*.47)):360;
+    px=Math.max(224,Math.floor(Math.min(availH,innerWidth-sideMin-chrome)));
+    const sideW=wide?Math.max(sideMin,Math.min(980,innerWidth-px-chrome)):Math.max(360,Math.min(560,innerWidth-px-chrome)); main.style.gridTemplateColumns=`minmax(0,1fr) ${sideW}px` }
   else { document.querySelector(".main").style.gridTemplateColumns=""; const availW=box.parentElement.clientWidth-52; px=Math.max(224,Math.floor(Math.min(availW,innerHeight*0.62))) }
   cv.style.width=px+"px"; cv.style.height=px+"px";
   const cell=px/7;
@@ -1468,7 +1545,7 @@ function renderGoals(){
     return `<div class="goal s${s}${gained.includes(k)?" gain":""}"><span class="ck">${s?"★".repeat(s):""}</span><span class="gn">${T(lab[2],lab[3])} <small>· ${T(lab[4],lab[5])}</small></span><span class="gv">${v} <small>/ ${t[0]} · ${t[1]}</small></span><span class="bar"><i style="width:${Math.min(100,v/t[1]*100)}%"></i><b style="left:${t[0]/t[1]*100}%"></b></span></div>`}).join("");
   $("goal-panel").innerHTML=`<div class="head" style="margin-bottom:10px"><h2>${T("ดาวนายกฯ","Mayor stars")}</h2><span class="tagk">⭐ ${n}/8 · ${T(...rankOf(n))}</span></div>
    <div class="goals">${rows}
-   <div class="goalnote${dm?" bad":""}">${dm?T(`มีอาคารพัง ${dm} หลัง: ไม่ได้เงินและไม่นับดาวจนกว่าจะซ่อม`,`${dm} damaged: no income and no stars until repaired`):T("นับดาวตอนจบรอบ 12 · 1 ดาวที่ตัวเลขแรก 2 ดาวที่ตัวเลขหลัง · 8 ดาว = Best Mayor","Stars are counted after round 12 · 1 star at the first number, 2 at the second · 8 stars = Best Mayor")}</div></div>`;
+   <div class="goalnote${dm?" bad":""}">${dm?T(`พัง ${dm} หลัง · ซ่อมก่อนจึงได้เงินและนับดาว`,`${dm} damaged · repair for income and stars`):T("นับดาวตอนจบรอบ 12 · 1 ดาวที่ตัวเลขแรก 2 ดาวที่ตัวเลขหลัง · 8 ดาว = Best Mayor","Stars are counted after round 12 · 1 star at the first number, 2 at the second · 8 stars = Best Mayor")}</div></div>`;
 }
 function renderLog(){ const d=$("log"); const open=d.open;
   d.innerHTML=`<summary>${T("บันทึกเมือง","City log")}</summary>${S.log.length?`<ul>${S.log.slice(0,80).map(l=>`<li class="${l.kind}"><span class="r">R${l.r}</span><span>${T(l.th,l.en)}</span></li>`).join("")}</ul>`:`<p style="margin:8px 0 0;color:var(--muted);font-size:13px">${T("ยังไม่มีเหตุการณ์","Nothing yet")}</p>`}`; d.open=open }
