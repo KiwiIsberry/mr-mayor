@@ -494,7 +494,7 @@ details.log summary{cursor:pointer;font-weight:700}
 @media (min-width:1240px) and (max-width:1399px) and (orientation:landscape){
   .side .pal .nm{font-size:12.5px} .side .tray-in{grid-template-columns:minmax(0,1fr) minmax(150px,24%)}
 }
-@media (min-width:1240px) and (orientation:landscape) and (max-height:940px){ .goalnote:not(.bad){display:none} .card .real{display:none} .totem .p{display:none} }
+@media (min-width:1240px) and (orientation:landscape) and (max-height:940px){ .goalnote:not(.bad){display:none} .card .real{display:none} .totem .p{display:none} #totem-panel .tsteps{display:none} #totem-panel .head,#goal-panel .head{margin-bottom:6px!important} .goal .gd{font-size:12px} .goals{row-gap:4px!important} }
 @media (min-width:1240px) and (orientation:landscape) and (max-height:830px){
   .side .pal{grid-template-columns:repeat(10,minmax(0,1fr));gap:4px} .side .pal .nm{display:none}
   .side .pal button>img,.side .pal .tool .glyph{width:28px;height:28px}
@@ -631,6 +631,13 @@ details.log summary{cursor:pointer;font-weight:700}
   .pal button img,.pal .tool .glyph{width:26px;height:26px;font-size:16px}
   .pal button{padding:4px 2px 4px}
 }
+
+/* goals: say what each star area counts and where the 1- and 2-star marks are */
+.goal{grid-template-columns:auto minmax(0,1fr) auto!important;row-gap:2px!important}
+.goal .ck{grid-row:auto!important}
+.goal .gd{grid-column:1 / -1;font-size:12.5px;color:var(--muted);line-height:1.3}
+.goal .gd b{color:#C99A1C;font-weight:700} .goal .gd .gt{display:block;color:var(--ink);font-weight:700;font-size:12.5px;white-space:pre}
+.goal .bar{grid-column:1 / -1!important}
 </style>
 
 <div class="wrap">
@@ -679,8 +686,8 @@ const N=7, ROAD=3, ROUNDS=12, TILE=16;
 const PRICE={house:4,shop:7,factory:8,condo:10,green:4}, TOTEM_STEPS=[8,12,16,20];
 const INCOME={house:1,shop:2,factory:4,condo:1}, SIZE={factory:2,condo:2}, NEEDS_HOME={shop:1,factory:1}, RF_PRICE=3;
 const STAR={income:[22,36],housing:[14,24],green:[3,6],totems:[2,4]}, STAR_KEYS=["income","housing","green","totems"];
-const STAR_LAB={income:["รายได้","income","เศรษฐกิจ","Economy","รายได้ต่อรอบ","income / round"],housing:["ที่อยู่","housing","สังคม","Society","ที่อยู่ บ้าน 1 · คอนโด 4","housing: house 1 · block 4"],
-  green:["สวน","park(s)","สิ่งแวดล้อม","Environment","พื้นที่สีเขียว","parks"],totems:["Totem","Totem(s)","พร้อมรับภัย","Disaster-ready","Totem","Totems"]};
+const STAR_LAB={income:["รายได้","income","เศรษฐกิจ","Economy","รายได้ต่อรอบ","income / round"],housing:["ที่อยู่","housing","สังคม","Society","ที่อยู่: บ้าน 1 · คอนโด 4","housing: house 1 · block 4"],
+  green:["สวน","park(s)","สิ่งแวดล้อม","Environment","จำนวนพื้นที่สีเขียว","number of parks"],totems:["Totem","Totem(s)","พร้อมรับภัย","Disaster-ready","จำนวน Totem ที่ซื้อ","Totems bought"]};
 const RISK0=4, RISK_YEAR=2, RISK_FACTORY=1, RISK_CAP=12;
 const COLS="ABCDEFG", TOT=["flood","quake","storm","fire"];
 const TOTEM_OF={flood:"flood",quake:"quake",storm:"storm",fire:"fire",ffire:"fire"};
@@ -2081,7 +2088,7 @@ function renderGoals(){
   const gained=PREV&&S.round>0?STAR_KEYS.filter(k=>cur[k]>PREV[k]):[]; PREV=cur;
   if(gained.length){ setTimeout(()=>{toast(T(`⭐ ได้ดาวเพิ่ม! รวม ${n}/8`,`⭐ Star earned! ${n}/8`),"good"); FX.stars()},350) }
   const rows=STAR_KEYS.map(k=>{const v=metric(k), t=STAR[k], s=starOf(k), lab=STAR_LAB[k];
-    return `<div class="goal s${s}${gained.includes(k)?" gain":""}"><span class="ck">${s?"★".repeat(s):""}</span><span class="gn">${T(lab[2],lab[3])} <small>· ${T(lab[4],lab[5])}</small></span><span class="gv">${v} <small>/ ${t[0]} · ${t[1]}</small></span><span class="bar"><i style="width:${Math.min(100,v/t[1]*100)}%"></i><b style="left:${t[0]/t[1]*100}%"></b></span></div>`}).join("");
+    return `<div class="goal s${s}${gained.includes(k)?" gain":""}"><span class="ck">${s?"★".repeat(s):""}</span><span class="gn">${T(lab[2],lab[3])}</span><span class="gv">${v}</span><span class="gd">${T(lab[4],lab[5])}<span class="gt"><b>★</b> ${t[0]}  ·  <b>★★</b> ${t[1]}</span></span><span class="bar"><i style="width:${Math.min(100,v/t[1]*100)}%"></i><b style="left:${t[0]/t[1]*100}%"></b></span></div>`}).join("");
   $("goal-panel").innerHTML=`<div class="head" style="margin-bottom:10px"><h2>${T("ดาวนายกฯ","Mayor stars")}</h2><span class="tagk">⭐ ${n}/8 · ${T(...rankOf(n))}</span></div>
    <div class="goals">${rows}
    <div class="goalnote${dm?" bad":""}">${dm?T(`พัง ${dm} หลัง · ซ่อมก่อนจึงได้เงินและนับดาว`,`${dm} damaged · repair for income and stars`):T("นับดาวตอนจบรอบ 12 · 1 ดาวที่ตัวเลขแรก 2 ดาวที่ตัวเลขหลัง · 8 ดาว = Best Mayor","Stars are counted after round 12 · 1 star at the first number, 2 at the second · 8 stars = Best Mayor")}</div></div>`;
