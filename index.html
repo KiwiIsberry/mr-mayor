@@ -1291,6 +1291,9 @@ function stepParts(x,P){ for(let i=P.length-1;i>=0;i--){ const q=P[i]; q.l++; q.
 async function destroyCard(dc,k){
   if(reduce()){ dc.style.opacity=0; return }
   dc.style.animation="none";   // the deal animation would otherwise pin transform
+  // freeze the flip animations of the card's own parts: iOS Safari will not clip (or even draw) a parent whose children are still animating
+  dc.querySelectorAll("*").forEach(e=>e.style.animation="none"); { const bk=dc.querySelector(".eback"); if(bk) bk.remove(); const fc=dc.querySelector(".dface"); if(fc) fc.style.transform="none" }
+  dc.style.webkitTransform="translateZ(0)";
   const P=[];
   if(k==="fire"||k==="ffire"){ // ragged flame front from the bottom-left corner; each part burns at its own pace
     SFX.hit(k,false);
@@ -1298,7 +1301,7 @@ async function destroyCard(dc,k){
     const pct=v=>(v*100).toFixed(2)+"%";
     await run(2700,p=>{ const q=-.06+p*1.12; x.clearRect(0,0,c.width,c.height); const r=dc.getBoundingClientRect(), front=[];
       for(let i=0;i<=NU;i++){ const u=i/NU; let v=1; while(v>0&&field(u,v)<=q) v-=.01; front.push([u,Math.max(0,v)]) }
-      dc.style.clipPath=`polygon(0% 0%,100% 0%,${front.slice().reverse().map(f=>pct(f[0])+" "+pct(f[1])).join(",")})`;
+      dc.style.clipPath=dc.style.webkitClipPath=`polygon(0% 0%,100% 0%,${front.slice().reverse().map(f=>pct(f[0])+" "+pct(f[1])).join(",")})`;
       for(const [u,v] of front){ if(v<=.004||v>=.995) continue; const px=r.left+u*W, py=r.top+v*H;
         x.fillStyle="#2A140C"; x.fillRect(px-4,py-1,9,5); x.fillStyle="#D94A3A"; x.fillRect(px-4,py-4,9,3); x.fillStyle="#F2C230"; x.fillRect(px-3,py-6,7,2);
         if(Math.random()<.5){ x.fillStyle="#FFE680"; x.fillRect(px-1,py-9-Math.random()*6,3,3) }
@@ -1339,7 +1342,7 @@ async function destroyCard(dc,k){
         const u=C[0]+Math.cos(a)*rr, v=C[1]+Math.sin(a)*rr; pts.push([u,v]);
         const lost=prevR[i]-rr; if(lost>.001){ const n=Math.min(5,Math.ceil(lost*90)); for(let m=0;m<n;m++) P.push({x:r.left+u*W+(Math.random()-.5)*6,y:r.top+v*H+(Math.random()-.5)*6,vx:(Math.random()-.5)*.9+Math.cos(a)*.3,vy:.3+Math.random()*.8,g:.04,fr:.98,l:0,m:50+Math.random()*40,c:["#2A2D36","#3A3F4A","#5A6270","#1B1B2F","#8A8F99"][Math.floor(Math.random()*5)],s:Math.random()<.5?3:4}) }
         prevR[i]=rr }
-      dc.style.clipPath=`polygon(${pts.map(q=>pct(q[0])+" "+pct(q[1])).join(",")})`;
+      dc.style.clipPath=dc.style.webkitClipPath=`polygon(${pts.map(q=>pct(q[0])+" "+pct(q[1])).join(",")})`;
       stepParts(x,P) });
     dc.style.visibility="hidden";
     await run(700,()=>{ x.clearRect(0,0,c.width,c.height); stepParts(x,P) });
