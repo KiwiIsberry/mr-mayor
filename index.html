@@ -397,7 +397,7 @@ details.log summary{cursor:pointer;font-weight:700}
 /* v4.3 extras */
 #coach{position:fixed;z-index:65;display:none;background:var(--panel);border:3px solid var(--ink);box-shadow:5px 5px 0 var(--ink);padding:10px 12px;font-size:14.5px;line-height:1.45}
 #coach.on{display:block;animation:pop .2s ease-out}
-#coach p{margin:4px 0 8px} #coach .cstep{font-family:var(--f-pix);font-size:11px;color:var(--muted);letter-spacing:.08em}
+#coach p{margin:4px 0 8px} #coach .bad{color:var(--red);font-weight:700} #coach small{color:var(--muted)} #coach .cstep{font-family:var(--f-pix);font-size:11px;color:var(--muted);letter-spacing:.08em}
 #coach .cbtn{display:flex;gap:8px;flex-wrap:wrap} #coach .cbtn button{padding:6px 12px;font-size:13px;min-height:0}
 #coachring{position:fixed;z-index:64;pointer-events:none;display:none;border:3px solid var(--gold);box-shadow:0 0 0 4px var(--ink),0 0 0 9999px rgba(14,15,34,.35);animation:ringblink 1s steps(2) infinite}
 #coachring.on{display:block}
@@ -1292,16 +1292,20 @@ async function destroyCard(dc,k){
   if(reduce()){ dc.style.opacity=0; return }
   dc.style.animation="none";   // the deal animation would otherwise pin transform
   const P=[];
-  if(k==="fire"||k==="ffire"){ // ragged flame front from the bottom-left corner; each side burns at its own pace
+  if(k==="fire"||k==="ffire"){ // ragged flame front from the bottom-left corner; each part burns at its own pace
     SFX.hit(k,false);
-    const {c,x,W,H,ox,oy}=fullFx(dc), nz=noise2();
-    const M=cellMask(dc,W,H,(u,v)=>((u+(1-v))/2)*.62+nz(u,v)*.38,6);
-    await run(2600,p=>{ const q=-.05+p*1.12; x.clearRect(0,0,c.width,c.height);
-      M.update(q,(u,v)=>{ const px=ox+u*W, py=oy+v*H; P.push({x:px,y:py,vx:(Math.random()-.3)*1.2,vy:-1-Math.random()*1.6,l:0,m:26+Math.random()*24,c:["#F2C230","#E9783A","#D94A3A","#FFE680"][Math.floor(Math.random()*4)],s:Math.random()<.5?4:3});
-        if(Math.random()<.25) P.push({x:px,y:py,vx:.3+Math.random()*.4,vy:-.7,l:0,m:60,c:"#2A2D36",s:7,a:.7}) });
-      for(let n=0;n<M.T.length;n++){ const t=M.T[n]; if(t>q&&t<q+.06){ const px=ox+(n%M.cols)/M.cols*W, py=oy+Math.floor(n/M.cols)/M.rows*H, b=W/M.cols;
-        x.fillStyle=t<q+.02?"#FFE680":t<q+.04?"#E9783A":"#3A1E14"; x.fillRect(px,py,b+1,b+1) } }
+    const {c,x,W,H}=fullFx(dc), nz=noise2(), NU=60, field=(u,v)=>((u+(1-v))/2)*.62+nz(u,v)*.38;
+    const pct=v=>(v*100).toFixed(2)+"%";
+    await run(2700,p=>{ const q=-.06+p*1.12; x.clearRect(0,0,c.width,c.height); const r=dc.getBoundingClientRect(), front=[];
+      for(let i=0;i<=NU;i++){ const u=i/NU; let v=1; while(v>0&&field(u,v)<=q) v-=.01; front.push([u,Math.max(0,v)]) }
+      dc.style.clipPath=`polygon(0% 0%,100% 0%,${front.slice().reverse().map(f=>pct(f[0])+" "+pct(f[1])).join(",")})`;
+      for(const [u,v] of front){ if(v<=.004||v>=.995) continue; const px=r.left+u*W, py=r.top+v*H;
+        x.fillStyle="#2A140C"; x.fillRect(px-4,py-1,9,5); x.fillStyle="#D94A3A"; x.fillRect(px-4,py-4,9,3); x.fillStyle="#F2C230"; x.fillRect(px-3,py-6,7,2);
+        if(Math.random()<.5){ x.fillStyle="#FFE680"; x.fillRect(px-1,py-9-Math.random()*6,3,3) }
+        if(Math.random()<.22) P.push({x:px,y:py-4,vx:(Math.random()-.3)*1.2,vy:-1-Math.random()*1.6,l:0,m:24+Math.random()*24,c:["#F2C230","#E9783A","#D94A3A","#FFE680"][Math.floor(Math.random()*4)],s:Math.random()<.5?4:3});
+        if(Math.random()<.04) P.push({x:px,y:py-6,vx:.3+Math.random()*.4,vy:-.7,l:0,m:60,c:"#2A2D36",s:7,a:.7}) }
       stepParts(x,P) });
+    dc.style.visibility="hidden";
     await run(600,()=>{ x.clearRect(0,0,c.width,c.height); stepParts(x,P) });
     c.remove();
   } else if(k==="storm"){ // a big hard lightning strike, the card is electrocuted and charred, then crumbles to dust unevenly
@@ -1324,12 +1328,20 @@ async function destroyCard(dc,k){
       dc.style.filter=`brightness(${(1-p*.78).toFixed(2)}) sepia(${(p*.5).toFixed(2)}) contrast(${(1+p*.5).toFixed(2)})`;
       if(Math.random()<.5) P.push({x:ox+Math.random()*W,y:oy+Math.random()*H,vx:.2,vy:-.7,l:0,m:40,c:"#5A6270",s:6,a:.6}); stepParts(x,P) });
     dc.style.transform="";
-    // crumbles: edges and weak spots go first, at different speeds, into falling ash
-    const nz=noise2(); const ed=(u,v)=>Math.min(u,1-u,v,1-v)*2, skew=Math.random()*.25;
-    const M=cellMask(dc,W,H,(u,v)=>nz(u,v)*.55+ed(u,v)*.35+u*skew,5);
-    await run(2400,p=>{ x.clearRect(0,0,c.width,c.height);
-      M.update(-.02+p*1.05,(u,v)=>{ for(let n=0;n<2;n++) P.push({x:ox+u*W+(Math.random()-.5)*4,y:oy+v*H,vx:(Math.random()-.5)*.9,vy:.3+Math.random()*.8,g:.04,fr:.98,l:0,m:50+Math.random()*40,c:["#2A2D36","#3A3F4A","#5A6270","#1B1B2F","#8A8F99"][Math.floor(Math.random()*5)],s:Math.random()<.5?3:4}) });
+    // crumbles: each side gives way at its own time and speed, falling as ash (clip-path: no async masks)
+    const NA=120, C=[.5,.5], nz=noise2(), skew=Math.random()*Math.PI*2;
+    const del=[...Array(NA)].map((_,i)=>{ const a=i/NA; return nz(a,.37)*.5+(1+Math.cos(a*Math.PI*2-skew))*.12 });
+    const spd=[...Array(NA)].map((_,i)=>.45+nz(.71,i/NA)*.5);
+    const rmax=[...Array(NA)].map((_,i)=>{ const e=edgeHit(C,i/NA*Math.PI*2); return Math.hypot(e[0]-C[0],e[1]-C[1]) });
+    const prevR=rmax.slice(), pct=v=>(v*100).toFixed(2)+"%";
+    await run(2700,p=>{ x.clearRect(0,0,c.width,c.height); const r=dc.getBoundingClientRect(), pts=[];
+      for(let i=0;i<NA;i++){ const a=i/NA*Math.PI*2, prog=Math.max(0,Math.min(1,(p*1.5-del[i])/spd[i])), rr=rmax[i]*(1-prog*prog*(3-2*prog));
+        const u=C[0]+Math.cos(a)*rr, v=C[1]+Math.sin(a)*rr; pts.push([u,v]);
+        const lost=prevR[i]-rr; if(lost>.001){ const n=Math.min(5,Math.ceil(lost*90)); for(let m=0;m<n;m++) P.push({x:r.left+u*W+(Math.random()-.5)*6,y:r.top+v*H+(Math.random()-.5)*6,vx:(Math.random()-.5)*.9+Math.cos(a)*.3,vy:.3+Math.random()*.8,g:.04,fr:.98,l:0,m:50+Math.random()*40,c:["#2A2D36","#3A3F4A","#5A6270","#1B1B2F","#8A8F99"][Math.floor(Math.random()*5)],s:Math.random()<.5?3:4}) }
+        prevR[i]=rr }
+      dc.style.clipPath=`polygon(${pts.map(q=>pct(q[0])+" "+pct(q[1])).join(",")})`;
       stepParts(x,P) });
+    dc.style.visibility="hidden";
     await run(700,()=>{ x.clearRect(0,0,c.width,c.height); stepParts(x,P) });
     c.remove();
   } else if(k==="flood"){ // water rises to half the card, the card tips over and sinks; what goes under fades away
@@ -1337,15 +1349,16 @@ async function destroyCard(dc,k){
     const {c,x,W,H,ox,oy}=fullFx(dc), slot=dc.parentElement, top0=dc.offsetTop, wlFinal=.5;
     const setMask=(wlPx,a)=>{ const g=`linear-gradient(to bottom,#000 0,#000 ${wlPx-4}px,rgba(0,0,0,${a}) ${wlPx+10}px,rgba(0,0,0,${a}) 100%)`; slot.style.maskImage=slot.style.webkitMaskImage=g };
     const water=(lvl,t,extra)=>{ const wy=oy+H*(1-lvl); x.clearRect(0,0,c.width,c.height);
-      const L=ox-70, R=ox+W+70, bot=oy+H+40;
-      const gr=x.createLinearGradient(0,wy,0,bot); gr.addColorStop(0,"rgba(47,95,158,.55)"); gr.addColorStop(1,"rgba(47,95,158,0)");
-      x.fillStyle=gr; x.beginPath(); x.moveTo(L,bot); for(let px=L;px<=R;px+=6) x.lineTo(px,wy+Math.sin(px/22+t/150)*4); x.lineTo(R,bot); x.fill();
-      x.fillStyle="#C8F2E8"; for(let px=L+4;px<R-4;px+=6){ if((px/6+Math.floor(t/90))%5<2) x.fillRect(px,wy+Math.sin(px/22+t/150)*4-1,4,2) }
-      // fade the water's left/right ends
-      const fl=x.createLinearGradient(L,0,L+60,0); fl.addColorStop(0,"rgba(0,0,0,1)"); fl.addColorStop(1,"rgba(0,0,0,0)");
-      x.globalCompositeOperation="destination-out"; x.fillStyle=fl; x.fillRect(L,wy-10,60,bot-wy+10);
-      const fr=x.createLinearGradient(R-60,0,R,0); fr.addColorStop(0,"rgba(0,0,0,0)"); fr.addColorStop(1,"rgba(0,0,0,1)"); x.fillStyle=fr; x.fillRect(R-60,wy-10,60,bot-wy+10);
-      x.globalCompositeOperation="source-over"; extra&&extra(wy); stepParts(x,P); return wy };
+      const L=ox-70, R=ox+W+70, bot=oy+H+50, wv=px=>wy+Math.sin(px/24+t/170)*3+Math.sin(px/9-t/110)*1.2;
+      x.fillStyle="rgba(47,95,158,.55)"; x.beginPath(); x.moveTo(L,bot); for(let px=L;px<=R;px+=3) x.lineTo(px,wv(px)); x.lineTo(R,bot); x.closePath(); x.fill();
+      x.strokeStyle="rgba(200,242,232,.9)"; x.lineWidth=2; x.beginPath(); for(let px=L;px<=R;px+=3) px===L?x.moveTo(px,wv(px)):x.lineTo(px,wv(px)); x.stroke();
+      // soften the left, right and bottom edges of the water
+      x.globalCompositeOperation="destination-in";
+      const gh=x.createLinearGradient(L,0,R,0); gh.addColorStop(0,"rgba(0,0,0,0)"); gh.addColorStop(.18,"#000"); gh.addColorStop(.82,"#000"); gh.addColorStop(1,"rgba(0,0,0,0)");
+      x.fillStyle=gh; x.fillRect(0,0,c.width,c.height);
+      const gv=x.createLinearGradient(0,wy,0,bot); gv.addColorStop(0,"#000"); gv.addColorStop(.6,"#000"); gv.addColorStop(1,"rgba(0,0,0,0)");
+      x.fillStyle=gv; x.fillRect(0,wy-20,c.width,bot-wy+20); x.globalCompositeOperation="source-over";
+      extra&&extra(wy); stepParts(x,P); return wy };
     await run(1500,(p,t)=>{ const lvl=wlFinal*(1-Math.pow(1-p,2)), wy=water(lvl,t);
       setMask(top0+H*(1-lvl),(1-p*.5).toFixed(2));
       if(Math.random()<.5) P.push({x:ox+Math.random()*W,y:oy+H-4,vx:0,vy:-1,l:0,m:Math.max(4,(oy+H-wy)/1),c:"#C8F2E8",s:3}) });
@@ -2269,12 +2282,14 @@ const TSTEPS=[
  {sel:"#act",show:()=>S.phase==="ready",th:"เริ่มกันเลย กดปุ่มนี้เพื่อเริ่มวาระนายกฯ 12 รอบ",en:"Let's go. Press this to start your 12-round term.",done:()=>S.round>=1},
  {sel:"#desk",th:"ทุกต้นรอบจะเปิด <b>การ์ดเหตุการณ์ 2 ใบ</b> บางใบให้เงิน บางใบหักเงิน บางใบเปลี่ยนกติกาเฉพาะรอบนั้น",en:"Every round opens <b>2 event cards</b>. Some give coins, some take coins, some change a rule for that round.",next:1},
  {sel:"#status .stat:nth-child(2)",th:"นี่คือ <b>เหรียญ</b> ของคุณ อาคารทุกหลังที่ไม่พังให้รายได้ทุกต้นรอบ",en:"These are your <b>coins</b>. Every undamaged building pays you at the start of each round.",next:1},
+ {sel:"#trayin .pal",th:"<b>อาคาร</b> (ราคา · ได้อะไร)<br>🏠 <b>บ้าน</b> 4 · +1 เหรียญ/รอบ · ที่อยู่ 1<br>🏪 <b>ร้านค้า</b> 7 · +2 เหรียญ/รอบ<br>🏭 <b>โรงงาน</b> 8 · +4 เหรียญ/รอบ <span class=\"bad\">แต่เพิ่มความเสี่ยงภัย และเพิ่มการ์ดไฟไหม้โรงงาน</span><br>🏢 <b>คอนโด</b> 10 · ที่อยู่ 4<br>🌳 <b>สวน</b> 4 · ช่วยด้านสิ่งแวดล้อม<br><small>ร้านค้าและโรงงานต้องวางติดบ้านหรือคอนโด</small>",en:"<b>Buildings</b> (cost · what you get)<br>🏠 <b>House</b> 4 · +1 coin/round · housing 1<br>🏪 <b>Shop</b> 7 · +2 coins/round<br>🏭 <b>Factory</b> 8 · +4 coins/round <span class=\"bad\">but raises disaster risk and adds factory-fire cards</span><br>🏢 <b>Apartments</b> 10 · housing 4<br>🌳 <b>Park</b> 4 · counts for the environment<br><small>Shops and factories must touch a house or apartments.</small>",next:1},
  {sel:'[data-buy="house"]',th:"มาสร้างเมืองกัน แตะปุ่ม <b>บ้าน</b>",en:"Let's build. Tap <b>House</b>.",done:()=>S.tool==="house"||built(),skip:()=>!!why("house")},
  {sel:"#stage",th:"แตะช่องว่างบนแผนที่เพื่อวางบ้าน (ถนนวางไม่ได้) ร้านค้าและโรงงานต้องวางติดบ้านหรือคอนโด",en:"Tap an empty lot to place it (not on a road). Shops and factories must touch a house or block.",done:()=>built(),skip:()=>!!why("house")&&!built()},
  {sel:"#zbar-top",enter:()=>{ S.tool=null; render() },th:"เมืองมี <b>4 โซน</b> แต่ละโซนเจอภัยคนละแบบ ป้ายสีด้านบนและล่างของแผนที่บอกภัยประจำของแต่ละโซน<br>เคล็ดลับ: ตอนที่<b>ไม่ได้เลือกอาคาร</b> ลองชี้หรือแตะช่องว่าง แล้วดูแถบข้อความเหนือปุ่มสร้างอาคาร จะบอกว่าตรงนั้นโดนภัยอะไรได้บ้าง",en:"The city has <b>4 zones</b>, each with its own hazards. The coloured labels above and below the map name each zone's main hazard.<br>Tip: with <b>no building selected</b>, point at or tap an empty lot and read the line above the build buttons to see what could hit it.",next:1},
  {sel:"#totem-panel",th:"<b>Totem</b> กันภัยหนึ่งแบบได้ทั้งใบไปตลอดเกม แต่ราคาแพงขึ้นทุกอันที่ซื้อ",en:"A <b>Totem</b> blocks one disaster type for the rest of the game, but each one costs more.",next:1},
  {sel:"#reinforce",th:"<b>เสริมความแข็งแรง</b> 3 เหรียญ อาคารนั้นจะรอดจากภัยได้ 1 ครั้ง ถูกกว่าซ่อมมาก",en:"<b>Reinforce</b> for 3 coins and that building survives one hit. Much cheaper than repairing.",next:1},
  {sel:"#act",th:"พร้อมแล้วกด <b>จบรอบ</b> ตั้งแต่รอบ 2 จะทอยลูกเต๋า 2 ลูก ถ้าได้ไม่เกินค่าความเสี่ยง ภัยพิบัติจะมา",en:"When you're ready, <b>end the round</b>. From round 2 you roll 2 dice: at or under the risk number, a disaster strikes.",done:()=>S.round>=2},
+ {sel:"#goal-panel",th:"<b>เป้าหมาย</b>: เก็บดาว 4 ด้าน ด้านละ 2 ดวง<br>เศรษฐกิจ (รายได้) · สังคม (ที่อยู่) · สิ่งแวดล้อม (สวน) · พร้อมรับภัย (Totem)<br>นับตอนจบรอบ 12 · ครบ <b>8 ดาว = Best Mayor 👑</b>",en:"<b>Your goal</b>: earn stars in 4 areas, 2 each<br>Economy (income) · Society (housing) · Environment (parks) · Disaster-ready (Totems)<br>Counted after round 12 · all <b>8 stars = Best Mayor 👑</b>",next:1},
 ];
 const built=()=>S.undo.some(u=>u.kind==="piece");
 function tutStart(){ TUT.on=true; TUT.step=0; TUT.entered=-1; S.modal=null; render() }
