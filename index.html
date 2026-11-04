@@ -906,7 +906,7 @@ function strike(k,box,targets){
   const nmTh=S.hits.map(id=>NAME[S.pieces.find(p=>p.id===id).type][0]);
   S.msg=S.hits.length?{th:`${nmTh.join(", ")} พัง${svt}`,en:`${S.hits.length} building(s) damaged${sve}`}
                      :{th:`ไม่มีอาคารพัง${svt||" รอดไป"}`,en:`Nothing damaged${sve||". A near miss."}`};
-  const dur=FX.disaster(k,box,S.hits,S.saved);
+  let dur=0; try{ dur=FX.disaster(k,box,S.hits,S.saved) }catch(err){ dur=0; S.hits.forEach(id=>dmgShow.set(id,0)); try{console.error(err)}catch(e2){} }
   S.phase="build"; S.busy=true; render();
   setTimeout(()=>{ S.busy=false; if(S.hits.length) toast(T(`${DIS[k].th}! พัง ${S.hits.length} หลัง`,`${DIS[k].en}! ${S.hits.length} damaged`),"bad"); else if(S.saved.length) toast(T("เสริมความแข็งแรงช่วยไว้!","Reinforcement held!"),"good"); render() },dur);
 }
@@ -1111,7 +1111,7 @@ FX.disaster=function(k,box,hits,saved){
   let order=ids.filter(byId);
   const cen=id=>{const r=pieceRect(byId(id));return [r.x+r.w/2,r.y+r.h/2]};
   if(k==="fire"||k==="ffire"){ // flames start somewhere and move to the nearest next building
-    let first=k==="ffire"?order.find(id=>byId(id).type==="factory"):order[rnd(order.length)]; const rest=order.filter(id=>id!==first), seq=first!==undefined?[first]:[];
+    let first=k==="ffire"?order.find(id=>byId(id).type==="factory"):order[rnd(order.length)]; if(first===undefined) first=order[0]; const rest=order.filter(id=>id!==first), seq=first!==undefined?[first]:[];
     while(rest.length){ const [ax,ay]=cen(seq[seq.length-1]); rest.sort((a,b)=>{const [bx,by]=cen(a),[cx2,cy2]=cen(b);return Math.hypot(bx-ax,by-ay)-Math.hypot(cx2-ax,cy2-ay)}); seq.push(rest.shift()) }
     order=seq }
   else order.sort((a,b)=>{const ra=pieceRect(byId(a)),rb=pieceRect(byId(b));return (ra.y-rb.y)||(ra.x-rb.x)});
