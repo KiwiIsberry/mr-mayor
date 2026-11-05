@@ -638,6 +638,12 @@ details.log summary{cursor:pointer;font-weight:700}
 .goal .gd{grid-column:1 / -1;font-size:12.5px;color:var(--muted);line-height:1.3}
 .goal .gd b{color:#C99A1C;font-weight:700} .goal .gd .gt{display:block;color:var(--ink);font-weight:700;font-size:12.5px;white-space:pre}
 .goal .bar{grid-column:1 / -1!important}
+
+#rotate{display:none}
+@media (orientation:landscape) and (max-height:500px){
+  #rotate{display:flex;position:fixed;inset:0;z-index:300;background:var(--cab);align-items:center;justify-content:center;text-align:center;color:var(--panel);padding:20px}
+  #rotate b{font-size:54px;display:block} #rotate p{margin:8px 0 0;font-size:18px;font-weight:700} #rotate p+p{font-size:14px;font-weight:500;color:#C9C6E0}
+}
 </style>
 
 <div class="wrap">
@@ -672,6 +678,7 @@ details.log summary{cursor:pointer;font-weight:700}
 </div>
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
 <div id="overlay"></div>
+<div id="rotate"><div><b>📱↻</b><p>หมุนโทรศัพท์เป็นแนวตั้งเพื่อเล่น</p><p>Turn your phone upright to play</p></div></div>
 <div id="splash" aria-live="assertive"></div>
 
 <script>
@@ -928,12 +935,12 @@ const DIS={
 const TOTEM={flood:["คันกั้นน้ำ","Flood wall"],quake:["วิศวกรโครงสร้าง","Quake engineers"],storm:["ศูนย์เตือนพายุ","Storm warning"],fire:["นักดับเพลิง","Firefighters"]};
 const EV={
  tourism:{n:3,cls:"plus",th:"ท่องเที่ยวคึกคัก",en:"Tourist boom",b:["+1 ต่อร้านค้าที่เปิดอยู่","+1 per open shop"]},
- investor:{n:2,cls:"plus",th:"นักลงทุนต่างชาติ",en:"Foreign investors",b:["ถ้ามีโรงงาน: +2 และ +1 ต่อโรงงาน","With a factory: +2, plus 1 per factory"]},
+ investor:{n:2,cls:"plus",th:"นักลงทุนต่างชาติ",en:"Foreign investors",b:["ถ้ามีโรงงานที่ใช้งานได้: +2 และ +1 ต่อโรงงานนั้น","With a working factory: +2, plus 1 per working factory"]},
  grant:{n:2,cls:"plus",th:"งบจากรัฐบาลกลาง",en:"National grant",b:["+4 เหรียญ","+4 coins"]},
  tax:{n:2,cls:"plus",th:"เก็บภาษีได้ดี",en:"Good tax year",b:["+3 เหรียญ","+3 coins"]},
- wastewater:{n:2,cls:"minus",th:"ค่าบำบัดน้ำเสีย",en:"Wastewater bill",b:["−2 ต่อโรงงาน","−2 per factory"]},
+ wastewater:{n:2,cls:"minus",th:"ค่าบำบัดน้ำเสีย",en:"Wastewater bill",b:["−2 ต่อโรงงาน (รวมที่พัง)","−2 per factory (damaged too)"]},
  road:{n:3,cls:"minus",th:"ซ่อมถนน",en:"Road repairs",b:["−3 เหรียญ","−3 coins"]},
- power:{n:1,cls:"minus",th:"ค่าไฟพุ่ง",en:"Power prices spike",b:["−1 ต่อร้านค้าและโรงงาน","−1 per shop and factory"]},
+ power:{n:1,cls:"minus",th:"ค่าไฟพุ่ง",en:"Power prices spike",b:["−1 ต่อร้านค้าและโรงงาน (รวมที่พัง)","−1 per shop and factory (damaged too)"]},
  drill:{n:2,cls:"special",th:"ซ้อมอพยพ",en:"Evacuation drill",b:["รอบนี้ไม่ต้องทอยความเสี่ยง","No risk roll this round"]},
  volunteers:{n:2,cls:"special",th:"อาสาสมัครซ่อมเมือง",en:"Repair volunteers",b:["ซ่อมฟรี 1 ชิ้นในรอบนี้","Repair 1 building free this round"]},
  material:{n:2,cls:"minus",th:"วัสดุก่อสร้างขึ้นราคา",en:"Material costs rise",b:["รอบนี้สร้างอาคารแพงขึ้น 2","Buildings cost 2 more this round"]},
@@ -1014,7 +1021,7 @@ function applyEvent(k){
   const e=EV[k], f=count("factory"), fo=count("factory",1); let d=0;
   switch(k){
     case "tourism": d=count("shop",1); break;
-    case "investor": d=f?2+fo:0; break;
+    case "investor": d=fo?2+fo:0; break;
     case "grant": d=4; break; case "tax": d=3; break;
     case "wastewater": d=-2*f; break; case "road": d=-3; break;
     case "power": d=-(count("shop")+f); break;
@@ -1490,7 +1497,7 @@ function resolveDisaster(card){
 function strike(k,box,targets){
   S.zone=box; S.hits=[]; S.saved=[];
   for(const p of targets){ if(p.dmg) continue; if(p.rf){ p.rf=false; S.saved.push(p.id); continue } p.dmg=true; p.dk=k; S.hits.push(p.id) }
-  S.stats.hits+=S.hits.length; S.stats.saved+=S.saved.length; S.stats.zhit=S.stats.zhit||{};
+  S.stats.hits+=S.hits.length; S.stats.saved+=S.saved.length; S.stats.zhit=S.stats.zhit||{}; if(k==="ffire") S.stats.ffhits=(S.stats.ffhits||0)+S.hits.length;
   S.hits.forEach(id=>{const q=S.pieces.find(x=>x.id===id); const z=q&&zoneOf(q.cells[0][0],q.cells[0][1]); if(z) S.stats.zhit[z]=(S.stats.zhit[z]||0)+1});
   const card=S.disCard, names=S.hits.map(id=>nm(S.pieces.find(p=>p.id===id).type));
   log(`${disLabel(card,"th")}: พัง ${S.hits.length} หลัง${S.saved.length?` · เสริมแล้วรอด ${S.saved.length}`:""}`,`${disLabel(card,"en")}: ${S.hits.length} damaged${S.saved.length?` · ${S.saved.length} saved by reinforcement`:""}`,S.hits.length?"bad":"good");
@@ -1616,7 +1623,8 @@ function fitCanvas(){
     const wide=innerWidth>=1240, sideMin=wide?Math.min(700,Math.max(590,innerWidth*.47)):360;
     px=Math.max(224,Math.floor(Math.min(availH,innerWidth-sideMin-chrome)));
     const sideW=wide?Math.max(sideMin,Math.min(980,innerWidth-px-chrome)):Math.max(360,Math.min(560,innerWidth-px-chrome)); main.style.gridTemplateColumns=`minmax(0,1fr) ${sideW}px` }
-  else { document.querySelector(".main").style.gridTemplateColumns=""; const availW=box.parentElement.clientWidth-52; px=Math.max(224,Math.floor(Math.min(availW,innerHeight*0.62))) }
+  else { document.querySelector(".main").style.gridTemplateColumns=""; const availW=box.parentElement.clientWidth-52, tr=document.querySelector(".tray"), th=tr?tr.offsetHeight:0;
+    px=Math.max(224,Math.floor(Math.min(availW,innerHeight*0.62,innerHeight-th-118))) }
   cv.style.width=px+"px"; cv.style.height=px+"px";
   const cell=px/7;
   document.getElementById("lx").style.gridTemplateColumns=`repeat(7,${cell}px)`; document.getElementById("lx").style.width=px+6+"px"; document.getElementById("lx").style.paddingLeft="3px";
@@ -2218,11 +2226,14 @@ function renderModal(){
 /* ======================= EVENTS ======================= */
 function startTip(){ const L=START_MAPS.find(m=>m.id===S.startMap); const z=L?L.z:null;
   return z?T(`เมืองคุณเริ่มที่${ZONES[z].th} (ผัง #${L.id}) · พร้อมแล้วกด ▶ เริ่มวาระ`,`Your town starts in ${ZONES[z].en} (map #${L.id}) · press ▶ Start your term`):T("พร้อมเมื่อไร กด ▶ เริ่มวาระ ที่มุมขวาล่าง","Ready? Press ▶ Start your term") }
+function mapIntoView(){ if(matchMedia("(min-width:821px) and (orientation:landscape)").matches) return; fitCanvas(); const mb=document.querySelector(".mapbox"); if(!mb) return;
+  const top=mb.getBoundingClientRect().top+scrollY-6; if(Math.abs(scrollY-top)>4) window.scrollTo({top,behavior:reduce()?"auto":"smooth"}) }
 function newGame(){ PREV=null; S=fresh(); S.modal="menu"; effects=[]; parts=[]; dmgShow.clear(); drops.clear(); render() }
 document.addEventListener("click",e=>{
   if(splashDone&&e.target.closest("#splash")){ splashDone(); return }
   const a=e.target.closest("button"); if(!a) return;
   if(a.id==="act"&&!S.busy){ if(S.phase==="ready") startRound(); else if(S.phase==="roll") rollRisk(); else if(S.phase==="build") endRound(); else if(S.phase==="over") newGame(); else resumeFlow(); return }
+  if(a.dataset.buy||["repair","reinforce","demolish"].includes(a.id)) setTimeout(mapIntoView,30);
   if(a.dataset.buy){ const w=why(a.dataset.buy); if(w&&S.tool!==a.dataset.buy){ toast(`${nm(a.dataset.buy)}: ${w}`,"bad"); return } S.tool=S.tool===a.dataset.buy?null:a.dataset.buy; render(); return }
   if(a.dataset.totem){ buyTotem(a.dataset.totem); return }
   if(a.id==="rotate"){ S.orient=S.orient==="h"?"v":"h"; render(); return }
@@ -2231,7 +2242,7 @@ document.addEventListener("click",e=>{
   if(a.id==="repair"){ S.tool=S.tool==="repair"?null:"repair"; render(); return }
   if(a.id==="undo"){ undo(); return }
   if(a.id==="newgame"){ if(S.round>0&&S.phase!=="over"){ S.modal="confirm"; renderModal() } else newGame(); return }
-  if(a.dataset.confirm){ if(a.dataset.confirm==="yes"){ try{localStorage.removeItem(SAVE_KEY)}catch(err){} newGame() } else { S.modal=null; renderModal(); setTimeout(resumeFlow,50) } return }
+  if(a.dataset.confirm){ if(a.dataset.confirm==="yes"){ try{localStorage.removeItem(SAVE_KEY)}catch(err){} newGame() } else { S.modal=null; renderModal(); setTimeout(mapIntoView,30); setTimeout(resumeFlow,50) } return }
   if(a.dataset.pick){ lang=a.dataset.pick; try{localStorage.setItem("mm4-lang",lang)}catch(err){} S.modal="menu"; render(); return }
   if(a.dataset.menu){ const m=a.dataset.menu;
     if(m==="lang"){ lang=lang==="th"?"en":"th"; try{localStorage.setItem("mm4-lang",lang)}catch(err){} render(); return }
@@ -2239,7 +2250,7 @@ document.addEventListener("click",e=>{
     if(m==="tut"){ tutStart(); return }
     if(m==="board"){ S.modal="board"; renderModal(); lbFetch(); return }
     if(m==="back"){ S.modal="menu"; renderModal(); return }
-    if(m==="play"){ S.modal=null; render(); setTimeout(()=>toast(startTip()),250); return } }
+    if(m==="play"){ setTimeout(mapIntoView,60); S.modal=null; render(); setTimeout(()=>toast(startTip()),250); return } }
   if(a.dataset.ipage!==undefined){ if(document.querySelector("#overlay .modal.intro")) showIntroPage(+a.dataset.ipage); else { introPage=+a.dataset.ipage; renderModal() } return }
   if(a.id==="help"){ if(S.phase!=="over"){introPage=0;S.modal="intro"; renderModal()} return }
   if(a.id==="lang-th"||a.id==="lang-en"){ lang=a.id==="lang-th"?"th":"en"; try{localStorage.setItem("mm4-lang",lang)}catch(err){} render(); return }
@@ -2330,7 +2341,7 @@ const TSTEPS=[
  {sel:"#goal-panel",th:"<b>เป้าหมาย</b>: เก็บดาว 4 ด้าน ด้านละ 2 ดวง<br>เศรษฐกิจ (รายได้) · สังคม (ที่อยู่) · สิ่งแวดล้อม (สวน) · พร้อมรับภัย (Totem)<br>นับตอนจบรอบ 12 · ครบ <b>8 ดาว = Best Mayor 👑</b>",en:"<b>Your goal</b>: earn stars in 4 areas, 2 each<br>Economy (income) · Society (housing) · Environment (parks) · Disaster-ready (Totems)<br>Counted after round 12 · all <b>8 stars = Best Mayor 👑</b>",next:1},
 ];
 const built=()=>S.undo.some(u=>u.kind==="piece");
-function tutStart(){ TUT.on=true; TUT.step=0; TUT.entered=-1; S.modal=null; render() }
+function tutStart(){ setTimeout(mapIntoView,60); TUT.on=true; TUT.step=0; TUT.entered=-1; S.modal=null; render() }
 function tutEnd(done){ TUT.on=false; coach(); if(done) setTimeout(()=>toast(T("จบการสอนแล้ว ขอให้เป็นนายกฯ ที่ดีที่สุด!","Tutorial done. Go be the best mayor!"),"good"),400) }
 function tutTick(){
   if(!TUT.on) return;
@@ -2373,7 +2384,7 @@ function lessons(){
   if(blds.length>=4&&share>=.6&&zh>=2) L.push([`อาคาร ${Math.round(share*100)}% ของเมืองอยู่ใน${ZONES[zTop].th} และโดนภัยในโซนนี้ ${zh} หลัง การกระจายเมืองไปหลายโซนช่วยไม่ให้ภัยครั้งเดียวทำลายเมืองทั้งหมด`,`${Math.round(share*100)}% of your buildings were in ${ZONES[zTop].en}, and ${zh} were hit there. Spreading out keeps one disaster from wrecking the whole city.`]);
   if((st.rep||0)>=10) L.push([`คุณจ่ายค่าซ่อมไป ${st.rep} เหรียญ ถ้าเสริมความแข็งแรงไว้ก่อน (หลังละ 3) จะถูกกว่ามาก`,`You spent ${st.rep} coins on repairs. Reinforcing first (3 each) would have cost much less.`]);
   if(st.hits>=5&&S.totems.length<2) L.push([`อาคารพังรวม ${st.hits} หลัง แต่มี Totem แค่ ${S.totems.length} อัน การลงทุนป้องกันภัยเร็วขึ้นอาจช่วยได้มาก`,`${st.hits} buildings were hit, but you had only ${S.totems.length} Totem(s). Investing in protection earlier could have helped.`]);
-  if(((st.hz||{}).ffire||0)>0&&st.hits) L.push(["ไฟไหม้โรงงานลามไปถึงอาคารที่อยู่ติดกัน ในชีวิตจริงผังเมืองจึงแยกโรงงานออกจากบ้านคน","A factory fire spread to the buildings touching it. That is why real cities zone factories away from homes."]);
+  if((st.ffhits||0)>0) L.push(["ไฟไหม้โรงงานลามไปถึงอาคารที่อยู่ติดกัน ในชีวิตจริงผังเมืองจึงแยกโรงงานออกจากบ้านคน","A factory fire spread to the buildings touching it. That is why real cities zone factories away from homes."]);
   if(!L.length) L.push(["เมืองที่รับมือภัยได้ดี ต้องเติบโตไปพร้อมกับการป้องกัน ไม่ใช่เลือกอย่างใดอย่างหนึ่ง","A resilient city grows and protects itself at the same time, not one or the other."]);
   return L.slice(0,3);
 }
