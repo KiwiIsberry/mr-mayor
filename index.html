@@ -899,9 +899,9 @@ function hash(a,b){let h=(a*374761393+b*668265263)^0x5bf03635;h=(h^(h>>>13))*127
 const BG=draw(112,112,(R)=>{
   for(let r=0;r<N;r++)for(let c=0;c<N;c++){const x0=c*TILE,y0=r*TILE;
     if(isRoad(r,c)){R("a",x0,y0,TILE,TILE);
-      if(r===ROAD&&c===ROAD){for(let i=0;i<4;i++){R("w",x0+2+i*3,y0+1,2,2);R("w",x0+2+i*3,y0+13,2,2);R("w",x0+1,y0+2+i*3,2,2);R("w",x0+13,y0+2+i*3,2,2)}}
-      else if(r===ROAD){R("s",x0,y0,TILE,1);R("s",x0,y0+15,TILE,1);R("m",x0+2,y0+7,4,1);R("m",x0+10,y0+7,4,1)}
-      else{R("s",x0,y0,1,TILE);R("s",x0+15,y0,1,TILE);R("m",x0+7,y0+2,1,4);R("m",x0+7,y0+10,1,4)}}
+      if(r===ROAD&&c===ROAD){R("w",x0+1,y0-2,6,1);R("w",x0-2,y0+8,1,6);for(let i=0;i<4;i++){R("w",x0+2+i*3,y0+1,2,2);R("w",x0+2+i*3,y0+13,2,2);R("w",x0+1,y0+2+i*3,2,2);R("w",x0+13,y0+2+i*3,2,2)}}
+      else if(r===ROAD){R("s",x0,y0,TILE,1);R("s",x0,y0+15,TILE,1);R("m",x0+2,y0+7,4,1);R("m",x0+10,y0+7,4,1);if(c===ROAD+1)R("w",x0+1,y0+1,1,6)}
+      else{R("s",x0,y0,1,TILE);R("s",x0+15,y0,1,TILE);R("m",x0+7,y0+2,1,4);R("m",x0+7,y0+10,1,4);if(r===ROAD+1)R("w",x0+8,y0+1,6,1)}}
     else{const z=zoneOf(r,c), TN={old:["#C9A97A","#DCC193","#A9895C"],river:["#4FAE9E","#7FD6C4","#2F8C7C"],soft:["#A08A55","#B9A36B","#7E6A3E"],open:["#7CC45A","#A8D86E","#5CA03E"]}[z];
       R(TN[0],x0,y0,TILE,TILE);
       if(z==="old"){ // cobblestone paving
@@ -1812,17 +1812,29 @@ function lifeSync(){
   const nb=S.pieces.filter(p=>p.type!=="green"&&!p.dmg).length, tc=Math.min(10,2+Math.floor(nb/3)), tp=Math.min(14,1+Math.floor(housing()/2));
   const k=tc+"/"+tp; if(k===lifeKey) return; lifeKey=k;
   while(cars.length<tc){ const i=cars.length, lane=i%4, h=lane<2?1:0, d=lane%2?-1:1, same=cars.filter(c=>c.h===h&&c.d===d);
-    let best=0,gap=-1; for(let q=0;q<140;q+=7){ const g=same.length?Math.min(...same.map(c=>Math.min(Math.abs(c.p-q),140-Math.abs(c.p-q)))):140; if(g>gap){gap=g;best=q} }
+    let best=0,gap=-1; for(let q=0;q<140;q+=7){ if(q>=49&&q<=91) continue; const g=same.length?Math.min(...same.map(c=>Math.min(Math.abs(c.p-q),140-Math.abs(c.p-q)))):140; if(g>gap){gap=g;best=q} }
     cars.push({h,d,p:best,col:CAR_COLS[i%CAR_COLS.length]}) }
   cars.length=tc;
   while(peds.length<tp){ const i=peds.length; peds.push({h:i%2,side:(i>>1)%2,d:Math.random()<.5?1:-1,p:Math.random()*120,v:.1+Math.random()*.12,col:SHIRT[i%SHIRT.length],hair:Math.random()<.5?"#3A2A1A":"#1B1B2F"}) }
   peds.length=tp;
 }
+/* traffic lights at the crossroads: one axis green, then yellow, then all-red so the box clears */
+const SIG_T=16000;
+function sigOf(ax,now){ const t=(now+(ax==="v"?SIG_T/2:0))%SIG_T; return t<5200?"g":t<6500?"y":"r" }   // axes offset by 8 s → 1.5 s all-red
+function drawSignals(now){ const o=ROAD*TILE, e=o+TILE, L={g:"#6EE06E",y:"#F2C230",r:"#FF3B30"};
+  // [x,y,axis] : each head faces the traffic that stops next to it
+  for(const [x,y,ax] of [[o-3,o-8,"v"],[e,o-8,"h"],[o-3,e+1,"h"],[e,e+1,"v"]]){ const st=sigOf(ax,now);
+    cx.fillStyle=PAL.k; cx.fillRect(x,y,3,7);
+    [["r","#5A2320"],["y","#5A4A1E"],["g","#1E4A26"]].forEach(([k,dim],i)=>{ cx.fillStyle=st===k?L[k]:dim; cx.fillRect(x+1,y+1+i*2,1,1) }) } }
+// pedestrians cross the side road only while its cars have red
+function pedWait(q,now){ const ax=q.h?"v":"h"; return sigOf(ax,now)!=="r" }
 function person(x,y,col,hair,step){ cx.fillStyle=hair; cx.fillRect(x,y,1,1); cx.fillStyle="#F1C9A0"; cx.fillRect(x,y+1,1,1); cx.fillStyle=col; cx.fillRect(x,y+2,1,1); cx.fillStyle="#1B1B2F"; cx.fillRect(x+(step?1:-1)*0,y+3,1,1) }
 function lifeDraw(now,dt){
   lifeSync();
   const storm=S.busy&&S.zone;   // during a disaster everyone takes shelter
-  if(!storm) for(const q of peds){ q.p+=q.v*q.d*dt; if(q.p>116) q.p=-4; if(q.p<-4) q.p=116; const step=Math.floor(now/180+q.p)%2;
+  if(!storm) for(const q of peds){ const a=ROAD*TILE-2, b=ROAD*TILE+TILE+1, np=q.p+q.v*q.d*dt;
+    const crossing=q.d>0?(q.p<=a&&np>a):(q.p>=b&&np<b), wait=crossing&&pedWait(q,now);
+    if(!wait) q.p=np; if(q.p>116) q.p=-4; if(q.p<-4) q.p=116; const step=wait?0:Math.floor(now/180+q.p)%2;
     if(q.h){ const y=ROAD*TILE+(q.side?12:0); person(Math.round(q.p),y,q.col,q.hair,step) }
     else { const x=ROAD*TILE+(q.side?14:1); person(x,Math.round(q.p),q.col,q.hair,step) } }
 }
@@ -1842,10 +1854,20 @@ function loop(now){
   cx.setTransform(1,0,0,1,0,0); cx.drawImage(BG,0,0);
   // city life: traffic and people grow with the city
   if(!reduce()) lifeDraw(now,dt);
-  // cars
-  if(!reduce()) for(const c of cars){ c.p=(c.p+(S.busy&&S.zone?0:.5)*dt)%140; const pos=c.d>0?c.p-14:126-c.p;
-    if(c.h){ const y=ROAD*TILE+(c.d>0?9:3); cx.fillStyle=PAL.k; cx.fillRect(pos,y,6,4); cx.fillStyle=c.col; cx.fillRect(pos+1,y+1,4,2) }
-    else { const x=ROAD*TILE+(c.d>0?3:9); cx.fillStyle=PAL.k; cx.fillRect(x,pos,4,6); cx.fillStyle=c.col; cx.fillRect(x+1,pos+1,2,4) } }
+  // cars: stop at the red light, queue behind each other, ease off and pull away
+  if(!reduce()){ const halt=S.busy&&S.zone, VMAX=.5;
+    for(const c of cars){ const SL=c.d>0?53:59, ax=c.h?"h":"v", go=sigOf(ax,now)==="g";
+      let lim=Infinity;
+      if(!go&&c.p<=SL+.01&&SL-c.p<24&&!(sigOf(ax,now)==="y"&&SL-c.p<4&&c.v>.3)) lim=SL;     // stop line (on yellow, a car already at the line keeps going)
+      for(const o of cars){ if(o===c||o.h!==c.h||o.d!==c.d) continue; let g=o.p-c.p; if(g<=0) g+=140; if(g<140) lim=Math.min(lim,c.p+g-9) }  // queue
+      if(c.v===undefined) c.v=VMAX;
+      const room=lim-c.p, want=halt?0:room<=0?0:Math.min(VMAX,room/10*VMAX+.02);
+      c.v+= (want-c.v)*(want<c.v?.35:.08)*dt;                                    // brake quickly, pull away gently
+      c.p+=Math.max(0,Math.min(c.v*dt,Math.max(0,room))); if(c.p>=140) c.p-=140 } }
+  if(!reduce()) for(const c of cars){ const pos=c.d>0?c.p-14:126-c.p;
+    const brk=c.v<.2&&!(S.busy&&S.zone);
+    if(c.h){ const y=ROAD*TILE+(c.d>0?9:3); cx.fillStyle=PAL.k; cx.fillRect(pos,y,6,4); cx.fillStyle=c.col; cx.fillRect(pos+1,y+1,4,2); if(brk){ cx.fillStyle="#FF3B30"; cx.fillRect(c.d>0?pos:pos+5,y+1,1,2) } }
+    else { const x=ROAD*TILE+(c.d>0?3:9); cx.fillStyle=PAL.k; cx.fillRect(x,pos,4,6); cx.fillStyle=c.col; cx.fillRect(x+1,pos+1,2,4); if(brk){ cx.fillStyle="#FF3B30"; cx.fillRect(x+1,c.d>0?pos:pos+5,2,1) } } }
   // zone marker (persisting)
   if(S.zone&&S.phase!=="over"){ const z=zoneRect(S.zone), ph=Math.floor(now/140)%4;
     for(let i=0;i<z.w;i++){ cx.fillStyle=(i+ph)%4<2?PAL.r:"#F4F4F4"; cx.fillRect(z.x+i,z.y,1,1); cx.fillRect(z.x+z.w-1-i,z.y+z.h-1,1,1) }
@@ -1861,6 +1883,7 @@ function loop(now){
   const ps=S.pieces.slice().sort((a,b)=>Math.min(...a.cells.map(x=>x[0]))-Math.min(...b.cells.map(x=>x[0])));
   for(const p of ps) drawPiece(p,now);
   if(!reduce()) lifeBldg(now);
+  drawSignals(now);
   // ambient smoke: factories (working) and damaged pieces
   if(!reduce()&&Math.random()<.25*dt) for(const p of S.pieces){
     if(p.type==="factory"&&!p.dmg&&Math.random()<.5){ const r=pieceRect(p), ch=SPR.chimney[sprKey(p)]; parts.push({x:r.x+ch[0]+Math.random()*3,y:r.y+ch[1],vx:.12,vy:-.3,life:0,max:40,col:"#C9CED6",sz:2,fade:1}) }
@@ -2527,7 +2550,7 @@ function start(data){
 }
 try{ window.claude?.hot?.snapshot?.(()=>({state:JSON.parse(JSON.stringify(S))})) }catch(e){}
 window.claude?.hot?.ready ? window.claude.hot.ready(start) : start(window.claude?.hot?.data ?? {});
-window.__mm={get S(){return S},setZoning:v=>{ZONING=!!v},buyTotem:k=>buyTotem(k),totemPrice:()=>totemPrice(),priceOf:t=>priceOf(t),STAR,LOTS,cellsFor:(t,r,c,o)=>cellsFor(t,r,c,o),income:()=>income(),housing:()=>housing(),stars:()=>stars(),canPlace:(t,r,c,o)=>canPlace(t,r,c,o),why:t=>why(t),place:(r,c)=>place(r,c),repair:id=>repair(id),cityImage:n=>cityImage(n),dis:(k,z)=>resolveDisaster({k,z})};
+window.__mm={get S(){return S},get cars(){return cars},get peds(){return peds},setZoning:v=>{ZONING=!!v},buyTotem:k=>buyTotem(k),totemPrice:()=>totemPrice(),priceOf:t=>priceOf(t),STAR,LOTS,cellsFor:(t,r,c,o)=>cellsFor(t,r,c,o),income:()=>income(),housing:()=>housing(),stars:()=>stars(),canPlace:(t,r,c,o)=>canPlace(t,r,c,o),why:t=>why(t),place:(r,c)=>place(r,c),repair:id=>repair(id),cityImage:n=>cityImage(n),dis:(k,z)=>resolveDisaster({k,z})};
 })();
 </script>
 
