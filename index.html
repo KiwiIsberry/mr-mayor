@@ -1825,9 +1825,11 @@ const SIG_T=16000;
 function sigOf(ax,now){ const t=(now+(ax==="v"?SIG_T/2:0))%SIG_T; return t<5200?"g":t<6500?"y":"r" }   // axes offset by 8 s → 1.5 s all-red
 function drawSignals(now){ const o=ROAD*TILE, e=o+TILE, L={g:"#6EE06E",y:"#F2C230",r:"#FF3B30"};
   // [x,y,axis] : each head faces the traffic that stops next to it
-  for(const [x,y,ax] of [[o-3,o-8,"v"],[e,o-8,"h"],[o-3,e+1,"h"],[e,e+1,"v"]]){ const st=sigOf(ax,now);
-    cx.fillStyle=PAL.k; cx.fillRect(x,y,3,7);
-    [["r","#5A2320"],["y","#5A4A1E"],["g","#1E4A26"]].forEach(([k,dim],i)=>{ cx.fillStyle=st===k?L[k]:dim; cx.fillRect(x+1,y+1+i*2,1,1) }) } }
+  // heads stand on the kerb of the road, just before each stop line, beside (not in) the lane — never on a building lot
+  // [x,y,axis,vertical head?]
+  for(const [x,y,ax,vt] of [[o,o-10,"v",1],[e-3,e+3,"v",1],[e+3,o,"h",0],[o-10,e-3,"h",0]]){ const st=sigOf(ax,now);
+    cx.fillStyle=PAL.k; cx.fillRect(x,y,vt?3:7,vt?7:3);
+    [["r","#5A2320"],["y","#5A4A1E"],["g","#1E4A26"]].forEach(([k,dim],i)=>{ cx.fillStyle=st===k?L[k]:dim; vt?cx.fillRect(x+1,y+1+i*2,1,1):cx.fillRect(x+1+i*2,y+1,1,1) }) } }
 // pedestrians cross the side road only while its cars have red
 function pedWait(q,now){ const ax=q.h?"v":"h"; return sigOf(ax,now)!=="r" }
 function person(x,y,col,hair,step){ cx.fillStyle=hair; cx.fillRect(x,y,1,1); cx.fillStyle="#F1C9A0"; cx.fillRect(x,y+1,1,1); cx.fillStyle=col; cx.fillRect(x,y+2,1,1); cx.fillStyle="#1B1B2F"; cx.fillRect(x+(step?1:-1)*0,y+3,1,1) }
@@ -1853,7 +1855,7 @@ function loop(now){
   if(S.modal&&frz){ last=now; return }  // city is hidden behind a dialog: draw it once, then stop burning CPU
   frz=!!S.modal;
   if(now-last<33) return; const dt=Math.min(3,(now-last)/33); last=now;
-  cx.setTransform(1,0,0,1,0,0); cx.drawImage(BG,0,0);
+  cx.setTransform(1,0,0,1,0,0); cx.drawImage(BG,0,0); drawSignals(now);
   // city life: traffic and people grow with the city
   if(!reduce()) lifeDraw(now,dt);
   // cars: stop at the red light, queue behind each other, ease off and pull away
@@ -1885,7 +1887,6 @@ function loop(now){
   const ps=S.pieces.slice().sort((a,b)=>Math.min(...a.cells.map(x=>x[0]))-Math.min(...b.cells.map(x=>x[0])));
   for(const p of ps) drawPiece(p,now);
   if(!reduce()) lifeBldg(now);
-  drawSignals(now);
   // ambient smoke: factories (working) and damaged pieces
   if(!reduce()&&Math.random()<.25*dt) for(const p of S.pieces){
     if(p.type==="factory"&&!p.dmg&&Math.random()<.5){ const r=pieceRect(p), ch=SPR.chimney[sprKey(p)]; parts.push({x:r.x+ch[0]+Math.random()*3,y:r.y+ch[1],vx:.12,vy:-.3,life:0,max:40,col:"#C9CED6",sz:2,fade:1}) }
