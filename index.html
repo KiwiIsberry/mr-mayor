@@ -1628,9 +1628,11 @@ function fitCanvas(){
   let px;
   if(app){ const main=document.querySelector(".main"), zt=$("zbar-top").offsetHeight||34, zb=$("zbar-bot").offsetHeight||34, hi=0;
     const chrome=14+24+26+(18+4)+16, availH=main.clientHeight-(16+6+6)-zt-zb-4-22-4-6;
-    const wide=innerWidth>=1240, sideMin=wide?Math.min(700,Math.max(590,innerWidth*.47)):360;
-    px=Math.max(224,Math.floor(Math.min(availH,innerWidth-sideMin-chrome)));
-    const sideW=wide?Math.max(sideMin,Math.min(980,innerWidth-px-chrome)):Math.max(360,Math.min(560,innerWidth-px-chrome)); main.style.gridTemplateColumns=`minmax(0,1fr) ${sideW}px` }
+    // width actually available: the page is capped (max-width 1680), so on big screens use the container, not the window
+    const W=Math.min(innerWidth,main.clientWidth+24);
+    const wide=innerWidth>=1240, sideMin=wide?Math.min(700,Math.max(590,W*.47)):360;
+    px=Math.max(224,Math.floor(Math.min(availH,W-sideMin-chrome)));
+    const sideW=wide?Math.max(sideMin,Math.min(980,W-px-chrome)):Math.max(360,Math.min(560,W-px-chrome)); main.style.gridTemplateColumns=`minmax(0,1fr) ${sideW}px` }
   else { document.querySelector(".main").style.gridTemplateColumns=""; const availW=box.parentElement.clientWidth-52, tr=document.querySelector(".tray"), th=tr?tr.offsetHeight:0;
     px=Math.max(224,Math.floor(Math.min(availW,innerHeight*0.62,innerHeight-th-118))) }
   cv.style.width=px+"px"; cv.style.height=px+"px";
