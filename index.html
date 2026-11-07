@@ -725,7 +725,7 @@ const isRoad=(r,c)=>r===ROAD||c===ROAD;
 const ZONES={old:{r:[0,2],c:[0,2],hz:"fire",th:"ย่านเก่า",en:"Old Town",col:"#C9A97A"},river:{r:[0,2],c:[4,6],hz:"flood",th:"ริมแม่น้ำ",en:"Riverside",col:"#4FAE9E"},
   soft:{r:[4,6],c:[0,2],hz:"quake",th:"ดินอ่อน",en:"Soft Ground",col:"#A08A55"},open:{r:[4,6],c:[4,6],hz:"storm",th:"ที่โล่ง",en:"Open Plain",col:"#7CC45A"}};
 const zoneOf=(r,c)=>isRoad(r,c)?null:r<ROAD?(c<ROAD?"old":"river"):(c<ROAD?"soft":"open");
-const HAZ={flood:{hits:["house","shop"],zones:["river","river","soft"]},quake:{hits:["condo","factory"],zones:["soft","soft","open"]},
+const HAZ={flood:{hits:["house","shop","factory"],zones:["river","river","soft"]},quake:{hits:["condo","factory"],zones:["soft","soft","open"]},
   storm:{hits:["house","factory"],zones:["open","open","old"]},fire:{hits:["shop","condo"],zones:["old","old","river"]}};
 const LOTS=[];for(let r=0;r<N;r++)for(let c=0;c<N;c++)if(!isRoad(r,c))LOTS.push([r,c]);
 const code=(r,c)=>COLS[c]+(r+1);
@@ -1028,7 +1028,13 @@ const touches=(p,q)=>p.cells.some(a=>q.cells.some(b=>side(a,b)));
 const zoneName=z=>T(ZONES[z].th,ZONES[z].en);
 
 /* decks */
-function drawEvent(){ if(S.practice){ const q=PRACTICE.ev[S.round]; if(q&&q[S.events.length]) return q[S.events.length] } if(!S.evDeck.length){S.evDeck=shuffle(Object.entries(EV).flatMap(([k,v])=>Array(v.n).fill(k)))} return S.evDeck.pop() }
+const EV_CLASH={strike:"investor",investor:"strike",holiday:"tourism",tourism:"holiday"};   // never dealt together: they contradict each other
+function drawEvent(){ if(S.practice){ const q=PRACTICE.ev[S.round]; if(q&&q[S.events.length]) return q[S.events.length] }
+  const fresh=()=>shuffle(Object.entries(EV).flatMap(([k,v])=>Array(v.n).fill(k))), ok=k=>!S.events.includes(EV_CLASH[k]);
+  if(!S.evDeck.length) S.evDeck=fresh();
+  let i=S.evDeck.length-1; while(i>=0&&!ok(S.evDeck[i])) i--;              // skip a card that clashes with the one already dealt; it stays in the deck
+  if(i<0){ S.evDeck=fresh().concat(S.evDeck); i=S.evDeck.length-1; while(!ok(S.evDeck[i])) i-- }
+  return S.evDeck.splice(i,1)[0] }
 function refillDis(){ S.disDeck=shuffle(TOT.flatMap(k=>HAZ[k].zones.map(z=>({k,z}))).concat(Array(S.ff).fill(0).map(()=>({k:"ffire"})))) }
 function drawDis(){ if(S.practice&&S.round===4) return {...PRACTICE.dis}; if(!S.disDeck.length) refillDis(); return S.disDeck.pop() }
 const disLabel=(c,lg)=>c.k==="ffire"?DIS.ffire[lg]:`${DIS[c.k][lg]} · ${lg==="th"?ZONES[c.z].th:ZONES[c.z].en}`;
@@ -1110,7 +1116,7 @@ function splash(card,blocked,cb){
   if(reduce()){ go(); return }
   const k=card.k, d=DIS[k];
   const zh=k==="ffire"?T("สุ่มโรงงาน 1 แห่ง · พังพร้อมอาคารที่ติดกัน","A random factory and everything touching it")
-    :`<b>${zoneName(card.z)}</b> · ${HAZ[k].hits.map(t=>`${img(t)}${nm(t)}`).join(" ")}`;
+    :`<b>${zoneName(card.z)}</b> · ${HAZ[k].hits.map(t=>`<span style="white-space:nowrap">${img(t)}${nm(t)}</span>`).join(" ")}`;
   el.innerHTML=`<div class="sp-bg"></div><div class="scard${blocked?" blk":""}"><div class="sk">${T("⚠ ภัยพิบัติ","⚠ DISASTER")}</div><img class="sart" src="${art(k)}" alt=""><div class="st">${T(d.th,d.en)}</div><div class="sz">${zh}</div>${blocked?`<div class="stamp">${timg(TOTEM_OF[k])}<span>${T(TOTEM[TOTEM_OF[k]][0],TOTEM[TOTEM_OF[k]][1])}</span><small>${T("กันได้!","BLOCKED!")}</small></div>`:""}<div class="skip">${T("แตะเพื่อข้าม","tap to skip")}</div></div>`;
   el.className="show"; splashDone=()=>{ el.className="out"; setTimeout(go,260) };
   setTimeout(()=>{ if(!fired&&splashDone) splashDone() }, blocked?2100:1750);
@@ -1232,7 +1238,7 @@ async function drawDisaster(ov){
   const k=card.k, d=DIS[k], blocked=S.totems.includes(TOTEM_OF[k]);
   ov.classList.remove("wait"); ov.querySelector(".taphint").style.opacity=0; ov.querySelector(".ovtitle").classList.add("gone");
   ov.querySelector(".edeck i:last-child").classList.add("off");
-  const zh=k==="ffire"?T("สุ่มโรงงาน 1 แห่ง · พังพร้อมอาคารที่ติดกัน","A random factory and everything touching it"):`<b>${zoneName(card.z)}</b> · ${HAZ[k].hits.map(t=>`${img(t)}${nm(t)}`).join(" ")}`;
+  const zh=k==="ffire"?T("สุ่มโรงงาน 1 แห่ง · พังพร้อมอาคารที่ติดกัน","A random factory and everything touching it"):`<b>${zoneName(card.z)}</b> · ${HAZ[k].hits.map(t=>`<span style="white-space:nowrap">${img(t)}${nm(t)}</span>`).join(" ")}`;
   ov.querySelector(".dslot").innerHTML=`<div class="dcard${blocked?" blk":""}"><div class="eback red"><span>⚠<b>${T("ภัยพิบัติ","DISASTER")}</b></span></div>
     <div class="dface"><div class="sk">${T("⚠ ภัยพิบัติ","⚠ DISASTER")}</div><img class="sart" src="${art(k)}" alt=""><div class="st">${T(d.th,d.en)}</div><div class="sz">${zh}</div></div></div>`;
   SFX.cards(1,.05,1);
@@ -2265,8 +2271,8 @@ function renderModal(){
      {t:T("ภัยพิบัติลงที่ไหน","Where disasters strike"),b:`
       <p>${T("เมืองแบ่งเป็น <b>4 โซน</b> แต่ละโซนมีภัยที่เจอบ่อย","The city has <b>4 zones</b>, each with a hazard it gets most")}</p>
       <div class="ig4 zones">${Object.keys(ZONES).map(z=>`<div class="zc z-${z}">${img(ZONES[z].hz)}<b>${zoneName(z)}</b><span>${T("เสี่ยง","mostly")} ${T(DIS[ZONES[z].hz].th,DIS[ZONES[z].hz].en)}</span></div>`).join("")}</div>
-      <p>${T("การ์ดภัยบอก <b>โซน</b> และ <b>อาคาร 2 แบบ</b> ที่จะพัง เช่น","A disaster card names a <b>zone</b> and <b>2 building types</b>, e.g.")}</p>
-      <div class="exc">${img("flood")}<div><b>${T("น้ำท่วม · ริมแม่น้ำ","Flood · Riverside")}</b><span>${T("บ้านและร้านค้า<b>ทุกหลัง</b>ในโซนริมแม่น้ำพัง · อาคารแบบอื่นและโซนอื่นไม่เป็นอะไร","<b>every</b> house and shop in Riverside is damaged. Other types and zones are fine.")}</span></div></div>
+      <p>${T("การ์ดภัยบอก <b>โซน</b> และ <b>แบบอาคาร</b> ที่จะพัง เช่น","A disaster card names a <b>zone</b> and the <b>building types</b> it damages, e.g.")}</p>
+      <div class="exc">${img("flood")}<div><b>${T("น้ำท่วม · ริมแม่น้ำ","Flood · Riverside")}</b><span>${T("บ้าน ร้านค้า และโรงงาน<b>ทุกหลัง</b>ในโซนริมแม่น้ำพัง · อาคารแบบอื่นและโซนอื่นไม่เป็นอะไร","<b>every</b> house, shop and factory in Riverside is damaged. Other types and zones are fine.")}</span></div></div>
       <p class="sm">${T("อาคารที่<b>พัง</b> = ไม่ได้เงิน และไม่นับดาว จนกว่าจะซ่อม · ชี้ที่ช่องบนแผนที่เพื่อดูว่าช่องนั้นเสี่ยงอะไร","A <b>damaged</b> building earns nothing and scores nothing until repaired. Point at a lot to see its risks.")}</p>`},
      {t:T("ป้องกันเมือง","Protect your city"),b:`
       <div class="bt">
@@ -2433,8 +2439,8 @@ const TSTEPS=[
     "Bring the risk back down with a <b>park</b>. Tap Park and place it anywhere.<br><span class=\"good\">Each park −1 (up to −3)</span>: green space soaks up rain, cools the city and breaks fires.",{sel:'[data-buy="green"]',r:2,enter:()=>topUp(4),done:()=>cnt("green")>1}),
  PT("ความเสี่ยงลดลงแล้ว กด <b>จบรอบ</b>","Risk is back down. Press <b>End round</b>.",{sel:"#act",r:2,end:1,done:()=>S.round>=3}),
  // round 3 — zones and protection
- PT("เมืองมี <b>4 โซน</b> แต่ละโซนเจอภัยคนละแบบ (ดูป้ายบนและล่างแผนที่)<br>เมืองฝึกของเราอยู่<b>ริมแม่น้ำ</b> ซึ่งเสี่ยง<b>น้ำท่วม</b> และน้ำท่วมทำให้บ้านกับร้านค้าพัง",
-    "The city has <b>4 zones</b>, each with its own hazard (see the bars above and below the map).<br>Our town is in <b>Riverside</b>, which <b>floods</b> — and floods wreck houses and shops.",{sel:"#zbar-top",r:3,next:1,enter:()=>{ S.tool=null; render() }}),
+ PT("เมืองมี <b>4 โซน</b> แต่ละโซนเจอภัยคนละแบบ (ดูป้ายบนและล่างแผนที่)<br>เมืองฝึกของเราอยู่<b>ริมแม่น้ำ</b> ซึ่งเสี่ยง<b>น้ำท่วม</b> และน้ำท่วมทำให้บ้าน ร้านค้า และโรงงานพัง",
+    "The city has <b>4 zones</b>, each with its own hazard (see the bars above and below the map).<br>Our town is in <b>Riverside</b>, which <b>floods</b> — and floods wreck houses, shops and factories.",{sel:"#zbar-top",r:3,next:1,enter:()=>{ S.tool=null; render() }}),
  PT("เตรียมรับภัย: แตะ <b>🛡 เสริม</b> (3 เหรียญ) อาคารที่เสริมแล้วจะรอดภัยได้ 1 ครั้ง ถูกกว่าซ่อมมาก",
     "Get ready: tap <b>🛡 Reinforce</b> (3 coins). A reinforced building survives one disaster — far cheaper than repairing.",{sel:"#reinforce",r:3,enter:()=>topUp(3),done:()=>S.tool==="reinforce"||riverRF()}),
  PT("แตะ<b>บ้านหรือร้านค้าในโซนริมแม่น้ำ</b> 1 หลังเพื่อเสริม","Tap one <b>house or shop in Riverside</b> to reinforce it.",{sel:"#stage",r:3,done:riverRF}),
