@@ -1513,7 +1513,7 @@ function resolveDisaster(card){
   if(k==="ffire"){
     const fs=S.pieces.filter(p=>p.type==="factory");
     if(!fs.length){ log("ไฟไหม้โรงงาน แต่ไม่มีโรงงาน","Factory fire, but no factory","good"); S.msg={th:"ไม่มีโรงงานในเมือง ไม่เกิดอะไร",en:"No factory in the city. Nothing happens."}; S.phase="build"; render(); return }
-    const f=fs[rnd(fs.length)];
+    const f=fs[rnd(fs.length)]; S.ffSrc=f.id;
     targets=S.pieces.filter(p=>p===f||(p.type!=="green"&&touches(p,f)));
     const rs=f.cells.map(x=>x[0]), cs=f.cells.map(x=>x[1]);
     box={r0:Math.max(0,Math.min(...rs)-1),r1:Math.min(N-1,Math.max(...rs)+1),c0:Math.max(0,Math.min(...cs)-1),c1:Math.min(N-1,Math.max(...cs)+1),fac:true};
@@ -1526,7 +1526,7 @@ function resolveDisaster(card){
 function strike(k,box,targets){
   S.zone=box; S.hits=[]; S.saved=[];
   for(const p of targets){ if(p.dmg) continue; if(p.rf){ p.rf=false; S.saved.push(p.id); continue } p.dmg=true; p.dk=k; S.hits.push(p.id) }
-  S.stats.hits+=S.hits.length; S.stats.saved+=S.saved.length; S.stats.zhit=S.stats.zhit||{}; if(k==="ffire") S.stats.ffhits=(S.stats.ffhits||0)+S.hits.length;
+  S.stats.hits+=S.hits.length; S.stats.saved+=S.saved.length; S.stats.zhit=S.stats.zhit||{}; if(k==="ffire") S.stats.ffhits=(S.stats.ffhits||0)+S.hits.filter(id=>id!==S.ffSrc).length;
   S.hits.forEach(id=>{const q=S.pieces.find(x=>x.id===id); const z=q&&zoneOf(q.cells[0][0],q.cells[0][1]); if(z) S.stats.zhit[z]=(S.stats.zhit[z]||0)+1});
   const card=S.disCard, names=S.hits.map(id=>nm(S.pieces.find(p=>p.id===id).type));
   log(`${disLabel(card,"th")}: พัง ${S.hits.length} หลัง${S.saved.length?` · เสริมแล้วรอด ${S.saved.length}`:""}`,`${disLabel(card,"en")}: ${S.hits.length} damaged${S.saved.length?` · ${S.saved.length} saved by reinforcement`:""}`,S.hits.length?"bad":"good");
@@ -1568,6 +1568,7 @@ function why(t){
   if(S.coins<priceOf(t)) return T("เงินไม่พอ","Not enough coins");
   if(NEEDS_HOME[t]&&!anySpot(t)) return T("ไม่มีช่องว่างที่ติดบ้านหรือคอนโด","No free lot next to a house or apartment block");
   if(t==="factory"&&!anySpot(t)) return T("ไม่มีช่องว่างที่ห่างจากบ้านและคอนโด","No free lots away from houses and apartment blocks");
+  if(!anySpot(t)) return HOMES[t]&&S.pieces.some(p=>p.type==="factory")?T("ไม่มีช่องว่างที่ไม่ติดโรงงาน","No free lot that isn't next to a factory"):T("ไม่มีช่องว่างที่วางได้","No free lot left for this");
   return "";
 }
 function place(r,c){
@@ -2077,7 +2078,7 @@ function hoverInfo(){
   if(S.tool==="green") msg=T("สวนไม่พังจากภัย","Parks are never damaged");
   else if(t) msg=list.length?`${T(`${nm(t)}ตรงนี้โดนได้จาก`,`A ${nm(t).toLowerCase()} here can be hit by`)} ${list.map(fmt).join(" ")}`:`<span class="th safe">${T(`${nm(t)}ปลอดภัยจากการ์ดภัยของโซนนี้`,`No disaster card in this zone hits a ${nm(t).toLowerCase()}`)}</span>`;
   else msg=`${T("การ์ดภัยของโซนนี้","Disaster cards here")}: ${list.map(fmt).join(" ")}`;
-  el.innerHTML=`<b>${code(r,c)}</b> · <b class="zn z-${z}">${zoneName(z)}</b> · ${msg}${t&&(t==="factory"||t==="shop"||t==="house"||t==="condo")&&S.pieces.some(p=>p.type==="factory")?` <small>· ${T("+ ไฟไหม้โรงงานถ้าติดโรงงาน","+ factory fire if touching a factory")}</small>`:""}`;
+  el.innerHTML=`<b>${code(r,c)}</b> · <b class="zn z-${z}">${zoneName(z)}</b> · ${msg}${t&&(t==="factory"||t==="shop")&&S.pieces.some(p=>p.type==="factory")?` <small>· ${T("+ ไฟไหม้โรงงานถ้าติดโรงงาน","+ factory fire if touching a factory")}</small>`:""}`;
 }
 function renderAxes(){ const z=S.zone, on=z&&S.phase!=="over";
   $("lx").innerHTML=[...COLS].map((l,i)=>`<span class="${on&&i>=z.c0&&i<=z.c1?"hl":""}">${l}</span>`).join("");
@@ -2260,7 +2261,7 @@ function renderModal(){
        <li><b>2</b><div><b>${T("รับเงิน","Collect income")}</b><span>${T("ทุกอาคารที่ไม่พังจ่ายเงินให้คุณ เช่น บ้าน 2 หลัง + ร้าน 1 ร้าน = 1+1+2 = 4 เหรียญ","every working building pays you, e.g. 2 houses + 1 shop = 1+1+2 = 4 coins")}</span></div></li>
        <li><b>3</b><div><b>${T("ทอยลูกเต๋า 2 ลูก","Roll 2 dice")}</b><span>${T("รวมแต้มแล้วเทียบกับ <b>ความเสี่ยง</b> (มุมขวาบน) · ได้<b>เท่ากับหรือน้อยกว่า</b> = เกิดภัย · ได้มากกว่า = ปลอดภัย<br>เช่น ความเสี่ยง 6 ทอยได้ 5 → เกิดภัย · ทอยได้ 9 → รอด","add them up and compare with the <b>risk</b> (top right). <b>Equal or lower</b> = disaster. Higher = safe.<br>e.g. risk 6: roll 5 → disaster, roll 9 → safe")}</span></div></li>
        <li><b>4</b><div><b>${T("บริหารเมือง","Run your city")}</b><span>${T("ใช้เงินสร้าง ซ่อม ป้องกันภัย ได้กี่อย่างก็ได้ แล้วกด <b>จบรอบ</b>","spend on building, repairing and protection as you like, then press <b>End round</b>")}</span></div></li></ol>
-      <p class="sm">${T("ความเสี่ยงสูงขึ้นทุกปี: ปีที่ 1 = 4 · ปี 2 = 6 · ปี 3 = 8 · ปี 4 = 10 · โรงงาน 1 หลัง +1 (สูงสุด 12) · <b>สวน 1 แห่ง −1 (ลดได้สูงสุด 3)</b>","Risk rises each year: 4 · 6 · 8 · 10 · +1 per factory (max 12) · <b>−1 per park (up to −3)</b>")}</p>`},
+      <p class="sm">${T("ความเสี่ยงสูงขึ้นทุกปี: ปีที่ 1 = 4 · ปี 2 = 6 · ปี 3 = 8 · ปี 4 = 10 · โรงงาน 1 หลัง +1 (สูงสุด 12) · <b>สวน 1 แห่ง −1 (ลดได้สูงสุด 3)</b> · ต่ำสุด 2","Risk rises each year: 4 · 6 · 8 · 10 · +1 per factory (max 12) · <b>−1 per park (up to −3)</b> · never below 2")}</p>`},
      {t:T("ภัยพิบัติลงที่ไหน","Where disasters strike"),b:`
       <p>${T("เมืองแบ่งเป็น <b>4 โซน</b> แต่ละโซนมีภัยที่เจอบ่อย","The city has <b>4 zones</b>, each with a hazard it gets most")}</p>
       <div class="ig4 zones">${Object.keys(ZONES).map(z=>`<div class="zc z-${z}">${img(ZONES[z].hz)}<b>${zoneName(z)}</b><span>${T("เสี่ยง","mostly")} ${T(DIS[ZONES[z].hz].th,DIS[ZONES[z].hz].en)}</span></div>`).join("")}</div>
@@ -2269,7 +2270,7 @@ function renderModal(){
       <p class="sm">${T("อาคารที่<b>พัง</b> = ไม่ได้เงิน และไม่นับดาว จนกว่าจะซ่อม · ชี้ที่ช่องบนแผนที่เพื่อดูว่าช่องนั้นเสี่ยงอะไร","A <b>damaged</b> building earns nothing and scores nothing until repaired. Point at a lot to see its risks.")}</p>`},
      {t:T("ป้องกันเมือง","Protect your city"),b:`
       <div class="bt">
-       <div><span class="tico4">${["flood","quake","storm","fire"].map(k=>timg(k)).join("")}</span><b>Totem</b><span>${T("กันภัยแบบนั้นได้<b>ทั้งใบ ทุกโซน ตลอดเกม</b> มี 4 แบบ (คันกั้นน้ำ · วิศวกร · ไซเรนเตือนพายุ · รถดับเพลิง) · ราคาขึ้นทุกอันที่ซื้อ: 8 → 12 → 16 → 20","blocks that hazard <b>everywhere, for the rest of the game</b>. 4 kinds. Each costs more: 8 → 12 → 16 → 20")}</span></div>
+       <div><span class="tico4">${["flood","quake","storm","fire"].map(k=>timg(k)).join("")}</span><b>Totem</b><span>${T("กันภัยแบบนั้นได้<b>ทั้งใบ ทุกโซน ตลอดเกม</b> มี 4 แบบ (คันกั้นน้ำ · วิศวกร · ไซเรนเตือนพายุ · รถดับเพลิง) · รถดับเพลิงกัน<b>ไฟไหม้โรงงาน</b>ด้วย · ราคาขึ้นทุกอันที่ซื้อ: 8 → 12 → 16 → 20","blocks that hazard <b>everywhere, for the rest of the game</b>. 4 kinds. Firefighters also stop <b>factory fires</b>. Each costs more: 8 → 12 → 16 → 20")}</span></div>
        <div>${img("shield")}<b>${T("เสริมความแข็งแรง","Reinforce")}</b><span>${T("3 เหรียญ · ใส่บนอาคาร 1 หลัง โดนภัยครั้งหน้าไม่พัง แล้วโทเคนหายไป","3 coins · put on one building; it ignores the next hit, then the token is used up")}</span></div>
        <div><i class="gl">✚</i><b>${T("ซ่อม","Repair")}</b><span>${T("จ่ายเท่าราคาสร้าง อาคารกลับมาใช้ได้","pay the building's cost to fix it")}</span></div>
        <div><i class="gl">✖</i><b>${T("รื้อ","Demolish")}</b><span>${T("ฟรี ไม่ได้เงินคืน · ใช้ย้ายอาคารที่วางผิดที่","free, no refund · use it to move a badly placed building")}</span></div></div>`},
@@ -2408,6 +2409,7 @@ const cnt=t=>S.pieces.filter(p=>p.type===t).length;
 const riverRF=()=>S.pieces.some(p=>p.rf&&(p.type==="house"||p.type==="shop")&&zoneOf(p.cells[0][0],p.cells[0][1])==="river");
 const topUp=n=>{ if(S.coins<n){ const d=n-S.coins; S.coins=n; bump(d); toast(T(`โหมดฝึก: เติมเงินให้ +${d}`,`Practice: +${d} coins top-up`)) } render() };
 const PT=(th,en,o)=>Object.assign({th,en},o);
+const r4ready=()=>S.round>=4&&S.phase==="build"&&!S.busy;   // the practice flood has been resolved
 const TSTEPS=[
  // round 1 — build a town
  PT("นี่คือ <b>เหรียญ</b> ของเมือง อาคารที่ไม่พังให้รายได้ทุกต้นรอบ<br>รอบนี้ได้ +4 จากเมือง และการ์ด +3 กับ −3 หักลบกันพอดี",
@@ -2440,9 +2442,11 @@ const TSTEPS=[
     "Ready. Press <b>End round</b>.<br><small>Placed something wrong? <b>↶ Undo</b> works until you end the round · <b>✖ Demolish</b> is free but refunds nothing.</small>",{sel:"#act",r:3,end:1,done:()=>S.round>=4}),
  // round 4 — the disaster
  PT("<b>น้ำท่วมริมแม่น้ำ!</b> อาคารที่<span class=\"good\">เสริมไว้รอด</span> (โล่ใช้ไปแล้ว ต้องเสริมใหม่) ที่เหลือ<span class=\"bad\">พัง</span><br>อาคารที่พัง<b>ไม่ให้เงินและไม่นับดาว</b>จนกว่าจะซ่อม",
-    "<b>Riverside flood!</b> The <span class=\"good\">reinforced building survived</span> (its shield is used up). The rest are <span class=\"bad\">damaged</span>.<br>Damaged buildings <b>earn nothing and don't count for stars</b> until repaired.",{sel:"#stage",r:4,next:1}),
+    "<b>Riverside flood!</b> The <span class=\"good\">reinforced building survived</span> (its shield is used up). The rest are <span class=\"bad\">damaged</span>.<br>Damaged buildings <b>earn nothing and don't count for stars</b> until repaired.",{sel:"#stage",r:4,next:1,skip:()=>r4ready()&&!S.pieces.some(p=>p.dmg)}),
+ PT("<b>น้ำท่วมริมแม่น้ำ!</b> แต่เมืองเรา<span class=\"good\">ไม่พังเลย</span> เพราะเตรียมรับมือไว้ก่อน (Totem กันได้ทั้งใบ · หลังที่เสริมไว้รอดแต่โล่ใช้ไปแล้ว ต้องเสริมใหม่)<br>ถ้าอาคารพัง จะ<b>ไม่ให้เงินและไม่นับดาว</b>จนกว่าจะซ่อม (ค่าซ่อม = ราคาสร้าง)",
+    "<b>Riverside flood!</b> But <span class=\"good\">nothing was damaged</span> because you prepared (a Totem blocks the whole card · reinforced buildings survive, but the shield is used up).<br>A damaged building <b>earns nothing and doesn't count for stars</b> until repaired (repair = building price).",{sel:"#stage",r:4,next:1,skip:()=>r4ready()&&(S.pieces.some(p=>p.dmg)||S.undo.some(u=>u.kind==="repair"))}),
  PT("การ์ด<b>อาสาสมัครซ่อมเมือง</b>ให้ซ่อมฟรี 1 หลัง แตะ <b>✚ ซ่อม</b> แล้วแตะอาคารที่พัง<br><small>ปกติค่าซ่อม = ราคาสร้าง</small>",
-    "The <b>Repair volunteers</b> card gives one free repair. Tap <b>✚ Repair</b>, then a damaged building.<br><small>Normally a repair costs the full building price.</small>",{sel:"#repair",r:4,done:()=>S.undo.some(u=>u.kind==="repair")}),
+    "The <b>Repair volunteers</b> card gives one free repair. Tap <b>✚ Repair</b>, then a damaged building.<br><small>Normally a repair costs the full building price.</small>",{sel:"#repair",r:4,done:()=>S.undo.some(u=>u.kind==="repair"),skip:()=>r4ready()&&!S.pieces.some(p=>p.dmg)}),
  PT("<b>Totem</b> กันภัยแบบหนึ่งได้<b>ทั้งใบ ตลอดเกม</b> (ราคาแพงขึ้นทุกอัน 8 → 12 → 16 → 20)<br>การ์ด<b>รัฐอุดหนุน</b>ลดให้ 3 ซื้อ <b>คันกั้นน้ำ</b>เลย ถ้ามีตั้งแต่แรก น้ำท่วมเมื่อกี้จะไม่ทำอะไรเมืองเลย",
     "A <b>Totem</b> blocks one hazard <b>completely, for the whole game</b> (each costs more: 8 → 12 → 16 → 20).<br>The <b>Safety subsidy</b> takes 3 off. Buy the <b>Flood wall</b> — with it, that flood would have done nothing.",{sel:"#totem-panel",r:4,enter:()=>topUp(totemPrice()),done:()=>S.totems.length>0}),
  PT("<b>เป้าหมาย</b>: เก็บดาว 4 ด้าน ด้านละ 2 ดวง<br>เศรษฐกิจ (รายได้) · สังคม (ที่อยู่) · สิ่งแวดล้อม (สวน) · พร้อมรับภัย (Totem)<br>นับตอนจบรอบ 12 · ครบ <b>8 ดาว = Best Mayor 👑</b>",
