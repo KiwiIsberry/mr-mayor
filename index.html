@@ -2420,8 +2420,8 @@ const TSTEPS=[
  // round 1 — build a town
  PT("นี่คือ <b>เหรียญ</b> ของเมือง อาคารที่ไม่พังให้รายได้ทุกต้นรอบ<br>รอบนี้ได้ +4 จากเมือง และการ์ด +3 กับ −3 หักลบกันพอดี",
     "These are your <b>coins</b>. Every undamaged building pays you at the start of each round.<br>+4 from the town this round; the +3 and −3 cards cancel out.",{sel:"#status .stat:nth-child(2)",next:1,r:1}),
- PT("<b>อาคาร</b> (ราคา · ได้อะไร)<br>🏠 <b>บ้าน</b> 4 · +1/รอบ · ที่อยู่ 1<br>🏪 <b>ร้านค้า</b> 7 · +2/รอบ · ต้องติดบ้าน<br>🏭 <b>โรงงาน</b> 8 · +4/รอบ <span class=\"bad\">แต่เพิ่มความเสี่ยง</span><br>🏢 <b>คอนโด</b> 10 · ที่อยู่ 4<br>🌳 <b>สวน</b> 4 · <span class=\"good\">ลดความเสี่ยง</span>",
-    "<b>Buildings</b> (cost · what you get)<br>🏠 <b>House</b> 4 · +1/round · housing 1<br>🏪 <b>Shop</b> 7 · +2/round · must touch a home<br>🏭 <b>Factory</b> 8 · +4/round <span class=\"bad\">but raises risk</span><br>🏢 <b>Apartments</b> 10 · housing 4<br>🌳 <b>Park</b> 4 · <span class=\"good\">lowers risk</span>",{sel:"#trayin .pal",next:1,r:1}),
+ PT("<b>อาคาร</b> (ราคา · ได้อะไร)<br>🏠 <b>บ้าน</b> 4 · +1/รอบ · ที่อยู่ 1<br>🏪 <b>ร้านค้า</b> 7 · +2/รอบ · ต้องติดบ้าน<br>🏭 <b>โรงงาน</b> 8 · +4/รอบ <span class=\"bad\">แต่เพิ่มความเสี่ยง</span><br>🏢 <b>คอนโด</b> 10 · +1/รอบ · ที่อยู่ 4 (2 ช่อง)<br>🌳 <b>สวน</b> 4 · <span class=\"good\">ลดความเสี่ยง</span>",
+    "<b>Buildings</b> (cost · what you get)<br>🏠 <b>House</b> 4 · +1/round · housing 1<br>🏪 <b>Shop</b> 7 · +2/round · must touch a home<br>🏭 <b>Factory</b> 8 · +4/round <span class=\"bad\">but raises risk</span><br>🏢 <b>Apartments</b> 10 · +1/round · housing 4 (2 lots)<br>🌳 <b>Park</b> 4 · <span class=\"good\">lowers risk</span>",{sel:"#trayin .pal",next:1,r:1}),
  PT("มาสร้างเมืองกัน แตะปุ่ม <b>บ้าน</b>","Let's build. Tap <b>House</b>.",{sel:'[data-buy="house"]',r:1,enter:()=>topUp(4),done:()=>S.tool==="house"||cnt("house")>2}),
  PT("แตะ<b>ช่องว่าง</b>บนแผนที่เพื่อวางบ้าน (ถนนวางไม่ได้)","Tap an <b>empty lot</b> on the map to place it (not on a road).",{sel:"#stage",r:1,done:()=>cnt("house")>2}),
  PT("ต่อไปแตะ <b>ร้านค้า</b> แล้ววาง<b>ติดด้านข้าง</b>กับบ้านหรือคอนโด (ทแยงไม่นับ) เพราะร้านต้องมีคนอยู่ใกล้ๆ มาซื้อของ",
