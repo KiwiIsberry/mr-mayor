@@ -719,7 +719,7 @@ details.log summary{cursor:pointer;font-weight:700}
    Round: 2 event cards -> income -> 2d6 <= risk -> disaster card -> (no Totem) location card -> 3x3 zone damaged -> build -> win check. */
 const N=7, ROAD=3, ROUNDS=12, TILE=16;
 const PRICE={house:4,shop:7,factory:8,condo:10,green:4}, TOTEM_STEPS=[8,12,16,20];
-const INCOME={house:1,shop:2,factory:4,condo:1}, SIZE={factory:2,condo:2}, NEEDS_HOME={shop:1}, RF_PRICE=3;
+const INCOME={house:1,shop:2,factory:4,condo:2}, SIZE={factory:2,condo:2}, NEEDS_HOME={shop:1}, RF_PRICE=3;
 let ZONING=true; // factories may not share a side with a house/condo (and vice versa)
 const STAR={income:[22,36],housing:[14,24],green:[3,6],totems:[2,4]}, STAR_KEYS=["income","housing","green","totems"];
 const STAR_LAB={income:["รายได้","income","เศรษฐกิจ","Economy","รายได้ต่อรอบ","income / round"],housing:["ที่อยู่","housing","สังคม","Society","ที่อยู่: บ้าน 1 · คอนโด 4","housing: house 1 · block 4"],
@@ -2214,7 +2214,7 @@ function renderTray(){
   }
   let tip="";
   if(S.phase==="build"&&!S.busy){
-    if(PRICE[S.tool]){ const t=S.tool, w=why(t); const info={house:T("รายได้ 1 · ที่อยู่ 1 · ห้ามติดโรงงาน","income 1 · housing 1 · not next to a factory"),shop:T("รายได้ 2 · ต้องติดบ้าน/คอนโด","income 2 · must touch a home"),factory:T("รายได้ 4 · ห้ามติดบ้าน/คอนโด · เสี่ยง +1 · 2 ช่อง","income 4 · not next to homes · risk +1 · 2 lots"),condo:T("รายได้ 1 · ที่อยู่ 4 · 2 ช่อง · ห้ามติดโรงงาน","income 1 · housing 4 · 2 lots · not next to a factory"),green:T("ความเสี่ยง −1 (สูงสุด −3) · นับดาวสิ่งแวดล้อม · ไม่พัง","risk −1 (up to −3) · counts for park stars · never damaged")}[t];
+    if(PRICE[S.tool]){ const t=S.tool, w=why(t); const info={house:T("รายได้ 1 · ที่อยู่ 1 · ห้ามติดโรงงาน","income 1 · housing 1 · not next to a factory"),shop:T("รายได้ 2 · ต้องติดบ้าน/คอนโด","income 2 · must touch a home"),factory:T("รายได้ 4 · ห้ามติดบ้าน/คอนโด · เสี่ยง +1 · 2 ช่อง","income 4 · not next to homes · risk +1 · 2 lots"),condo:T("รายได้ 2 · ที่อยู่ 4 · 2 ช่อง · ห้ามติดโรงงาน","income 2 · housing 4 · 2 lots · not next to a factory"),green:T("ความเสี่ยง −1 (สูงสุด −3) · นับดาวสิ่งแวดล้อม · ไม่พัง","risk −1 (up to −3) · counts for park stars · never damaged")}[t];
       tip=`<b>${nm(t)}</b> · ${info} → ${w?`<span class="w">${w}</span>`:(isTouch()?T("แตะช่องเพื่อดูตัวอย่าง แตะซ้ำเพื่อวาง","tap a lot to preview, tap again to build"):T("แตะช่องว่างบนแผนที่","tap an empty lot on the map"))}` }
     else if(S.tool==="repair") tip=T(`แตะอาคารที่พังเพื่อซ่อม (ราคาเต็ม)${S.mod.freerepair?` · ซ่อมฟรีเหลือ ${S.mod.freerepair}`:""}`,`Tap a damaged building to repair it (full price)${S.mod.freerepair?` · ${S.mod.freerepair} free repair left`:""}`);
     else if(S.tool==="demolish") tip=T("แตะอาคารเพื่อรื้อทิ้ง (ฟรี ไม่ได้เงินคืน) ใช้ย้ายอาคารที่วางผิดโซน หรือเคลียร์อาคารที่พังแทนการซ่อม · กดย้อนได้","Tap a building to demolish it (free, no refund). Use it to move a badly placed building or clear a damaged one instead of repairing · Undo works");
@@ -2277,7 +2277,7 @@ function renderModal(){
       <p class="sm">${T("<b>ราคา</b> = จ่ายครั้งเดียวตอนสร้าง · <b>ได้เงิน</b> = เหรียญที่อาคารนี้ทำให้ทุกรอบ · <b>ครอบครัว</b> = นับเป็นที่อยู่อาศัย","<b>Cost</b> = paid once to build · <b>Earns</b> = coins it makes every round · <b>Families</b> = counts as housing")}</p>
       <div class="bt">
        <div>${ib("house")}<b>${T("บ้าน","House")}</b><span>${T("ราคา 4 · ได้เงิน 1/รอบ · อยู่ได้ <b>1 ครอบครัว</b>","cost 4 · earns 1/round · houses <b>1 family</b>")}</span></div>
-       <div>${ib("condo")}<b>${T("คอนโด","Apartments")}</b><span>${T("ราคา 10 · ได้เงิน 1/รอบ · อยู่ได้ <b>4 ครอบครัว</b> · ใช้ 2 ช่อง","cost 10 · earns 1/round · houses <b>4 families</b> · 2 lots")}</span></div>
+       <div>${ib("condo")}<b>${T("คอนโด","Apartments")}</b><span>${T("ราคา 10 · ได้เงิน 2/รอบ · อยู่ได้ <b>4 ครอบครัว</b> · ใช้ 2 ช่อง","cost 10 · earns 2/round · houses <b>4 families</b> · 2 lots")}</span></div>
        <div>${ib("shop")}<b>${T("ร้านค้า","Shop")}</b><span>${T("ราคา 7 · ได้เงิน <b>2</b>/รอบ · ต้องวางติดบ้านหรือคอนโด","cost 7 · earns <b>2</b>/round · must touch a home")}</span></div>
        <div>${ib("factory")}<b>${T("โรงงาน","Factory")}</b><span>${T("ราคา 8 · ได้เงิน <b>4</b>/รอบ · ใช้ 2 ช่อง · <b>ห้ามวางติดบ้านหรือคอนโด</b> (ทแยงได้) · ทำให้เมืองเสี่ยงภัยมากขึ้น","cost 8 · earns <b>4</b>/round · 2 lots · <b>can't touch a house or apartment block</b> (diagonal is fine) · raises disaster risk")}</span></div>
        <div>${ib("green")}<b>${T("สวน","Park")}</b><span>${T("ราคา 4 · ไม่ได้เงิน · <b>ลดความเสี่ยงภัยแห่งละ 1 (สูงสุด 3)</b> เพราะพื้นที่สีเขียวช่วยซับน้ำ ลดความร้อน และกั้นไฟ · นับดาวสิ่งแวดล้อม · ไม่พังจากภัย","cost 4 · earns nothing · <b>each park cuts risk by 1 (up to 3)</b>: green space soaks up rain, cools the city and breaks fires · counts for environment · never damaged")}</span></div></div>
@@ -2442,7 +2442,7 @@ function bTable(lg){ const th=lg==="th", c=pi("coin");
   const rows=[["house",th?"บ้าน":"House",4,"+1",th?"ที่อยู่ 1 ครอบครัว":"homes 1 family"],
     ["shop",th?"ร้านค้า":"Shop",7,"+2",th?"ต้องวางติดบ้าน":"must touch a home"],
     ["factory",th?"โรงงาน":"Factory",8,"+4",`<span class="bad">${th?"เสี่ยงภัย +1 · ห้ามติดบ้าน":"risk +1 · not next to homes"}</span>`],
-    ["condo",th?"คอนโด":"Apartments",10,"+1",th?"ที่อยู่ 4 ครอบครัว · 2 ช่อง":"homes 4 families · 2 lots"],
+    ["condo",th?"คอนโด":"Apartments",10,"+2",th?"ที่อยู่ 4 ครอบครัว · 2 ช่อง":"homes 4 families · 2 lots"],
     ["green",th?"สวน":"Park",4,"–",`<span class="good">${th?"เสี่ยงภัย −1":"risk −1"}</span>`]];
   return `<b>${th?"อาคารที่สร้างได้":"What you can build"}</b><table class="ptab"><tr><th></th><th>${th?"ราคา":"Cost"}</th><th>${th?"ได้/รอบ":"Per round"}</th><th>${th?"อื่นๆ":"Also"}</th></tr>`+
     rows.map(r=>`<tr><td>${pi(r[0])} <b>${r[1]}</b></td><td>${c}${r[2]}</td><td>${r[3]==="–"?"–":c+r[3]}</td><td>${r[4]}</td></tr>`).join("")+
