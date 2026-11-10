@@ -435,6 +435,8 @@ details.log summary{cursor:pointer;font-weight:700}
 .lbnote{margin:2px 0 0;font-size:12px;color:var(--muted);text-align:center} .lbdone{margin:0;font-weight:700;text-align:center}
 .endm.gold{border-color:#F2C230;box-shadow:0 0 0 3px var(--ink),0 0 40px 8px rgba(242,194,48,.7);animation:pop .25s ease-out,goldglow 1.6s ease-in-out infinite}
 @keyframes goldglow{50%{box-shadow:0 0 0 3px var(--ink),0 0 70px 18px rgba(242,194,48,.9)}}
+.pi{height:1em;width:auto;image-rendering:pixelated;image-rendering:crisp-edges;vertical-align:-.14em;display:inline-block}
+.starrow i img{height:1em;width:auto;image-rendering:pixelated;display:block} .starrow i:not(.on) img{filter:grayscale(1) brightness(1.25) opacity(.55)}
 .crownhead{font-size:56px;text-align:center;line-height:1;margin-bottom:-8px;animation:bob 1.2s ease-in-out infinite}
 @keyframes bob{50%{transform:translateY(-6px) rotate(-4deg)}}
 #party{position:fixed;inset:0;z-index:90;background:radial-gradient(circle at 50% 45%,#3B2A6B 0,#140F2A 70%);display:flex;flex-direction:column;align-items:center;justify-content:center;overflow:hidden;cursor:pointer;transition:opacity .45s}
@@ -673,8 +675,8 @@ details.log summary{cursor:pointer;font-weight:700}
     <div class="tools">
       <div class="seg" role="group" aria-label="Language"><button class="btn" id="lang-th" type="button">TH</button><button class="btn" id="lang-en" type="button">EN</button></div>
       <button class="btn" id="newgame" type="button"></button>
-      <button class="btn" id="mute" type="button" aria-label="Sound">🔊</button>
-      <button class="btn" id="logbtn" type="button" aria-expanded="false">📜</button>
+      <button class="btn" id="mute" type="button" aria-label="Sound"></button>
+      <button class="btn" id="logbtn" type="button" aria-expanded="false"></button>
       <button class="btn" id="help" type="button" aria-label="How to play">?</button>
     </div>
   </header>
@@ -699,7 +701,7 @@ details.log summary{cursor:pointer;font-weight:700}
 </div>
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
 <div id="overlay"></div>
-<div id="rotatehint"><div><b>📱↻</b><p>หมุนโทรศัพท์เป็นแนวตั้งเพื่อเล่น</p><p>Turn your phone upright to play</p></div></div>
+<div id="rotatehint"><div><b id="rotico">↻</b><p>หมุนโทรศัพท์เป็นแนวตั้งเพื่อเล่น</p><p>Turn your phone upright to play</p></div></div>
 <div id="splash" aria-live="assertive"></div>
 <div id="idle" aria-live="assertive"></div>
 
@@ -763,6 +765,18 @@ SPR.fire=fromMap(["...r....","...rr...","..rorr..",".rroorr.",".roooyr.","rooyyo
 SPR.quake=fromMap(["........","k.......","k..k....",".k.k..k.",".kk.k.k.","..k.kk.k","....k..k","........"]);
 SPR.storm=fromMap(["..ss....",".ssss.s.","ssssssss","SSSSSSSS","...yy...","..yy....","...yy...","..y....."]);
 SPR.shield=fromMap(["..kkkk..",".kbbbbk.","kbwbbbbk","kbwbbbbk","kbbbbbbk",".kbbbbk.","..kbbk..","...kk..."]);
+/* 8-bit icons that replace emoji in the UI */
+SPR.crown=fromMap([".k...k...k.","kyk.kyk.kyk","kyykyyykyyk","kyyyyyyyyyk","kyyryyybyyk","kyyyyyyyyyk","kYYYYYYYYYk","kkkkkkkkkkk"]);
+SPR.star=fromMap(["....k....","...kyk...","kkkyyykkk","kyyywyyyk",".kyyyyyk.","..kyyyk..",".kyykyyk.",".kyk.kyk.",".kk...kk."]);
+SPR.trophy=fromMap(["..kkkkkkk..","kkkyyywykkk","k.kyyyyyk.k","k.kyyyyyk.k","kkkyyyyykkk","..kYyyyYk..","...kYYYk...","....kyk....","....kyk....","..kkkkkkk..","..kYYYYYk..","..kkkkkkk.."]);
+SPR.sound=fromMap(["....kk....","...kwk..k.","kkkwwk.k.k","kwwwwk.k.k","kwwwwk.k.k","kkkwwk.k.k","...kwk..k.","....kk...."]);
+SPR.mute=fromMap(["....kk....","...kwk....","kkkwwkr..r","kwwwwk.rr.","kwwwwk.rr.","kkkwwkr..r","...kwk....","....kk...."]);
+SPR.doc=fromMap(["kkkkkkkk.","kcccccckk","kcSSSScck","kccccccck","kcSSSSSck","kccccccck","kcSSSScck","kccccccck","kkkkkkkkk"]);
+SPR.book=fromMap([".kkkk.kkkk.","kcccckcccck","kcSSckcSSck","kcccckcccck","kcSSckcSSck","kcccckcccck","kBBBBkBBBBk",".kkkkkkkkk."]);
+SPR.camera=fromMap(["...kkk.....","kkkkkkkkkkk","kssskkkssrk","ksskbbbkssk","ksskbwbkssk","ksskbbbkssk","kssskkksssk","kkkkkkkkkkk"]);
+SPR.phone=fromMap(["kkkkkkk","kbbbbbk","kbbbbbk","kbbbbbk","kbbbbbk","kbbbbbk","kbbbbbk","kkkkkkk","kkkwkkk","kkkkkkk"]);
+SPR.warn=fromMap([".....k.....","....kyk....","....kyk....","...kykyk...","...kykyk...","..kyykyyk..","..kyyyyyk..",".kyyykyyyk.","kkkkkkkkkkk"]);
+
 SPR.ffire=SPR.fire;
 function gray(src){const c=canvasOf(src.width,src.height),x=c.getContext("2d");x.drawImage(src,0,0);const d=x.getImageData(0,0,c.width,c.height),a=d.data;
   for(let i=0;i<a.length;i+=4){const v=(a[i]*.3+a[i+1]*.55+a[i+2]*.15)*.62;a[i]=v;a[i+1]=v;a[i+2]=v+6}x.putImageData(d,0,0);
@@ -836,6 +850,9 @@ const TOTEM_ACT={fire:["รถดับเพลิงมาดับไฟแ�
   quake:["วิศวกรเสริมโครงสร้างไว้แล้ว!","Engineers kept the buildings standing!"],storm:["เตือนภัยทัน ทุกคนเตรียมพร้อม!","The warning came in time!"]};
 
 const URL={};["house","shop","green","coin","flood","fire","quake","storm","shield"].forEach(k=>URL[k]=SPR[k].toDataURL());
+["crown","star","trophy","sound","mute","doc","book","camera","phone","warn"].forEach(k=>URL[k]=SPR[k].toDataURL()); SPR.starOff=gray(SPR.star); URL.starOff=SPR.starOff.toDataURL();
+try{ const rb=document.getElementById("rotico"); if(rb) rb.innerHTML=`<img src="${URL.phone}" alt="" class="pi"> ↻` }catch(e){}
+const pi=(k,cls)=>`<img src="${URL[k]}" alt="" class="pi${cls?" "+cls:""}">`;
 /* ===== card art (same pixel scenes as the printed cards) ===== */
 const XS={};
 XS.person=fromMap(["..k..",".kck.","..k..","kBBBk",".BBB.",".BBB.",".k.k.",".k.k.","kk.kk"]);
@@ -1019,7 +1036,7 @@ const damaged=()=>S.pieces.filter(p=>p.dmg);
 const metric=k=>k==="income"?income():k==="housing"?housing():k==="green"?count("green"):S.totems.length;
 const starOf=k=>{const v=metric(k),t=STAR[k];return v>=t[1]?2:v>=t[0]?1:0};
 const stars=()=>STAR_KEYS.reduce((a,k)=>a+starOf(k),0);
-const rankOf=n=>n>=8?["Best Mayor 👑","Best Mayor 👑"]:n>=6?["นายกฯ ฝีมือดี","Skilled Mayor"]:n>=4?["ผ่าน","Pass"]:["ไม่ได้รับเลือกตั้งอีกสมัย","Not re-elected"];
+const rankOf=n=>n>=8?["Best Mayor","Best Mayor"]:n>=6?["นายกฯ ฝีมือดี","Skilled Mayor"]:n>=4?["ผ่าน","Pass"]:["ไม่ได้รับเลือกตั้งอีกสมัย","Not re-elected"];
 function log(th,en,kind){S.log.unshift({r:S.round,th,en,kind:kind||""})}
 function occ(){const m={};S.pieces.forEach(p=>p.cells.forEach(([r,c])=>m[r+","+c]=p));return m}
 const cheb=(a,b)=>Math.max(Math.abs(a[0]-b[0]),Math.abs(a[1]-b[1]));
@@ -1095,9 +1112,9 @@ function eventSplash(keys,ds,inc,cb){
   if(reduce()||!keys.length){ go(); return }
   S.busy=true; render();
   const badge=(k,d)=>{const e=EV[k]; if(d) return `<div class="delta ${d>0?"plus":"minus"}">${img("coin")}${d>0?"+":"−"}${Math.abs(d)} ${T("เหรียญ","coins")}</div>`;
-    if(e.cls==="special") return `<div class="delta special">★ ${T("พิเศษ","SPECIAL")}</div>`;
+    if(e.cls==="special") return `<div class="delta special">${pi("star")} ${T("พิเศษ","SPECIAL")}</div>`;
     if(k==="movein") return `<div class="delta plus">${img("house")}${T("บ้านฟรี","FREE HOUSE")}</div>`;
-    if(["strike","holiday","material","tide"].includes(k)) return `<div class="delta minus">⚠ ${T("รอบนี้","THIS ROUND")}</div>`;
+    if(["strike","holiday","material","tide"].includes(k)) return `<div class="delta minus">${pi("warn")} ${T("รอบนี้","THIS ROUND")}</div>`;
     return `<div class="delta none">${T("รอดไป ไม่มีผล","NO EFFECT")}</div>`};
   const D0=.6, GAP=2.1, dealt=D0+(keys.length-1)*GAP+1.4;   // seconds: first card leaves the deck, gap to the next, last card fully readable
   el.innerHTML=`<div class="sp-bg"></div><div class="evsplash"><div class="evhead">${T(`รอบ ${S.round} · ปีที่ ${year(S.round)}`,`Round ${S.round} · Year ${year(S.round)}`)}</div>
@@ -1117,7 +1134,7 @@ function splash(card,blocked,cb){
   const k=card.k, d=DIS[k];
   const zh=k==="ffire"?T("สุ่มโรงงาน 1 แห่ง · พังพร้อมอาคารที่ติดกัน","A random factory and everything touching it")
     :`<b>${zoneName(card.z)}</b> · ${HAZ[k].hits.map(t=>`<span style="white-space:nowrap">${img(t)}${nm(t)}</span>`).join(" ")}`;
-  el.innerHTML=`<div class="sp-bg"></div><div class="scard${blocked?" blk":""}"><div class="sk">${T("⚠ ภัยพิบัติ","⚠ DISASTER")}</div><img class="sart" src="${art(k)}" alt=""><div class="st">${T(d.th,d.en)}</div><div class="sz">${zh}</div>${blocked?`<div class="stamp">${timg(TOTEM_OF[k])}<span>${T(TOTEM[TOTEM_OF[k]][0],TOTEM[TOTEM_OF[k]][1])}</span><small>${T("กันได้!","BLOCKED!")}</small></div>`:""}<div class="skip">${T("แตะเพื่อข้าม","tap to skip")}</div></div>`;
+  el.innerHTML=`<div class="sp-bg"></div><div class="scard${blocked?" blk":""}"><div class="sk">${pi("warn")} ${T("ภัยพิบัติ","DISASTER")}</div><img class="sart" src="${art(k)}" alt=""><div class="st">${T(d.th,d.en)}</div><div class="sz">${zh}</div>${blocked?`<div class="stamp">${timg(TOTEM_OF[k])}<span>${T(TOTEM[TOTEM_OF[k]][0],TOTEM[TOTEM_OF[k]][1])}</span><small>${T("กันได้!","BLOCKED!")}</small></div>`:""}<div class="skip">${T("แตะเพื่อข้าม","tap to skip")}</div></div>`;
   el.className="show"; splashDone=()=>{ el.className="out"; setTimeout(go,260) };
   setTimeout(()=>{ if(!fired&&splashDone) splashDone() }, blocked?2100:1750);
 }
@@ -1131,7 +1148,7 @@ function ovOpen(html,cls){ const el=OV(); el.innerHTML=`<div class="sp-bg"></div
 function ovClose(){ const el=OV(); el.className=""; el.innerHTML=""; splashDone=null }
 function onTap(fn){ splashDone=()=>{ splashDone=null; fn() } }
 const wait=ms=>new Promise(r=>setTimeout(r,reduce()?0:ms));
-function deckHTML(kind,n){ const back=kind==="dis"?`<span>⚠<b>${T("ภัยพิบัติ","DISASTER")}</b></span>`:`<span>MR.<b>MAYOR</b></span>`;
+function deckHTML(kind,n){ const back=kind==="dis"?`<span>${pi("warn")}<b>${T("ภัยพิบัติ","DISASTER")}</b></span>`:`<span>MR.<b>MAYOR</b></span>`;
   return `<div class="edeck ${kind==="dis"?"red":""}">${[...Array(n)].map((_,i)=>`<i class="dk${i}">${back}</i>`).join("")}</div>` }
 /* move an element from where it is on the overlay to a target rect on the page, then fade it out */
 function flyTo(el,target,ms){ if(!el||!target||reduce()) return; const a=el.getBoundingClientRect(), b=target.getBoundingClientRect(); if(!a.width||!b.width) return;
@@ -1157,9 +1174,9 @@ function dealEvents(ov){
   S.phase="events"; S.busy=false; saveNow(); S.busy=true; const dCoins=S.coins-c0;
   const D0=.15, GAP=2.0, dealt=D0+GAP+1.3;
   const badge=(k,d)=>{const e=EV[k]; if(d) return `<div class="delta ${d>0?"plus":"minus"}">${img("coin")}${d>0?"+":"−"}${Math.abs(d)} ${T("เหรียญ","coins")}</div>`;
-    if(e.cls==="special") return `<div class="delta special">★ ${T("พิเศษ","SPECIAL")}</div>`;
+    if(e.cls==="special") return `<div class="delta special">${pi("star")} ${T("พิเศษ","SPECIAL")}</div>`;
     if(k==="movein") return `<div class="delta plus">${img("house")}${T("บ้านฟรี","FREE HOUSE")}</div>`;
-    if(["strike","holiday","material","tide"].includes(k)) return `<div class="delta minus">⚠ ${T("รอบนี้","THIS ROUND")}</div>`;
+    if(["strike","holiday","material","tide"].includes(k)) return `<div class="delta minus">${pi("warn")} ${T("รอบนี้","THIS ROUND")}</div>`;
     return `<div class="delta none">${T("รอดไป ไม่มีผล","NO EFFECT")}</div>`};
   ov.classList.remove("wait"); ov.querySelector(".ovtitle").classList.add("gone");
   const dk=ov.querySelectorAll(".edeck i"); dk[3].style.setProperty("--d",D0+"s"); dk[2].style.setProperty("--d",(D0+GAP)+"s"); dk[3].classList.add("off"); dk[2].classList.add("off");
@@ -1239,8 +1256,8 @@ async function drawDisaster(ov){
   ov.classList.remove("wait"); ov.querySelector(".taphint").style.opacity=0; ov.querySelector(".ovtitle").classList.add("gone");
   ov.querySelector(".edeck i:last-child").classList.add("off");
   const zh=k==="ffire"?T("สุ่มโรงงาน 1 แห่ง · พังพร้อมอาคารที่ติดกัน","A random factory and everything touching it"):`<b>${zoneName(card.z)}</b> · ${HAZ[k].hits.map(t=>`<span style="white-space:nowrap">${img(t)}${nm(t)}</span>`).join(" ")}`;
-  ov.querySelector(".dslot").innerHTML=`<div class="dcard${blocked?" blk":""}"><div class="eback red"><span>⚠<b>${T("ภัยพิบัติ","DISASTER")}</b></span></div>
-    <div class="dface"><div class="sk">${T("⚠ ภัยพิบัติ","⚠ DISASTER")}</div><img class="sart" src="${art(k)}" alt=""><div class="st">${T(d.th,d.en)}</div><div class="sz">${zh}</div></div></div>`;
+  ov.querySelector(".dslot").innerHTML=`<div class="dcard${blocked?" blk":""}"><div class="eback red"><span>${pi("warn")}<b>${T("ภัยพิบัติ","DISASTER")}</b></span></div>
+    <div class="dface"><div class="sk">${pi("warn")} ${T("ภัยพิบัติ","DISASTER")}</div><img class="sart" src="${art(k)}" alt=""><div class="st">${T(d.th,d.en)}</div><div class="sz">${zh}</div></div></div>`;
   SFX.cards(1,.05,1);
   await wait(2700);                      // deal + flip + time to read
   const dc=ov.querySelector(".dcard");
@@ -2054,7 +2071,7 @@ const PIPS={1:[4],2:[0,8],3:[0,4,8],4:[0,2,6,8],5:[0,2,4,6,8],6:[0,2,3,5,6,8]};
 const dieHTML=(v,r,l)=>`<div class="die${r?" roll":""}${l?" land":""}" aria-label="${v}">${[...Array(9)].map((_,i)=>`<i class="${PIPS[v].includes(i)?"p":""}"></i>`).join("")}</div>`;
 const img=(k,cls)=>`<img src="${URL[k]}" alt="" class="${cls||""}">`;
 let toastT=null;
-function toast(msg,kind){const el=$("toast"); el.textContent=msg; el.className="toast show"+(kind?" "+kind:""); clearTimeout(toastT); toastT=setTimeout(()=>{el.className="toast"+(kind?" "+kind:"")},2300)}
+function toast(msg,kind,html){const el=$("toast"); if(html) el.innerHTML=msg; else el.textContent=msg; el.className="toast show"+(kind?" "+kind:""); clearTimeout(toastT); toastT=setTimeout(()=>{el.className="toast"+(kind?" "+kind:"")},2300)}
 let bumpQ=0; function bump(d){ bumpQ+=d }
 let lastDeal=-1, lastDis=null, lastLoc=null;
 function render(){
@@ -2096,7 +2113,7 @@ function renderStatus(){
   const d=bumpQ; bumpQ=0;
   $("status").innerHTML=`
    <div class="box stat"><div class="k">${S.practice?`<b class="ptag">${T("โหมดฝึก","PRACTICE")}</b> `:""}${T("รอบ","Round")} · ${T("ปีที่","Year")} ${year(r)}/4</div><div class="v">${S.round||"–"}<small>/ ${S.practice?PRACTICE.rounds:12}</small></div><div class="track">${track}</div></div>
-   <div class="box stat"><div class="k">${T("เหรียญ","Coins")}</div><div class="v">${img("coin","coinimg")}${S.coins}</div><div class="s">${T("รายได้","Income")} +${income()} ${T("ต่อรอบ","/ round")} · ⭐ ${stars()}/8</div>${d?`<span class="float ${d>0?"up":"down"}">${d>0?"+":""}${d}</span>`:""}</div>
+   <div class="box stat"><div class="k">${T("เหรียญ","Coins")}</div><div class="v">${img("coin","coinimg")}${S.coins}</div><div class="s">${T("รายได้","Income")} +${income()} ${T("ต่อรอบ","/ round")} · ${pi("star")} ${stars()}/8</div>${d?`<span class="float ${d>0?"up":"down"}">${d>0?"+":""}${d}</span>`:""}</div>
    <div class="box stat riskbox"><div class="k">${T("ความเสี่ยง · ทอย 2 ลูก","Risk · 2 dice")}</div><div class="v">${rk}<small>${T("โอกาสเกิดภัย","disaster chance")} ${S.round<=1?0:chance(rk)}%</small></div><div class="s rwhy">${riskWhy(r)}</div><div class="gauge">${g}</div></div>`;
 }
 function evCard(k,i){ if(!k) return `<div class="card empty">${T("การ์ดเหตุการณ์","Event card")}</div>`; const e=EV[k], deal=S.deal!==lastDeal;
@@ -2164,10 +2181,10 @@ let PREV=null;
 function renderGoals(){
   const dm=damaged().length, n=stars(), cur={}; STAR_KEYS.forEach(k=>cur[k]=starOf(k));
   const gained=PREV&&S.round>0?STAR_KEYS.filter(k=>cur[k]>PREV[k]):[]; PREV=cur;
-  if(gained.length){ setTimeout(()=>{toast(T(`⭐ ได้ดาวเพิ่ม! รวม ${n}/8`,`⭐ Star earned! ${n}/8`),"good"); FX.stars()},350) }
+  if(gained.length){ setTimeout(()=>{toast(pi("star")+" "+T(`ได้ดาวเพิ่ม! รวม ${n}/8`,`Star earned! ${n}/8`),"good",1); FX.stars()},350) }
   const rows=STAR_KEYS.map(k=>{const v=metric(k), t=STAR[k], s=starOf(k), lab=STAR_LAB[k];
-    return `<div class="goal s${s}${gained.includes(k)?" gain":""}"><span class="ck">${s?"★".repeat(s):""}</span><span class="gn">${T(lab[2],lab[3])}</span><span class="gv">${v}</span><span class="gd">${T(lab[4],lab[5])}<span class="gt"><b>★</b> ${t[0]}  ·  <b>★★</b> ${t[1]}</span></span><span class="bar"><i style="width:${Math.min(100,v/t[1]*100)}%"></i><b style="left:${t[0]/t[1]*100}%"></b></span></div>`}).join("");
-  $("goal-panel").innerHTML=`<div class="head" style="margin-bottom:10px"><h2>${T("ดาวนายกฯ","Mayor stars")}</h2><span class="tagk">⭐ ${n}/8 · ${T(...rankOf(n))}</span></div>
+    return `<div class="goal s${s}${gained.includes(k)?" gain":""}"><span class="ck">${s?pi("star").repeat(s):""}</span><span class="gn">${T(lab[2],lab[3])}</span><span class="gv">${v}</span><span class="gd">${T(lab[4],lab[5])}<span class="gt">${pi("star")} ${t[0]}  ·  ${pi("star")}${pi("star")} ${t[1]}</span></span><span class="bar"><i style="width:${Math.min(100,v/t[1]*100)}%"></i><b style="left:${t[0]/t[1]*100}%"></b></span></div>`}).join("");
+  $("goal-panel").innerHTML=`<div class="head" style="margin-bottom:10px"><h2>${T("ดาวนายกฯ","Mayor stars")}</h2><span class="tagk">${pi("star")} ${n}/8 · ${T(...rankOf(n))}${n>=8?" "+pi("crown"):""}</span></div>
    <div class="goals">${rows}
    <div class="goalnote${dm?" bad":""}">${dm?T(`พัง ${dm} หลัง · ซ่อมก่อนจึงได้เงินและนับดาว`,`${dm} damaged · repair for income and stars`):T("นับดาวตอนจบรอบ 12 · 1 ดาวที่ตัวเลขแรก 2 ดาวที่ตัวเลขหลัง · 8 ดาว = Best Mayor","Stars are counted after round 12 · 1 star at the first number, 2 at the second · 8 stars = Best Mayor")}</div></div>`;
 }
@@ -2180,15 +2197,15 @@ function renderTray(){
     `<span class="sep"></span>
      <button type="button" class="tool" id="reinforce" aria-pressed="${S.tool==="reinforce"}"${!b||!rfOk||S.coins<RF_PRICE?" disabled":""}>${img("shield")}<span class="nm">${T("เสริม","Reinforce")}</span><span class="pr">${img("coin")}${RF_PRICE}</span></button>
      <button type="button" class="tool" id="repair" aria-pressed="${S.tool==="repair"}"${!b||!dm?" disabled":""}><span class="glyph">✚</span><span class="nm">${T("ซ่อม","Repair")}</span><span class="pr">${dm||"–"}</span></button>
-     <button type="button" class="tool" id="demolish" aria-pressed="${S.tool==="demolish"}"${!b||!S.pieces.length?" disabled":""}><span class="glyph">✖</span><span class="nm">${T("รื้อ","Demolish")}</span><span class="pr">${T("ฟรี","free")}</span></button>
-     <button type="button" class="tool" id="rotate"${!b||!SIZE[S.tool]?" disabled":""}><span class="glyph">${S.orient==="h"?"↔":"↕"}</span><span class="nm">${T("หมุน","Rotate")}</span><span class="pr blank">&nbsp;</span></button>
+     <button type="button" class="tool" id="demolish" aria-pressed="${S.tool==="demolish"}"${!b||!S.pieces.length?" disabled":""}><span class="glyph">✖︎</span><span class="nm">${T("รื้อ","Demolish")}</span><span class="pr">${T("ฟรี","free")}</span></button>
+     <button type="button" class="tool" id="rotate"${!b||!SIZE[S.tool]?" disabled":""}><span class="glyph">${S.orient==="h"?"↔︎":"↕︎"}</span><span class="nm">${T("หมุน","Rotate")}</span><span class="pr blank">&nbsp;</span></button>
      <button type="button" class="tool" id="undo"${!b||!S.undo.length?" disabled":""}><span class="glyph">↶</span><span class="nm">${T("ย้อน","Undo")}</span><span class="pr blank">&nbsp;</span></button>`;
   let act="", dis=S.busy?" disabled":"";
   switch(S.phase){
-    case "draw": case "events": case "disdraw": case "strike": act=S.busy?"":`<button class="primary pulse" id="act" type="button">${T("▶ ไปต่อ","▶ Continue")}</button>`; break;
-    case "ready": act=`<button class="primary pulse" id="act" type="button">${T("▶ เริ่มวาระ","▶ Start your term")}</button>`; break;
+    case "draw": case "events": case "disdraw": case "strike": act=S.busy?"":`<button class="primary pulse" id="act" type="button">${T("▶︎ ไปต่อ","▶︎ Continue")}</button>`; break;
+    case "ready": act=`<button class="primary pulse" id="act" type="button">${T("▶︎ เริ่มวาระ","▶︎ Start your term")}</button>`; break;
     case "roll": act=`<button class="primary red pulse" id="act" type="button"${dis}>${T(`ทอยลูกเต๋า 2 ลูก (ต้องได้มากกว่า ${risk()})`,`Roll 2 dice (need over ${risk()})`)}</button>`; break;
-    case "build": act=`<button class="primary" id="act" type="button"${dis}>${S.practice&&S.round>=PRACTICE.rounds?T("จบการฝึก ▶ เริ่มเกมจริง","Finish practice ▶ real game"):S.round>=ROUNDS?T("จบวาระ → นับดาว","End term → count stars"):T(`จบรอบ ${S.round} ▶`,`End round ${S.round} ▶`)}</button>`; break;
+    case "build": act=`<button class="primary" id="act" type="button"${dis}>${S.practice&&S.round>=PRACTICE.rounds?T("จบการฝึก ▶︎ เริ่มเกมจริง","Finish practice ▶︎ real game"):S.round>=ROUNDS?T("จบวาระ → นับดาว","End term → count stars"):T(`จบรอบ ${S.round} ▶︎`,`End round ${S.round} ▶︎`)}</button>`; break;
     case "over": act=`<button class="primary" id="act" type="button">${T("เล่นใหม่","Play again")}</button>`; break;
   }
   let tip="";
@@ -2224,9 +2241,9 @@ function renderModal(){
     o.innerHTML=`<div class="overlay"><div class="box modal start pdone" role="dialog" aria-modal="true"><h3>${T("พร้อมเป็นนายกฯ แล้ว!","Ready to be mayor!")}</h3>
       <ul class="precap"><li>${img("coin")}<span>${T("สร้างเมืองให้มีรายได้ แต่<b>โรงงานเพิ่มความเสี่ยง</b> และต้องอยู่ห่างบ้าน","Grow your income, but <b>factories raise the risk</b> and must stay away from homes")}</span></li>
         <li>${img("green")}<span>${T("<b>สวน</b>ลดความเสี่ยง · <b>เสริม</b>ช่วยรอดภัย 1 ครั้ง · <b>Totem</b> กันภัยได้ทั้งใบ","<b>Parks</b> lower risk · <b>Reinforce</b> survives one hit · a <b>Totem</b> blocks a whole hazard")}</span></li>
-        <li>⭐<span>${T("เก็บดาว 4 ด้านให้ได้ภายใน 12 รอบ ความเสี่ยงสูงขึ้นทุกปี","Collect stars in 4 areas within 12 rounds — risk rises every year")}</span></li></ul>
+        <li>${pi("star")}<span>${T("เก็บดาว 4 ด้านให้ได้ภายใน 12 รอบ ความเสี่ยงสูงขึ้นทุกปี","Collect stars in 4 areas within 12 rounds — risk rises every year")}</span></li></ul>
       <p class="sm">${T("เกมจริงสุ่มผังเริ่มต้น การ์ด และลูกเต๋า ไม่เหมือนรอบฝึก","The real game shuffles the start map, the cards and the dice.")}</p>
-      <div class="menu"><button type="button" class="primary pulse" data-menu="real">▶ ${T("เริ่มเกมจริง รอบ 1","Start the real game · round 1")}</button></div></div></div>`; return }
+      <div class="menu"><button type="button" class="primary pulse" data-menu="real">▶︎ ${T("เริ่มเกมจริง รอบ 1","Start the real game · round 1")}</button></div></div></div>`; return }
   if(S.modal==="confirm"){
     o.innerHTML=`<div class="overlay"><div class="box modal start" role="dialog" aria-modal="true"><h3>${T("เริ่มเกมใหม่?","Start a new game?")}</h3>
       <p class="lead">${T(`เมืองที่สร้างมาถึงรอบ ${S.round} จะหายไป`,`Your city (round ${S.round}) will be lost.`)}</p>
@@ -2236,17 +2253,17 @@ function renderModal(){
     o.innerHTML=`<div class="overlay"><div class="box modal start" role="dialog" aria-modal="true"><h3><span>MR.</span>MAYOR</h3>
       <div class="startart"><img src="${art("quiet")}" alt=""></div>
       <p class="lead">${T("เป็นนายกฯ 4 ปี สร้างเมืองให้เติบโตและรับมือภัยพิบัติได้","Run a city for 4 years. Grow it and keep it safe from disasters.")}</p>
-      <div class="menu"><button type="button" class="primary pulse" data-menu="tut">▶ ${T("ลองเล่นก่อน · โหมดฝึก 4 รอบ","Try it first · 4-round practice")} <small>${T("แนะนำสำหรับครั้งแรก ราว 4 นาที","best for first-timers · about 4 min")}</small></button>
-        <button type="button" class="ghostbtn" data-menu="rules">📖 ${T("อ่านวิธีเล่นแบบเต็ม","Read the full rules")}</button>
+      <div class="menu"><button type="button" class="primary pulse" data-menu="tut">▶︎ ${T("ลองเล่นก่อน · โหมดฝึก 4 รอบ","Try it first · 4-round practice")} <small>${T("แนะนำสำหรับครั้งแรก ราว 4 นาที","best for first-timers · about 4 min")}</small></button>
+        <button type="button" class="ghostbtn" data-menu="rules">${pi("book")} ${T("อ่านวิธีเล่นแบบเต็ม","Read the full rules")}</button>
         <button type="button" class="ghostbtn" data-menu="play">${T("เล่นเป็นแล้ว เข้าเกมจริงเลย","I know how to play · real game")}</button>
-        <button type="button" class="ghostbtn" data-menu="board">🏆 ${T("ตารางนายกฯ","Leaderboard")}</button></div>
+        <button type="button" class="ghostbtn" data-menu="board">${pi("trophy")} ${T("ตารางนายกฯ","Leaderboard")}</button></div>
       <button type="button" class="langsw" data-menu="lang">${lang==="th"?"ภาษา: ไทย · Change to English":"Language: English · เปลี่ยนเป็นไทย"}</button></div></div>`; return }
   if(S.modal==="intro"){
     const ib=t=>`<img src="${t==="condo"?URL.condoTall:t==="factory"?URL.factoryWide:URL[t]}" alt="" class="${t==="factory"?"wide":t==="condo"?"tall":""}">`;
     const pages=[
      {t:T("เป้าหมาย: เป็นนายกฯ 4 ปี","Your goal: 4 years as mayor"),b:`
       <p>${T("คุณเป็นนายกเทศมนตรีของเมืองเล็กๆ มีเวลา <b>12 รอบ</b> (ทุก 3 รอบ = 1 ปี รวม 4 ปี) สร้างเมืองให้<b>เติบโต</b>และ<b>รับมือภัยพิบัติได้</b>","You run a small city for <b>12 rounds</b> (3 rounds = 1 year, 4 years in all). Make it <b>grow</b> and <b>survive disasters</b>.")}</p>
-      <p>${T("จบรอบ 12 แล้วนับ<b>ดาว</b> 4 ด้าน ด้านละ 2 ดวง ได้ครบ 8 ดวง = <b>Best Mayor 👑</b>","After round 12 you score <b>stars</b> in 4 areas, 2 stars each. All 8 = <b>Best Mayor 👑</b>")}</p>
+      <p>${T("จบรอบ 12 แล้วนับ<b>ดาว</b> 4 ด้าน ด้านละ 2 ดวง ได้ครบ 8 ดวง = <b>Best Mayor "+pi("crown")+"</b>","After round 12 you score <b>stars</b> in 4 areas, 2 stars each. All 8 = <b>Best Mayor "+pi("crown")+"</b>")}</p>
       <div class="ig4">
        <div>${img("coin")}<b>${T("เศรษฐกิจ","Economy")}</b><span>${T("เมืองได้เงินต่อรอบเท่าไร","coins the city earns each round")}</span></div>
        <div>${img("house")}<b>${T("ที่อยู่อาศัย","Housing")}</b><span>${T("มีที่ให้กี่ครอบครัวอยู่","how many families can live here")}</span></div>
@@ -2279,21 +2296,21 @@ function renderModal(){
        <div><span class="tico4">${["flood","quake","storm","fire"].map(k=>timg(k)).join("")}</span><b>Totem</b><span>${T("กันภัยแบบนั้นได้<b>ทั้งใบ ทุกโซน ตลอดเกม</b> มี 4 แบบ (คันกั้นน้ำ · วิศวกร · ไซเรนเตือนพายุ · รถดับเพลิง) · รถดับเพลิงกัน<b>ไฟไหม้โรงงาน</b>ด้วย · ราคาขึ้นทุกอันที่ซื้อ: 8 → 12 → 16 → 20","blocks that hazard <b>everywhere, for the rest of the game</b>. 4 kinds. Firefighters also stop <b>factory fires</b>. Each costs more: 8 → 12 → 16 → 20")}</span></div>
        <div>${img("shield")}<b>${T("เสริมความแข็งแรง","Reinforce")}</b><span>${T("3 เหรียญ · ใส่บนอาคาร 1 หลัง โดนภัยครั้งหน้าไม่พัง แล้วโทเคนหายไป","3 coins · put on one building; it ignores the next hit, then the token is used up")}</span></div>
        <div><i class="gl">✚</i><b>${T("ซ่อม","Repair")}</b><span>${T("จ่ายเท่าราคาสร้าง อาคารกลับมาใช้ได้","pay the building's cost to fix it")}</span></div>
-       <div><i class="gl">✖</i><b>${T("รื้อ","Demolish")}</b><span>${T("ฟรี ไม่ได้เงินคืน · ใช้ย้ายอาคารที่วางผิดที่","free, no refund · use it to move a badly placed building")}</span></div></div>`},
+       <div><i class="gl">✖︎</i><b>${T("รื้อ","Demolish")}</b><span>${T("ฟรี ไม่ได้เงินคืน · ใช้ย้ายอาคารที่วางผิดที่","free, no refund · use it to move a badly placed building")}</span></div></div>`},
      {t:T("นับดาวตอนจบ","Scoring at the end"),b:`
-      <table class="itab"><tr><th></th><th>⭐</th><th>⭐⭐</th></tr>
+      <table class="itab"><tr><th></th><th>${pi("star")}</th><th>${pi("star")}${pi("star")}</th></tr>
        <tr><td>${img("coin")}${T("เงินต่อรอบ","Income / round")}</td><td>${STAR.income[0]}</td><td>${STAR.income[1]}</td></tr>
        <tr><td>${img("house")}${T("ครอบครัว (บ้าน 1 · คอนโด 4)","Families (house 1 · block 4)")}</td><td>${STAR.housing[0]}</td><td>${STAR.housing[1]}</td></tr>
        <tr><td>${img("green")}${T("สวน","Parks")}</td><td>${STAR.green[0]}</td><td>${STAR.green[1]}</td></tr>
        <tr><td>${timg("fire")}Totem</td><td>${STAR.totems[0]}</td><td>${STAR.totems[1]}</td></tr></table>
-      <p class="sm">${T("เช่น มีบ้าน 6 หลัง + คอนโด 2 ตึก = 6 + 8 = 14 ครอบครัว → ได้ ⭐ ด้านที่อยู่อาศัย · อาคารที่พังอยู่ตอนจบไม่นับ","e.g. 6 houses + 2 blocks = 6 + 8 = 14 families → ⭐ for housing. Damaged buildings at the end don't count.")}</p>
-      <p class="rk"><b>8</b> Best Mayor 👑 · <b>6–7</b> ${T("ฝีมือดี","Skilled")} · <b>4–5</b> ${T("ผ่าน","Pass")} · <b>0–3</b> ${T("ไม่ได้รับเลือกตั้งอีกสมัย","Not re-elected")}</p>`}];
+      <p class="sm">${T("เช่น มีบ้าน 6 หลัง + คอนโด 2 ตึก = 6 + 8 = 14 ครอบครัว → ได้ "+pi("star")+" ด้านที่อยู่อาศัย · อาคารที่พังอยู่ตอนจบไม่นับ","e.g. 6 houses + 2 blocks = 6 + 8 = 14 families → "+pi("star")+" for housing. Damaged buildings at the end don't count.")}</p>
+      <p class="rk"><b>8</b> Best Mayor ${pi("crown")} · <b>6–7</b> ${T("ฝีมือดี","Skilled")} · <b>4–5</b> ${T("ผ่าน","Pass")} · <b>0–3</b> ${T("ไม่ได้รับเลือกตั้งอีกสมัย","Not re-elected")}</p>`}];
     const n=pages.length, i=Math.max(0,Math.min(n-1,introPage));
     const ex=o.querySelector(".modal.intro");
     if(ex&&ex.dataset.lang===lang){ showIntroPage(i); return }   // pre-rendered: just flip to the page
     const nav=j=>`<div class="idots">${pages.map((_,q)=>`<button type="button" class="${q===j?"on":""}" data-ipage="${q}" aria-label="${q+1}"></button>`).join("")}</div>
-      <div class="inav">${j>0?`<button type="button" class="ghostbtn" data-ipage="${j-1}">◀ ${T("ก่อนหน้า","Back")}</button>`:`<button type="button" class="ghostbtn" data-close="intro">${T("ข้าม เริ่มเลย","Skip")}</button>`}
-        ${j<n-1?`<button class="primary" type="button" data-ipage="${j+1}">${T("ถัดไป","Next")} ▶</button>`:`<button class="primary pulse" type="button" data-close="intro">▶ ${T("เข้าใจแล้ว เริ่มเลย","Got it, let's play")}</button>`}</div>`;
+      <div class="inav">${j>0?`<button type="button" class="ghostbtn" data-ipage="${j-1}">◀︎ ${T("ก่อนหน้า","Back")}</button>`:`<button type="button" class="ghostbtn" data-close="intro">${T("ข้าม เริ่มเลย","Skip")}</button>`}
+        ${j<n-1?`<button class="primary" type="button" data-ipage="${j+1}">${T("ถัดไป","Next")} ▶︎</button>`:`<button class="primary pulse" type="button" data-close="intro">▶︎ ${T("เข้าใจแล้ว เริ่มเลย","Got it, let's play")}</button>`}</div>`;
     o.innerHTML=`<div class="overlay"><div class="box modal intro" role="dialog" aria-modal="true" data-lang="${lang}"><h3><span>MR.</span>MAYOR</h3>
       ${pages.map((pg,j)=>`<section class="ipg${j===i?" on":""}" data-pg="${j}"><div class="ihead"><span class="inum">${j+1}/${n}</span><b>${pg.t}</b></div><div class="ibody">${pg.b}</div>${nav(j)}</section>`).join("")}</div></div>`; return }
   if(!LB.list&&!LB.loading) setTimeout(()=>lbFetch(),0);
@@ -2302,7 +2319,7 @@ function renderModal(){
 
 /* ======================= EVENTS ======================= */
 function startTip(){ const L=START_MAPS.find(m=>m.id===S.startMap); const z=L?L.z:null;
-  return z?T(`เมืองคุณเริ่มที่${ZONES[z].th} (ผัง #${L.id}) · พร้อมแล้วกด ▶ เริ่มวาระ`,`Your town starts in ${ZONES[z].en} (map #${L.id}) · press ▶ Start your term`):T("พร้อมเมื่อไร กด ▶ เริ่มวาระ ที่มุมขวาล่าง","Ready? Press ▶ Start your term") }
+  return z?T(`เมืองคุณเริ่มที่${ZONES[z].th} (ผัง #${L.id}) · พร้อมแล้วกด ▶︎ เริ่มวาระ`,`Your town starts in ${ZONES[z].en} (map #${L.id}) · press ▶︎ Start your term`):T("พร้อมเมื่อไร กด ▶︎ เริ่มวาระ ที่มุมขวาล่าง","Ready? Press ▶︎ Start your term") }
 function mapIntoView(){ if(matchMedia("(min-width:821px) and (orientation:landscape)").matches) return; fitCanvas(); const mb=document.querySelector(".mapbox"); if(!mb) return;
   const top=mb.getBoundingClientRect().top+scrollY-6; if(Math.abs(scrollY-top)>4) window.scrollTo({top,behavior:reduce()?"auto":"smooth"}) }
 function newGame(){ PREV=null; TUT.on=false; coach(); S=fresh(); S.modal="menu"; effects=[]; parts=[]; dmgShow.clear(); drops.clear(); render() }
@@ -2399,9 +2416,9 @@ const SFX={
 { const w=(k,f)=>{ const o=FX[k]; FX[k]=function(){ try{f.apply(null,arguments)}catch(e){} return o.apply(FX,arguments) } };
   w("build",()=>SFX.build()); w("coins",n=>{ if(n) SFX.coin() }); w("blocked",()=>SFX.blocked());
   w("shield",()=>SFX.blocked()); w("sparkle",()=>SFX.repair()); w("demolish",()=>SFX.demolish()); w("shieldSmall",()=>SFX.totem()); }
-{ const _t=toast; toast=function(m,k){ if(k==="bad") SFX.bad(); else if(k==="good") SFX.good(); return _t(m,k) } }
-function logBtn(){ const b=$("logbtn"); if(b){ b.textContent="📜 "+T("บันทึก","Log"); b.title=T("บันทึกเมือง","City log") } }
-function muteBtn(){ logBtn(); const b=$("mute"); if(b){ b.textContent=MUTED?"🔇":"🔊"; b.setAttribute("aria-label",MUTED?T("เปิดเสียง","Sound on"):T("ปิดเสียง","Sound off")) } }
+{ const _t=toast; toast=function(m,k,h){ if(k==="bad") SFX.bad(); else if(k==="good") SFX.good(); return _t(m,k,h) } }
+function logBtn(){ const b=$("logbtn"); if(b){ b.innerHTML=pi("doc")+" "+T("บันทึก","Log"); b.title=T("บันทึกเมือง","City log") } }
+function muteBtn(){ logBtn(); const b=$("mute"); if(b){ b.innerHTML=pi(MUTED?"mute":"sound"); b.setAttribute("aria-label",MUTED?T("เปิดเสียง","Sound on"):T("ปิดเสียง","Sound off")) } }
 
 /* ---------- guided first round (coach marks) ---------- */
 const TUT={on:false,step:0};
@@ -2420,8 +2437,8 @@ const TSTEPS=[
  // round 1 — build a town
  PT("นี่คือ <b>เหรียญ</b> ของเมือง อาคารที่ไม่พังให้รายได้ทุกต้นรอบ<br>รอบนี้ได้ +4 จากเมือง และการ์ด +3 กับ −3 หักลบกันพอดี",
     "These are your <b>coins</b>. Every undamaged building pays you at the start of each round.<br>+4 from the town this round; the +3 and −3 cards cancel out.",{sel:"#status .stat:nth-child(2)",next:1,r:1}),
- PT("<b>อาคาร</b> (ราคา · ได้อะไร)<br>🏠 <b>บ้าน</b> 4 · +1/รอบ · ที่อยู่ 1<br>🏪 <b>ร้านค้า</b> 7 · +2/รอบ · ต้องติดบ้าน<br>🏭 <b>โรงงาน</b> 8 · +4/รอบ <span class=\"bad\">แต่เพิ่มความเสี่ยง</span><br>🏢 <b>คอนโด</b> 10 · +1/รอบ · ที่อยู่ 4 (2 ช่อง)<br>🌳 <b>สวน</b> 4 · <span class=\"good\">ลดความเสี่ยง</span>",
-    "<b>Buildings</b> (cost · what you get)<br>🏠 <b>House</b> 4 · +1/round · housing 1<br>🏪 <b>Shop</b> 7 · +2/round · must touch a home<br>🏭 <b>Factory</b> 8 · +4/round <span class=\"bad\">but raises risk</span><br>🏢 <b>Apartments</b> 10 · +1/round · housing 4 (2 lots)<br>🌳 <b>Park</b> 4 · <span class=\"good\">lowers risk</span>",{sel:"#trayin .pal",next:1,r:1}),
+ PT("<b>อาคาร</b> (ราคา · ได้อะไร)<br>"+pi("house")+" <b>บ้าน</b> 4 · +1/รอบ · ที่อยู่ 1<br>"+pi("shop")+" <b>ร้านค้า</b> 7 · +2/รอบ · ต้องติดบ้าน<br>"+pi("factory")+" <b>โรงงาน</b> 8 · +4/รอบ <span class=\"bad\">แต่เพิ่มความเสี่ยง</span><br>"+pi("condo")+" <b>คอนโด</b> 10 · +1/รอบ · ที่อยู่ 4 (2 ช่อง)<br>"+pi("green")+" <b>สวน</b> 4 · <span class=\"good\">ลดความเสี่ยง</span>",
+    "<b>Buildings</b> (cost · what you get)<br>"+pi("house")+" <b>House</b> 4 · +1/round · housing 1<br>"+pi("shop")+" <b>Shop</b> 7 · +2/round · must touch a home<br>"+pi("factory")+" <b>Factory</b> 8 · +4/round <span class=\"bad\">but raises risk</span><br>"+pi("condo")+" <b>Apartments</b> 10 · +1/round · housing 4 (2 lots)<br>"+pi("green")+" <b>Park</b> 4 · <span class=\"good\">lowers risk</span>",{sel:"#trayin .pal",next:1,r:1}),
  PT("มาสร้างเมืองกัน แตะปุ่ม <b>บ้าน</b>","Let's build. Tap <b>House</b>.",{sel:'[data-buy="house"]',r:1,enter:()=>topUp(4),done:()=>S.tool==="house"||cnt("house")>2}),
  PT("แตะ<b>ช่องว่าง</b>บนแผนที่เพื่อวางบ้าน (ถนนวางไม่ได้)","Tap an <b>empty lot</b> on the map to place it (not on a road).",{sel:"#stage",r:1,done:()=>cnt("house")>2}),
  PT("ต่อไปแตะ <b>ร้านค้า</b> แล้ววาง<b>ติดด้านข้าง</b>กับบ้านหรือคอนโด (ทแยงไม่นับ) เพราะร้านต้องมีคนอยู่ใกล้ๆ มาซื้อของ",
@@ -2431,8 +2448,8 @@ const TSTEPS=[
  PT("<b>ความเสี่ยง</b> ตั้งแต่รอบ 2 ทอยลูกเต๋าทุกรอบ ได้<b>ไม่เกินตัวเลขนี้</b> = เกิดภัย<br><span class=\"bad\">ความเสี่ยงสูงขึ้นทุกปี</span> ปี 1–4 = 4 · 6 · 8 · 10<br>บรรทัดล่างบอกที่มาของตัวเลข",
     "<b>Risk</b>: from round 2 you roll every round. Roll <b>this number or less</b> and a disaster strikes.<br><span class=\"bad\">Risk rises every year</span>: years 1–4 = 4 · 6 · 8 · 10<br>The bottom line shows where the number comes from.",{sel:"#status .riskbox",next:1,r:2}),
  PT("<b>โรงงาน</b> ได้เงินมากที่สุด (+4) แตะปุ่มโรงงานเลย","A <b>factory</b> earns the most (+4). Tap Factory.",{sel:'[data-buy="factory"]',r:2,enter:()=>topUp(8),done:()=>S.tool==="factory"||cnt("factory")>0}),
- PT("วางโรงงาน (ใช้ 2 ช่อง กด <b>↔ หมุน</b> เพื่อเปลี่ยนแนว)<br><span class=\"bad\">โรงงานห้ามติดบ้านหรือคอนโด</span> เพราะมีเสียง ควัน และเสี่ยงไฟไหม้ ลองวางติดบ้านดูก็ได้ เกมจะไม่ยอม",
-    "Place the factory (2 lots; tap <b>↔ Rotate</b> to turn it).<br><span class=\"bad\">Factories can't touch houses or apartments</span>: noise, smoke and fire risk. Try next to a house — the game won't let you.",{sel:"#stage",r:2,done:()=>cnt("factory")>0}),
+ PT("วางโรงงาน (ใช้ 2 ช่อง กด <b>↔︎ หมุน</b> เพื่อเปลี่ยนแนว)<br><span class=\"bad\">โรงงานห้ามติดบ้านหรือคอนโด</span> เพราะมีเสียง ควัน และเสี่ยงไฟไหม้ ลองวางติดบ้านดูก็ได้ เกมจะไม่ยอม",
+    "Place the factory (2 lots; tap <b>↔︎ Rotate</b> to turn it).<br><span class=\"bad\">Factories can't touch houses or apartments</span>: noise, smoke and fire risk. Try next to a house — the game won't let you.",{sel:"#stage",r:2,done:()=>cnt("factory")>0}),
  PT("ดูความเสี่ยง: <span class=\"bad\">โรงงาน +1</span> และกองการ์ดภัยมี<b>ไฟไหม้โรงงาน</b>เพิ่มอีก 1 ใบ (โรงงานพังพร้อมอาคารที่ติดกัน)",
     "Look at the risk: <span class=\"bad\">factory +1</span>, and a <b>factory fire</b> card joined the disaster deck (the factory and everything touching it).",{sel:"#status .riskbox",next:1,r:2}),
  PT("ลดความเสี่ยงกลับด้วย <b>สวน</b> แตะสวนแล้ววางที่ไหนก็ได้<br><span class=\"good\">สวนแห่งละ −1 (สูงสุด −3)</span> พื้นที่สีเขียวช่วยซับน้ำ ลดความร้อน และกั้นไฟ",
@@ -2441,11 +2458,11 @@ const TSTEPS=[
  // round 3 — zones and protection
  PT("เมืองมี <b>4 โซน</b> แต่ละโซนเจอภัยคนละแบบ (ดูป้ายบนและล่างแผนที่)<br>เมืองฝึกของเราอยู่<b>ริมแม่น้ำ</b> ซึ่งเสี่ยง<b>น้ำท่วม</b> และน้ำท่วมทำให้บ้าน ร้านค้า และโรงงานพัง",
     "The city has <b>4 zones</b>, each with its own hazard (see the bars above and below the map).<br>Our town is in <b>Riverside</b>, which <b>floods</b> — and floods wreck houses, shops and factories.",{sel:"#zbar-top",r:3,next:1,enter:()=>{ S.tool=null; render() }}),
- PT("เตรียมรับภัย: แตะ <b>🛡 เสริม</b> (3 เหรียญ) อาคารที่เสริมแล้วจะรอดภัยได้ 1 ครั้ง ถูกกว่าซ่อมมาก",
-    "Get ready: tap <b>🛡 Reinforce</b> (3 coins). A reinforced building survives one disaster — far cheaper than repairing.",{sel:"#reinforce",r:3,enter:()=>topUp(3),done:()=>S.tool==="reinforce"||riverRF()}),
+ PT("เตรียมรับภัย: แตะ <b>"+pi("shield")+" เสริม</b> (3 เหรียญ) อาคารที่เสริมแล้วจะรอดภัยได้ 1 ครั้ง ถูกกว่าซ่อมมาก",
+    "Get ready: tap <b>"+pi("shield")+" Reinforce</b> (3 coins). A reinforced building survives one disaster — far cheaper than repairing.",{sel:"#reinforce",r:3,enter:()=>topUp(3),done:()=>S.tool==="reinforce"||riverRF()}),
  PT("แตะ<b>บ้านหรือร้านค้าในโซนริมแม่น้ำ</b> 1 หลังเพื่อเสริม","Tap one <b>house or shop in Riverside</b> to reinforce it.",{sel:"#stage",r:3,done:riverRF}),
- PT("พร้อมแล้ว กด <b>จบรอบ</b><br><small>ถ้าวางผิด กด <b>↶ ย้อน</b> ได้ก่อนจบรอบ · <b>✖ รื้อ</b> ฟรี แต่ไม่ได้เงินคืน</small>",
-    "Ready. Press <b>End round</b>.<br><small>Placed something wrong? <b>↶ Undo</b> works until you end the round · <b>✖ Demolish</b> is free but refunds nothing.</small>",{sel:"#act",r:3,end:1,done:()=>S.round>=4}),
+ PT("พร้อมแล้ว กด <b>จบรอบ</b><br><small>ถ้าวางผิด กด <b>↶ ย้อน</b> ได้ก่อนจบรอบ · <b>✖︎ รื้อ</b> ฟรี แต่ไม่ได้เงินคืน</small>",
+    "Ready. Press <b>End round</b>.<br><small>Placed something wrong? <b>↶ Undo</b> works until you end the round · <b>✖︎ Demolish</b> is free but refunds nothing.</small>",{sel:"#act",r:3,end:1,done:()=>S.round>=4}),
  // round 4 — the disaster
  PT("<b>น้ำท่วมริมแม่น้ำ!</b> อาคารที่<span class=\"good\">เสริมไว้รอด</span> (โล่ใช้ไปแล้ว ต้องเสริมใหม่) ที่เหลือ<span class=\"bad\">พัง</span><br>อาคารที่พัง<b>ไม่ให้เงินและไม่นับดาว</b>จนกว่าจะซ่อม",
     "<b>Riverside flood!</b> The <span class=\"good\">reinforced building survived</span> (its shield is used up). The rest are <span class=\"bad\">damaged</span>.<br>Damaged buildings <b>earn nothing and don't count for stars</b> until repaired.",{sel:"#stage",r:4,next:1,skip:()=>r4ready()&&!S.pieces.some(p=>p.dmg)}),
@@ -2455,8 +2472,8 @@ const TSTEPS=[
     "The <b>Repair volunteers</b> card gives one free repair. Tap <b>✚ Repair</b>, then a damaged building.<br><small>Normally a repair costs the full building price.</small>",{sel:"#repair",r:4,done:()=>S.undo.some(u=>u.kind==="repair"),skip:()=>r4ready()&&!S.pieces.some(p=>p.dmg)}),
  PT("<b>Totem</b> กันภัยแบบหนึ่งได้<b>ทั้งใบ ตลอดเกม</b> (ราคาแพงขึ้นทุกอัน 8 → 12 → 16 → 20)<br>การ์ด<b>รัฐอุดหนุน</b>ลดให้ 3 ซื้อ <b>คันกั้นน้ำ</b>เลย ถ้ามีตั้งแต่แรก น้ำท่วมเมื่อกี้จะไม่ทำอะไรเมืองเลย",
     "A <b>Totem</b> blocks one hazard <b>completely, for the whole game</b> (each costs more: 8 → 12 → 16 → 20).<br>The <b>Safety subsidy</b> takes 3 off. Buy the <b>Flood wall</b> — with it, that flood would have done nothing.",{sel:"#totem-panel",r:4,enter:()=>topUp(totemPrice()),done:()=>S.totems.length>0}),
- PT("<b>เป้าหมาย</b>: เก็บดาว 4 ด้าน ด้านละ 2 ดวง<br>เศรษฐกิจ (รายได้) · สังคม (ที่อยู่) · สิ่งแวดล้อม (สวน) · พร้อมรับภัย (Totem)<br>นับตอนจบรอบ 12 · ครบ <b>8 ดาว = Best Mayor 👑</b>",
-    "<b>Your goal</b>: 2 stars in each of 4 areas<br>Economy (income) · Society (housing) · Environment (parks) · Preparedness (Totems)<br>Counted after round 12 · <b>8 stars = Best Mayor 👑</b>",{sel:"#goal-panel",r:4,next:1}),
+ PT("<b>เป้าหมาย</b>: เก็บดาว 4 ด้าน ด้านละ 2 ดวง<br>เศรษฐกิจ (รายได้) · สังคม (ที่อยู่) · สิ่งแวดล้อม (สวน) · พร้อมรับภัย (Totem)<br>นับตอนจบรอบ 12 · ครบ <b>8 ดาว = Best Mayor "+pi("crown")+"</b>",
+    "<b>Your goal</b>: 2 stars in each of 4 areas<br>Economy (income) · Society (housing) · Environment (parks) · Preparedness (Totems)<br>Counted after round 12 · <b>8 stars = Best Mayor "+pi("crown")+"</b>",{sel:"#goal-panel",r:4,next:1}),
  PT("ฝึกครบแล้ว! กด <b>จบการฝึก</b> แล้วเริ่มวาระจริง 12 รอบ","Practice complete! Press <b>Finish practice</b> to start your real 12-round term.",{sel:"#act",r:4,end:1}),
 ];
 const built=()=>S.undo.some(u=>u.kind==="piece");
@@ -2497,7 +2514,7 @@ function coach(){
   if(!tgt){ el.className=""; ring.className=""; return }
   const phone=!matchMedia("(min-width:821px) and (orientation:landscape)").matches, onMap=phone&&st.sel==="#stage";
   if(el.dataset.k!==String(TUT.step)){ el.dataset.k=TUT.step; if(onMap) mapIntoView(); else try{tgt.scrollIntoView({block:"center",behavior:"smooth"})}catch(e){}
-    el.innerHTML=`<div class="cstep">${T("โหมดฝึก","Practice")} · ${T("รอบ","round")} ${S.round}/${PRACTICE.rounds}</div><p>${T(st.th,st.en)}</p><div class="cbtn">${st.next?`<button type="button" class="primary" data-tut="next">${T("ถัดไป ▶","Next ▶")}</button>`:""}<button type="button" class="ghostbtn" data-tut="skip">${T("ข้ามไปเกมจริง","Skip to the real game")}</button></div>` }
+    el.innerHTML=`<div class="cstep">${T("โหมดฝึก","Practice")} · ${T("รอบ","round")} ${S.round}/${PRACTICE.rounds}</div><p>${T(st.th,st.en)}</p><div class="cbtn">${st.next?`<button type="button" class="primary" data-tut="next">${T("ถัดไป ▶︎","Next ▶︎")}</button>`:""}<button type="button" class="ghostbtn" data-tut="skip">${T("ข้ามไปเกมจริง","Skip to the real game")}</button></div>` }
   const r=tgt.getBoundingClientRect(), vw=innerWidth, vh=innerHeight;
   ring.className="on"; Object.assign(ring.style,{left:r.left-6+"px",top:r.top-6+"px",width:r.width+12+"px",height:r.height+12+"px"});
   el.className="on"+(phone?" ph":""); const w=Math.min(320,vw-24); el.style.width=w+"px"; el.style.maxHeight=""; let h=el.offsetHeight;
@@ -2536,7 +2553,7 @@ function celebrate(cb){
   SFX.fanfare();
   if(reduce()){ setTimeout(cb,600); return }
   const o=document.createElement("div"); o.id="party";
-  o.innerHTML=`<canvas></canvas><div class="rays"></div><div class="flash"></div><div class="pcrown">👑</div><div class="ptitle"><span>BEST</span><span>MAYOR</span></div><div class="psub">${T("นายกฯ ที่ดีที่สุด · ครบ 8 ดาว","A perfect 8-star term")}</div><div class="pstars">${[...Array(8)].map((_,i)=>`<i style="animation-delay:${1.1+i*.12}s">★</i>`).join("")}</div>`;
+  o.innerHTML=`<canvas></canvas><div class="rays"></div><div class="flash"></div><div class="pcrown">${pi("crown")}</div><div class="ptitle"><span>BEST</span><span>MAYOR</span></div><div class="psub">${T("นายกฯ ที่ดีที่สุด · ครบ 8 ดาว","A perfect 8-star term")}</div><div class="pstars">${[...Array(8)].map((_,i)=>`<i style="animation-delay:${1.1+i*.12}s">${pi("star")}</i>`).join("")}</div>`;
   document.body.appendChild(o);
   const cvs=o.querySelector("canvas"), x=cvs.getContext("2d"); let W,H; const fit=()=>{W=cvs.width=Math.ceil(innerWidth/4);H=cvs.height=Math.ceil(innerHeight/4)}; fit();
   const P=[], cols=["#F2C230","#FFE680","#D94A3A","#7FC1F2","#5CB85C","#F4F4F4","#C58CF2"];
@@ -2563,8 +2580,8 @@ async function cityImage(name){
   x.fillStyle=best?"#F2C230":"#1B1B2F"; x.fillRect(0,0,W,8); x.fillRect(0,H-8,W,8); x.fillRect(0,0,8,H); x.fillRect(W-8,0,8,H);
   x.textAlign="center"; x.fillStyle=best?"#F2C230":"#1B1B2F"; x.font="700 40px Silkscreen, 'Chakra Petch', monospace"; x.fillText("MR.MAYOR",W/2,62);
   x.fillStyle="#1B1B2F"; x.fillRect(20,80,440,440); x.drawImage(cv,0,0,112,112,24,84,432,432);
-  x.font="34px Silkscreen, monospace"; for(let i=0;i<8;i++){ x.fillStyle=i<n?"#F2C230":(best?"#4A4064":"#D8CFB8"); x.fillText("★",W/2-147+i*42,568) }
-  x.fillStyle=best?"#FFE680":"#1B1B2F"; x.font="700 30px 'Chakra Petch', sans-serif"; x.fillText(`${n}/8 · ${T(rk[0],rk[1]).replace(" 👑","")}${best?" 👑":""}`,W/2,612);
+  x.imageSmoothingEnabled=false; for(let i=0;i<8;i++){ x.drawImage(i<n?SPR.star:SPR.starOff,W/2-147+i*42-16,536,32,32) }
+  x.fillStyle=best?"#FFE680":"#1B1B2F"; x.font="700 30px 'Chakra Petch', sans-serif"; const rkt=`${n}/8 · ${T(rk[0],rk[1])}`; x.fillText(rkt,W/2,612); if(best){ const tw=x.measureText(rkt).width; x.imageSmoothingEnabled=false; x.drawImage(SPR.crown,W/2+tw/2+10,588,33,24); x.drawImage(SPR.crown,W/2-tw/2-43,588,33,24) }
   if(name){ x.fillStyle=best?"#F4F4F4":"#6A6478"; x.font="600 22px 'Chakra Petch', sans-serif"; x.fillText(T(`นายกฯ ${name}`,`Mayor ${name}`),W/2,646) }
   x.fillStyle=best?"#B9AEDB":"#6A6478"; x.font="500 16px 'Chakra Petch', sans-serif"; x.fillText("SDG 11.5 · Bangkok University · 17.11.2026",W/2,688);
   return c;
@@ -2604,7 +2621,7 @@ async function lbFetch(entry){
 function lbRows(){
   if(LB.loading&&!LB.list) return `<p class="lbnote">${T("กำลังโหลด…","Loading…")}</p>`;
   if(!LB.list||!LB.list.length) return `<p class="lbnote">${T("ยังไม่มีใครส่งคะแนน เป็นคนแรกเลย!","No scores yet. Be the first!")}</p>`;
-  return `<ol class="lb">${LB.list.map((e,i)=>`<li class="${e.id&&e.id===S.lbId?"me":""}"><span class="lr">${i===0?"👑":i+1}</span><span class="ln">${esc(e.name)}</span><span class="ls">${"★".repeat(Math.min(8,e.stars|0))}<small>${e.stars|0}</small></span></li>`).join("")}</ol>
+  return `<ol class="lb">${LB.list.map((e,i)=>`<li class="${e.id&&e.id===S.lbId?"me":""}"><span class="lr">${i===0?pi("crown"):i+1}</span><span class="ln">${esc(e.name)}</span><span class="ls">${pi("star").repeat(Math.min(8,e.stars|0))}<small>${e.stars|0}</small></span></li>`).join("")}</ol>
     <p class="lbnote">${LB.global?T("ตารางรวมทุกเครื่อง","All devices"):T("คะแนนในเครื่องนี้","This device only")}${LB.err?T(" · เชื่อมต่อตารางรวมไม่ได้",""+" · couldn't reach the shared board"):""}</p>`;
 }
 function lbPaint(){ const el=$("lbbox"); if(el) el.innerHTML=lbRows() }
@@ -2618,27 +2635,27 @@ function lbSubmit(){
   const f=$("lbform"); if(f) f.innerHTML=`<p class="lbdone">${T(`ส่งคะแนนแล้ว · นายกฯ ${esc(name)}`,`Score sent · Mayor ${esc(name)}`)}</p>`;
 }
 function boardModal(){
-  return `<div class="overlay"><div class="box modal start" role="dialog" aria-modal="true"><h3>🏆 ${T("ตารางนายกฯ","Mayor leaderboard")}</h3>
+  return `<div class="overlay"><div class="box modal start" role="dialog" aria-modal="true"><h3>${pi("trophy")} ${T("ตารางนายกฯ","Mayor leaderboard")}</h3>
     <div id="lbbox">${lbRows()}</div><button type="button" class="primary" data-menu="back">${T("กลับ","Back")}</button></div></div>`;
 }
 function endModal(){
   const n=typeof S.result==="number"?S.result:stars(), rk=rankOf(n), best=n>=8;
-  const rows=STAR_KEYS.map(k=>{const lab=STAR_LAB[k], s=starOf(k);return `<div><b>${"★".repeat(s)||"–"}</b><span>${T(lab[2],lab[3])} ${metric(k)}</span></div>`}).join("");
+  const rows=STAR_KEYS.map(k=>{const lab=STAR_LAB[k], s=starOf(k);return `<div><b>${pi("star").repeat(s)||"–"}</b><span>${T(lab[2],lab[3])} ${metric(k)}</span></div>`}).join("");
   const rf=realFact(), st=S.stats;
   return `<div class="overlay"><div class="box modal endm${best?" gold":""}" role="dialog" aria-modal="true">
-    ${best?`<div class="crownhead">👑</div>`:""}
-    <div class="big" style="color:${n>=6?"var(--go)":n>=4?"var(--ink)":"var(--red)"};text-shadow:3px 3px 0 ${n>=4&&n<6?"var(--gold)":"var(--ink)"}">⭐ ${n}/8</div>
-    <div class="starrow">${[...Array(8)].map((_,i)=>`<i class="${i<n?"on":""}" style="animation-delay:${.2+i*.14}s">★</i>`).join("")}</div>
+    ${best?`<div class="crownhead">${pi("crown")}</div>`:""}
+    <div class="big" style="color:${n>=6?"var(--go)":n>=4?"var(--ink)":"var(--red)"};text-shadow:3px 3px 0 ${n>=4&&n<6?"var(--gold)":"var(--ink)"}">${pi("star")} ${n}/8</div>
+    <div class="starrow">${[...Array(8)].map((_,i)=>`<i class="${i<n?"on":""}" style="animation-delay:${.2+i*.14}s"><img src="${URL.star}" alt=""></i>`).join("")}</div>
     <p class="lead" style="font-size:20px;font-weight:700;color:var(--ink)">${T(rk[0],rk[1])}</p>
     <div class="stats3 s4">${rows}</div>
     <h4 class="sumh">${T("วาระของคุณ","Your term")}</h4>
     <div class="stats3 s4"><div><b>${st.dis}</b><span>${T("ภัยที่เจอ","disasters")}</span></div><div><b>${st.blocked}</b><span>${T("Totem กันได้","blocked")}</span></div><div><b>${st.saved}</b><span>${T("เสริมแล้วรอด","saved")}</span></div><div><b>${st.hits}</b><span>${T("อาคารที่พัง","hit")}</span></div></div>
     <ul class="lessons">${lessons().map(l=>`<li>${T(l[0],l[1])}</li>`).join("")}</ul>
     <div class="debrief"><b>${T("เรื่องจริง","Real world")} · ${T(DIS[rf.k].th,DIS[rf.k].en)}:</b> ${T(rf.f[0],rf.f[1])}<br><small>${T("SDG 11.5 คือการลดความสูญเสียจากภัยพิบัติในเมือง","SDG 11.5 is about cutting city losses from disasters.")}</small></div>
-    <h4 class="sumh">🏆 ${T("ตารางนายกฯ","Leaderboard")}</h4>
+    <h4 class="sumh">${pi("trophy")} ${T("ตารางนายกฯ","Leaderboard")}</h4>
     <div id="lbform">${S.lbId?`<p class="lbdone">${T(`ส่งคะแนนแล้ว · นายกฯ ${esc(S.lbName)}`,`Score sent · Mayor ${esc(S.lbName)}`)}</p>`:`<div class="lbin"><input id="lbname" maxlength="16" autocomplete="off" placeholder="${T("ชื่อนายกฯ","Mayor's name")}"><button type="button" class="primary" id="lbsend">${T("ส่งคะแนน","Submit")}</button></div>`}</div>
     <div id="lbbox">${lbRows()}</div>
-    <button class="primary" type="button" id="saveimg">📸 ${T("บันทึกรูปเมืองของฉัน","Save my city image")}</button>
+    <button class="primary" type="button" id="saveimg">${pi("camera")} ${T("บันทึกรูปเมืองของฉัน","Save my city image")}</button>
     <div class="row2"><button class="ghostbtn" type="button" data-close="view">${T("ดูเมืองของฉัน","See my city")}</button><button class="ghostbtn" type="button" data-close="new">${T("เล่นใหม่","Play again")}</button></div></div></div>`;
 }
 
