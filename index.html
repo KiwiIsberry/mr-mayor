@@ -2579,7 +2579,7 @@ async function saveCity(){
 const URL_=window.URL;
 
 /* ---------- leaderboard (shared across devices via LB_URL, local fallback) ---------- */
-const LB_URL="";   // Google Apps Script web-app URL goes here
+const LB_URL="https://script.google.com/macros/s/AKfycbwMMhNWf0rFotOf5leoOPpS9kLx1zDJiQ0hNjqsPV7PL1MGajFGqV4dab6yzy8q8jtBdg/exec";   // Google Apps Script web-app URL goes here
 const LB={list:null,global:false,loading:false,err:false};
 const lbLocal=()=>{ try{return JSON.parse(localStorage.getItem("mm-lb")||"[]")}catch(e){return []} };
 function lbSort(a){ return a.sort((p,q)=>q.stars-p.stars||q.pts-p.pts||(p.t||0)-(q.t||0)).slice(0,10) }
