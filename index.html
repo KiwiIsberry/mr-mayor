@@ -419,6 +419,10 @@ details.log summary{cursor:pointer;font-weight:700}
 .pdone .precap li{display:grid;grid-template-columns:28px 1fr;gap:10px;align-items:center;border:2px solid var(--ink);background:var(--panel-2);padding:6px 10px;font-size:15px}
 .pdone .precap li img{width:24px;height:24px;image-rendering:pixelated}
 #coach.ph{font-size:13.5px;line-height:1.4;padding:8px 10px;overflow-y:auto} #coach.ph p{margin:3px 0 6px}
+#coach .ptab{width:100%;border-collapse:collapse;margin:4px 0 4px;font-size:12.5px;line-height:1.3}
+#coach .ptab th{font-size:11px;color:var(--muted);font-weight:600;text-align:left;padding:0 4px 2px;border-bottom:2px solid var(--ink)}
+#coach .ptab td{padding:3px 4px;border-bottom:1px solid #E2D9C2;vertical-align:middle;white-space:nowrap} #coach .ptab td:last-child{white-space:normal}
+#coach .ptab .pi{height:15px}
 #coach .cbtn{display:flex;gap:8px;flex-wrap:wrap} #coach .cbtn button{padding:6px 12px;font-size:13px;min-height:0}
 #coachring{position:fixed;z-index:64;pointer-events:none;display:none;border:3px solid var(--gold);box-shadow:0 0 0 4px var(--ink),0 0 0 9999px rgba(14,15,34,.35);animation:ringblink 1s steps(2) infinite}
 #coachring.on{display:block}
@@ -2433,12 +2437,21 @@ const riverRF=()=>S.pieces.some(p=>p.rf&&(p.type==="house"||p.type==="shop")&&zo
 const topUp=n=>{ if(S.coins<n){ const d=n-S.coins; S.coins=n; bump(d); toast(T(`โหมดฝึก: เติมเงินให้ +${d}`,`Practice: +${d} coins top-up`)) } render() };
 const PT=(th,en,o)=>Object.assign({th,en},o);
 const r4ready=()=>S.round>=4&&S.phase==="build"&&!S.busy;   // the practice flood has been resolved
+// practice: the building overview as a small table (cost · coins each round · what else it does)
+function bTable(lg){ const th=lg==="th", c=pi("coin");
+  const rows=[["house",th?"บ้าน":"House",4,"+1",th?"ที่อยู่ 1 ครอบครัว":"homes 1 family"],
+    ["shop",th?"ร้านค้า":"Shop",7,"+2",th?"ต้องวางติดบ้าน":"must touch a home"],
+    ["factory",th?"โรงงาน":"Factory",8,"+4",`<span class="bad">${th?"เสี่ยงภัย +1 · ห้ามติดบ้าน":"risk +1 · not next to homes"}</span>`],
+    ["condo",th?"คอนโด":"Apartments",10,"+1",th?"ที่อยู่ 4 ครอบครัว · 2 ช่อง":"homes 4 families · 2 lots"],
+    ["green",th?"สวน":"Park",4,"–",`<span class="good">${th?"เสี่ยงภัย −1":"risk −1"}</span>`]];
+  return `<b>${th?"อาคารที่สร้างได้":"What you can build"}</b><table class="ptab"><tr><th></th><th>${th?"ราคา":"Cost"}</th><th>${th?"ได้/รอบ":"Per round"}</th><th>${th?"อื่นๆ":"Also"}</th></tr>`+
+    rows.map(r=>`<tr><td>${pi(r[0])} <b>${r[1]}</b></td><td>${c}${r[2]}</td><td>${r[3]==="–"?"–":c+r[3]}</td><td>${r[4]}</td></tr>`).join("")+
+    `</table><small>${th?"ได้/รอบ = เหรียญที่อาคารให้ทุกต้นรอบ · ที่อยู่นับดาวด้านสังคม":"Per round = coins it pays at the start of every round · homes count for Society stars"}</small>` }
 const TSTEPS=[
  // round 1 — build a town
  PT("นี่คือ <b>เหรียญ</b> ของเมือง อาคารที่ไม่พังให้รายได้ทุกต้นรอบ<br>รอบนี้ได้ +4 จากเมือง และการ์ด +3 กับ −3 หักลบกันพอดี",
     "These are your <b>coins</b>. Every undamaged building pays you at the start of each round.<br>+4 from the town this round; the +3 and −3 cards cancel out.",{sel:"#status .stat:nth-child(2)",next:1,r:1}),
- PT("<b>อาคาร</b> (ราคา · ได้อะไร)<br>"+pi("house")+" <b>บ้าน</b> 4 · +1/รอบ · ที่อยู่ 1<br>"+pi("shop")+" <b>ร้านค้า</b> 7 · +2/รอบ · ต้องติดบ้าน<br>"+pi("factory")+" <b>โรงงาน</b> 8 · +4/รอบ <span class=\"bad\">แต่เพิ่มความเสี่ยง</span><br>"+pi("condo")+" <b>คอนโด</b> 10 · +1/รอบ · ที่อยู่ 4 (2 ช่อง)<br>"+pi("green")+" <b>สวน</b> 4 · <span class=\"good\">ลดความเสี่ยง</span>",
-    "<b>Buildings</b> (cost · what you get)<br>"+pi("house")+" <b>House</b> 4 · +1/round · housing 1<br>"+pi("shop")+" <b>Shop</b> 7 · +2/round · must touch a home<br>"+pi("factory")+" <b>Factory</b> 8 · +4/round <span class=\"bad\">but raises risk</span><br>"+pi("condo")+" <b>Apartments</b> 10 · +1/round · housing 4 (2 lots)<br>"+pi("green")+" <b>Park</b> 4 · <span class=\"good\">lowers risk</span>",{sel:"#trayin .pal",next:1,r:1}),
+ PT(bTable("th"),bTable("en"),{sel:"#trayin .pal",next:1,r:1,wide:1}),
  PT("มาสร้างเมืองกัน แตะปุ่ม <b>บ้าน</b>","Let's build. Tap <b>House</b>.",{sel:'[data-buy="house"]',r:1,enter:()=>topUp(4),done:()=>S.tool==="house"||cnt("house")>2}),
  PT("แตะ<b>ช่องว่าง</b>บนแผนที่เพื่อวางบ้าน (ถนนวางไม่ได้)","Tap an <b>empty lot</b> on the map to place it (not on a road).",{sel:"#stage",r:1,done:()=>cnt("house")>2}),
  PT("ต่อไปแตะ <b>ร้านค้า</b> แล้ววาง<b>ติดด้านข้าง</b>กับบ้านหรือคอนโด (ทแยงไม่นับ) เพราะร้านต้องมีคนอยู่ใกล้ๆ มาซื้อของ",
@@ -2517,7 +2530,7 @@ function coach(){
     el.innerHTML=`<div class="cstep">${T("โหมดฝึก","Practice")} · ${T("รอบ","round")} ${S.round}/${PRACTICE.rounds}</div><p>${T(st.th,st.en)}</p><div class="cbtn">${st.next?`<button type="button" class="primary" data-tut="next">${T("ถัดไป ▶︎","Next ▶︎")}</button>`:""}<button type="button" class="ghostbtn" data-tut="skip">${T("ข้ามไปเกมจริง","Skip to the real game")}</button></div>` }
   const r=tgt.getBoundingClientRect(), vw=innerWidth, vh=innerHeight;
   ring.className="on"; Object.assign(ring.style,{left:r.left-6+"px",top:r.top-6+"px",width:r.width+12+"px",height:r.height+12+"px"});
-  el.className="on"+(phone?" ph":""); const w=Math.min(320,vw-24); el.style.width=w+"px"; el.style.maxHeight=""; let h=el.offsetHeight;
+  el.className="on"+(phone?" ph":""); const w=Math.min(st.wide?400:320,vw-24); el.style.width=w+"px"; el.style.maxHeight=""; let h=el.offsetHeight;
   if(onMap){ // phones: keep the whole map visible, the bubble sits under it (scrolls inside itself if space is short)
     const left0=Math.max(12,(vw-w)/2); let top0=r.bottom+8; if(vh-top0-8<120) top0=vh-128;
     el.style.maxHeight=(vh-top0-8)+"px"; el.style.left=left0+"px"; el.style.top=top0+"px"; return }
