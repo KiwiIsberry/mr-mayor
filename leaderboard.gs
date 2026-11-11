@@ -9,6 +9,7 @@ function doPost(e) {
   var d = {};
   try { d = JSON.parse(e.postData.contents); } catch (err) { return out(top_()); }
   var name = String(d.name || '').replace(/[<>]/g, '').trim().slice(0, 16) || 'Mayor';
+  if (rude_(name)) name = 'Mayor';
   var stars = Math.max(0, Math.min(8, Math.floor(Number(d.stars) || 0)));
   var pts = Math.max(0, Math.min(300, Math.floor(Number(d.pts) || 0)));
   var id = String(d.id || '').replace(/[^a-z0-9]/gi, '').slice(0, 20);
@@ -16,6 +17,16 @@ function doPost(e) {
   lock.waitLock(5000);
   try { sheet_().appendRow([new Date(), name, stars, pts, id]); } finally { lock.releaseLock(); }
   return out(top_());
+}
+
+// Same simple word list as the game: rude names are stored as "Mayor".
+var BAD_ = ['ควย','เหี้ย','สัส','เย็ด','หี','แตด','ดอกทอง','อีดอก','แม่ง','ระยำ','ชิบหาย','เชี่ย','กระหรี่','ส้นตีน','เงี่ยน','หำ','เสือก','สถุน','fuck','shit','bitch','cunt','dick','pussy','asshole','nigg','fag','cock','slut','whore','porn','rape','nazi','hitler','penis','vagina','bastard'];
+function rude_(n) {
+  var t = String(n).toLowerCase().replace(/[\u200b-\u200d\ufeff]/g, '')
+    .replace(/0/g, 'o').replace(/[1!|]/g, 'i').replace(/3/g, 'e').replace(/[4@]/g, 'a').replace(/[5$]/g, 's').replace(/7/g, 't')
+    .replace(/[^a-z\u0e00-\u0e7f]/g, '');
+  var sq = t.replace(/(.)\1+/g, '$1');
+  return BAD_.some(function (w) { return t.indexOf(w) >= 0 || sq.indexOf(w) >= 0; });
 }
 
 function sheet_() { return SpreadsheetApp.getActiveSpreadsheet().getSheets()[0]; }
