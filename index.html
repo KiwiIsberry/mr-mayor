@@ -1434,28 +1434,39 @@ async function destroyCard(dc,k){
         x.globalAlpha=.6; x.fillStyle="#FFFFFF"; x.beginPath(); x.arc(hitX,hitY,26+Math.random()*10,0,7); x.fill(); x.globalAlpha=1 }
       dc.style.transform=t>60?`translate(${(Math.random()-.5)*10}px,${(Math.random()-.5)*10}px)`:"" ;
       dc.style.filter=on?"brightness(2.2) saturate(0)":"brightness(.6) contrast(1.4)" });
-    // electrocuted: arcs crawl over the card while it blackens
-    await run(900,p=>{ x.clearRect(0,0,c.width,c.height);
-      for(let a=0;a<3;a++) if(Math.random()<.8){ const a0=[ox+Math.random()*W,oy+Math.random()*H]; strokePath(x,boltPath(a0[0],a0[1],a0[0]+(Math.random()-.5)*W*.6,a0[1]+(Math.random()-.5)*H*.5,24),4,"#BFE0FF",.9) }
-      dc.style.transform=`translate(${(Math.random()-.5)*6*(1-p)}px,${(Math.random()-.5)*6*(1-p)}px)`;
-      dc.style.filter=`brightness(${(1-p*.78).toFixed(2)}) sepia(${(p*.5).toFixed(2)}) contrast(${(1+p*.5).toFixed(2)})`;
-      if(Math.random()<.5) P.push({x:ox+Math.random()*W,y:oy+Math.random()*H,vx:.2,vy:-.7,l:0,m:40,c:"#5A6270",s:6,a:.6}); stepParts(x,P) });
-    dc.style.transform="";
-    // crumbles: each side gives way at its own time and speed, falling as ash (clip-path: no async masks)
-    const NA=120, C=[.5,.5], nz=noise2(), skew=Math.random()*Math.PI*2;
-    const del=[...Array(NA)].map((_,i)=>{ const a=i/NA; return nz(a,.37)*.5+(1+Math.cos(a*Math.PI*2-skew))*.12 });
-    const spd=[...Array(NA)].map((_,i)=>.45+nz(.71,i/NA)*.5);
-    const rmax=[...Array(NA)].map((_,i)=>{ const e=edgeHit(C,i/NA*Math.PI*2); return Math.hypot(e[0]-C[0],e[1]-C[1]) });
-    const prevR=rmax.slice(), pct=v=>(v*100).toFixed(2)+"%";
-    await run(2700,p=>{ x.clearRect(0,0,c.width,c.height); const r=dc.getBoundingClientRect(), pts=[];
-      for(let i=0;i<NA;i++){ const a=i/NA*Math.PI*2, prog=Math.max(0,Math.min(1,(p*1.5-del[i])/spd[i])), rr=rmax[i]*(1-prog*prog*(3-2*prog));
-        const u=C[0]+Math.cos(a)*rr, v=C[1]+Math.sin(a)*rr; pts.push([u,v]);
-        const lost=prevR[i]-rr; if(lost>.001){ const n=Math.min(5,Math.ceil(lost*90)); for(let m=0;m<n;m++) P.push({x:r.left+u*W+(Math.random()-.5)*6,y:r.top+v*H+(Math.random()-.5)*6,vx:(Math.random()-.5)*.9+Math.cos(a)*.3,vy:.3+Math.random()*.8,g:.04,fr:.98,l:0,m:50+Math.random()*40,c:["#2A2D36","#3A3F4A","#5A6270","#1B1B2F","#8A8F99"][Math.floor(Math.random()*5)],s:Math.random()<.5?3:4}) }
-        prevR[i]=rr }
-      dc.style.clipPath=dc.style.webkitClipPath=`polygon(${pts.map(q=>pct(q[0])+" "+pct(q[1])).join(",")})`;
+    // The strike leaves a scorch that spreads out from where the bolt hit, with a glowing ember rim, until the whole card is charcoal.
+    // From then on the card is drawn on the canvas as small charred blocks (no CSS masks: they vanish on iOS), so it can crumble block by block.
+    const B=Math.max(5,Math.round(W/38)), cols=Math.ceil(W/B), rows=Math.ceil(H/B), nz=noise2(), nz2=noise2();
+    const hu=(hitX-ox)/W, hv=(hitY-oy)/H, CH=["#14141C","#1B1B26","#1B1B2F","#22232C","#2A2D36"], cells=[];
+    let dmax=0; for(const [a,b] of [[0,0],[1,0],[0,1],[1,1]]) dmax=Math.max(dmax,Math.hypot((a-hu)*W,(b-hv)*H));
+    for(let r=0;r<rows;r++) for(let q=0;q<cols;q++){ const u=(q+.5)/cols, v=(r+.5)/rows, d=Math.hypot((u-hu)*W,(v-hv)*H)/dmax, n=nz(u,v), n2=nz2(u,v);
+      cells.push({q,r,u,v, tc:d*.78+n*.22,                                      // when the scorch reaches this block
+        tf:(v*.52+n2*.34+(1-d)*.14)+Math.random()*.05,                          // when it lets go: top and thin patches first, the part round the strike holds longest
+        col:CH[Math.min(CH.length-1,Math.floor((n2*.7+Math.random()*.3)*CH.length))], grey:Math.random()<.04, gone:false}) }
+    const tfMin=Math.min(...cells.map(o=>o.tf)), tfMax=Math.max(...cells.map(o=>o.tf)); cells.forEach(o=>o.tf=(o.tf-tfMin)/(tfMax-tfMin));
+    const drawCells=(X0,Y0,p,ember)=>{ for(const o of cells){ if(o.gone) continue; if(ember){ if(o.tc>p+.07) continue;
+          if(o.tc>p-.02){ x.fillStyle=o.tc>p+.03?"#FFE680":"#F2A23A"; x.fillRect(X0+o.q*B,Y0+o.r*B,B,B); continue }
+          if(o.tc>p-.07){ x.fillStyle="#8A2F1E"; x.fillRect(X0+o.q*B,Y0+o.r*B,B,B); continue } }
+        x.fillStyle=o.grey?"#3A3F4A":o.col; x.fillRect(X0+o.q*B,Y0+o.r*B,B+.5,B+.5) } };
+    await run(1150,p=>{ x.clearRect(0,0,c.width,c.height); const k2=(1-p)*(1-p);
+      dc.style.transform=`translate(${(Math.random()-.5)*7*k2}px,${(Math.random()-.5)*7*k2}px)`; dc.style.filter=`brightness(${(.6+.4*p).toFixed(2)})`;
+      const r=dc.getBoundingClientRect(); drawCells(r.left,r.top,p*1.12,true);
+      for(let a=0;a<2;a++) if(Math.random()<.75*(1-p)){ const a0=[r.left+Math.random()*W,r.top+Math.random()*H]; strokePath(x,boltPath(a0[0],a0[1],a0[0]+(Math.random()-.5)*W*.6,a0[1]+(Math.random()-.5)*H*.5,24),3,"#BFE0FF",.9) }
+      if(Math.random()<.6) P.push({x:r.left+Math.random()*W,y:r.top+Math.random()*H*.6,vx:(Math.random()-.5)*.3,vy:-.5-Math.random()*.5,l:0,m:46,c:"#5A6270",s:5,a:.45}); stepParts(x,P) });
+    dc.style.transform=""; dc.style.filter=""; dc.style.visibility="hidden";      // the canvas blocks are the card now
+    // a breath of stillness: charcoal with a few dying embers
+    await run(380,p=>{ x.clearRect(0,0,c.width,c.height); drawCells(ox,oy,9,false);
+      for(let e=0;e<5;e++){ const o=cells[Math.floor(Math.random()*cells.length)]; x.fillStyle=Math.random()<.5?"#F2A23A":"#8A2F1E"; x.globalAlpha=.8*(1-p); x.fillRect(ox+o.q*B,oy+o.r*B,B,B); x.globalAlpha=1 }
       stepParts(x,P) });
-    dc.style.visibility="hidden";
-    await run(700,()=>{ x.clearRect(0,0,c.width,c.height); stepParts(x,P) });
+    // crumble: blocks let go a few at a time and fall as ash, drifting on a light wind; whole patches give way together
+    const wind=(Math.random()<.5?-1:1)*(.25+Math.random()*.35), ASH=["#2A2D36","#3A3F4A","#5A6270","#1B1B2F","#8A8F99"];
+    await run(2600,p=>{ x.clearRect(0,0,c.width,c.height); const pe=p*p*(3-2*p)*1.04;
+      for(const o of cells){ if(o.gone||o.tf>pe) continue; o.gone=true;
+        const px=ox+o.q*B, py=oy+o.r*B, big=Math.random()<.35;
+        P.push({x:px,y:py,vx:wind*(.4+Math.random())+(Math.random()-.5)*.5,vy:-.25+Math.random()*.5,g:.035+Math.random()*.035,fr:.985,l:0,m:55+Math.random()*50,c:o.grey?"#5A6270":ASH[Math.floor(Math.random()*ASH.length)],s:big?B:Math.max(2,Math.round(B*.6))});
+        if(!big&&Math.random()<.5) P.push({x:px+B*.4,y:py+B*.4,vx:wind*(.8+Math.random())+(Math.random()-.5)*.6,vy:-.5+Math.random()*.4,g:.02+Math.random()*.02,fr:.985,l:0,m:70+Math.random()*50,c:"#8A8F99",s:2,a:.8}) }
+      drawCells(ox,oy,9,false); stepParts(x,P) });
+    await run(1100,()=>{ x.clearRect(0,0,c.width,c.height); stepParts(x,P) });
     c.remove();
   } else if(k==="flood"){ // water rises to half the card, the card tips over and sinks; what goes under fades away
     SFX.hit("flood",false);
