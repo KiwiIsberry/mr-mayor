@@ -600,6 +600,14 @@ details.log summary{cursor:pointer;font-weight:700}
 }
 
 /* v4.8 event deal: a deck that cards are drawn from, one at a time */
+#splash .yearbox{display:flex;flex-direction:column;align-items:center;gap:10px;background:var(--panel);border:4px solid var(--ink);box-shadow:8px 8px 0 var(--gold);padding:20px 28px 16px;max-width:min(460px,92vw);text-align:center;animation:pop .35s cubic-bezier(.2,1.5,.4,1) both}
+#splash .yearbox .yk{font-family:var(--f-pix);font-size:12px;letter-spacing:.1em;color:var(--muted)}
+#splash .yearbox .yn{font-family:var(--f-pix);font-weight:700;font-size:44px;line-height:1.1;color:var(--ink)} #splash .yearbox .yn small{font-size:18px;color:var(--muted);margin-left:8px}
+#splash .yearbox .yr{font-weight:700;font-size:17px;color:var(--red)} #splash .yearbox .yr .pi{height:18px}
+#splash .yearbox .yv{font-size:16px;font-weight:600} #splash .yearbox .yv s{color:var(--muted);font-family:var(--f-pix)} #splash .yearbox .yv b{font-family:var(--f-pix);font-size:22px;color:var(--red);margin:0 4px} #splash .yearbox .yv span{display:block;font-size:14px;color:var(--muted);font-weight:500}
+#splash .yearbox .ybar{display:grid;grid-template-columns:repeat(11,1fr);gap:3px;width:100%} #splash .yearbox .ybar i{height:12px;border:2px solid var(--ink);background:var(--panel-2)}
+#splash .yearbox .ybar i.on{background:var(--gold)} #splash .yearbox .ybar i.new{background:var(--red);animation:blink2 .5s steps(2) 4}
+#splash .yearbox .taphint{color:var(--ink);background:none;border:0;font-size:14px;padding:0}
 #splash .edeck{position:relative;width:96px;height:132px;margin:2px 0 6px}
 #splash .edeck i{position:absolute;inset:0;border:4px solid var(--ink);box-shadow:4px 4px 0 var(--ink);background:var(--cab);background-image:repeating-linear-gradient(45deg,#2E3356 0 6px,#262A48 6px 12px);display:flex;align-items:center;justify-content:center}
 #splash .edeck i span{font-family:var(--f-pix);font-weight:700;font-size:12px;color:var(--panel);text-align:center;line-height:1.1}
@@ -632,7 +640,7 @@ details.log summary{cursor:pointer;font-weight:700}
 @keyframes deckbob{50%{transform:translateY(-6px)}}
 #splash .edeck .dk2,#splash .edeck .dk3{animation:none}
 #splash .edeck i.off{animation:deckoff .35s ease-in var(--d,0s) both}
-#splash .edeck.leave{transition:transform .4s ease-in,opacity .4s;transform:translateY(-30px) scale(.8);opacity:0}
+#splash .edeck.leave,#splash .ov.wait .edeck.leave{animation:none;transition:transform .4s ease-in,opacity .4s;transform:translateY(-30px) scale(.8);opacity:0;pointer-events:none}
 #splash .edeck.red i{background:#7A1F18;background-image:repeating-linear-gradient(45deg,#9E2B25 0 6px,#7A1F18 6px 12px)}
 #splash .edeck.red i span{color:#FFE0DA}
 #splash .evfoot{min-height:44px;display:flex;justify-content:center}
@@ -659,6 +667,7 @@ details.log summary{cursor:pointer;font-weight:700}
 #splash .dcard>.dface{background:#F8D5CF;padding:12px;display:flex;flex-direction:column;gap:6px;transform:scaleX(0);animation:ecfront .25s ease-out .87s both}
 #splash .dcard.blk>.dface{background:#DDF1DF}
 #splash.fast .dcard,#splash.fast .dcard>*{animation-delay:0s!important}
+.flycoin{position:fixed;z-index:70;width:18px;height:18px;image-rendering:pixelated;pointer-events:none;will-change:transform}
 .cardfx{position:fixed;z-index:95;pointer-events:none;image-rendering:pixelated}
 #splash .frag{z-index:2}
 
@@ -1185,8 +1194,20 @@ function flyTo(el,target,ms){ if(!el||!target||reduce()) return; const a=el.getB
 /* ---------- 1. events ---------- */
 function startRound(){
   S.round++; S.mod={}; S.events=[]; S.disCard=null; S.blocked=false; S.zone=null; S.dice=null; S.hits=[]; S.saved=[]; S.undo=[]; S.tool=null; S.msg=null; S.pending=[]; S.deal++;
-  S.phase="draw"; saveNow(); promptDraw();
+  S.phase="draw"; saveNow();
+  if(S.round>1&&year(S.round)!==year(S.round-1)) yearBanner(promptDraw); else promptDraw();
 }
+// a new year: say so, and show that the base risk just went up (rounds 4, 7 and 10)
+function yearBanner(cb){ const y=year(S.round), b0=RISK0+RISK_YEAR*(y-2), b1=RISK0+RISK_YEAR*(y-1), st=S, rd=S.round;
+  const bar=n=>[...Array(11)].map((_,i)=>`<i class="${i+2<=n?(i+2>b0&&n===b1?"on new":"on"):""}"></i>`).join("");
+  ovOpen(`<div class="yearbox"><div class="yk">${T("ขึ้นปีใหม่","A NEW YEAR")}</div><div class="yn">${T(`ปีที่ ${y}`,`Year ${y}`)}<small>/ 4</small></div>
+    <div class="yr">${pi("warn")} ${T("ภัยพิบัติรุนแรงขึ้นทุกปี","Disasters get worse every year")}</div>
+    <div class="yv">${T("ความเสี่ยงพื้นฐาน","Base risk")} <s>${b0}</s> <b>${b1}</b> <span>${T(`(โอกาสเกิดภัย ${chance(b0)}% → ${chance(b1)}%)`,`(disaster chance ${chance(b0)}% → ${chance(b1)}%)`)}</span></div>
+    <div class="ybar">${bar(b1)}</div>
+    <div class="taphint">${T("แตะเพื่อไปต่อ","Tap to continue")}</div></div>`,"wait");
+  try{ SFX.alarm() }catch(e){}
+  let done=false; const go=()=>{ if(done) return; done=true; clearTimeout(tm); if(S!==st||S.round!==rd||S.phase!=="draw") return; ovClose(); cb() };
+  const tm=setTimeout(go,reduce()?1800:4200); onTap(go) }
 function promptDraw(){
   const ov=ovOpen(`<div class="evsplash"><div class="evhead">${T(`รอบ ${S.round} · ปีที่ ${year(S.round)}`,`Round ${S.round} · Year ${year(S.round)}`)}</div>
     <div class="ovtitle">${T("จั่วการ์ดเหตุการณ์","Draw the event cards")}</div>
@@ -1225,7 +1246,8 @@ async function eventsToDesk(ov,inc,dCoins){
   ov.querySelector(".edeck").classList.add("leave"); ov.querySelector(".taphint").style.opacity=0; OV().classList.add("dim");
   await wait(680);
   targets.forEach(t=>t.style.visibility="");
-  ovClose(); bump(dCoins); FX.coins(inc); toast(T(`รอบ ${S.round} · รายได้ +${inc}`,`Round ${S.round} · income +${inc}`));
+  ovClose(); bump(dCoins); const flew=FX.coins(inc), st=S; toast(T(`รอบ ${S.round} · รายได้ +${inc}`,`Round ${S.round} · income +${inc}`));
+  if(flew){ await wait(Math.min(flew,16)*45+760); if(S!==st||S.phase!=="events") return }     // let the coins land before the dice come up
   nextStep();
 }
 function nextStep(){
@@ -1478,32 +1500,54 @@ async function destroyCard(dc,k){
       drawCells(ox,oy,9,false); stepParts(x,P) });
     await run(1100,()=>{ x.clearRect(0,0,c.width,c.height); stepParts(x,P) });
     c.remove();
-  } else if(k==="flood"){ // water rises to half the card, the card tips over and sinks; what goes under fades away
+  } else if(k==="flood"){ // a surge of water rises round the card, it floats for a moment, tips over and sinks out of sight
     SFX.hit("flood",false);
-    const {c,x,W,H,ox,oy}=fullFx(dc), slot=dc.parentElement, top0=dc.offsetTop, wlFinal=.5;
+    const {c,x,W,H,ox,oy}=fullFx(dc), slot=dc.parentElement, top0=dc.offsetTop, wlFinal=.55, PX=4;
+    // the part of the card under the water line fades with depth (CSS gradient mask: synchronous, safe on iOS)
     const setMask=(wlPx,a)=>{ const g=`linear-gradient(to bottom,#000 0,#000 ${wlPx-4}px,rgba(0,0,0,${a}) ${wlPx+10}px,rgba(0,0,0,${a}) 100%)`; slot.style.maskImage=slot.style.webkitMaskImage=g };
-    const water=(lvl,t,extra)=>{ const wy=oy+H*(1-lvl); x.clearRect(0,0,c.width,c.height);
-      const L=ox-70, R=ox+W+70, bot=oy+H+50, wv=px=>wy+Math.sin(px/24+t/170)*3+Math.sin(px/9-t/110)*1.2;
-      x.fillStyle="rgba(47,95,158,.55)"; x.beginPath(); x.moveTo(L,bot); for(let px=L;px<=R;px+=3) x.lineTo(px,wv(px)); x.lineTo(R,bot); x.closePath(); x.fill();
-      x.strokeStyle="rgba(200,242,232,.9)"; x.lineWidth=2; x.beginPath(); for(let px=L;px<=R;px+=3) px===L?x.moveTo(px,wv(px)):x.lineTo(px,wv(px)); x.stroke();
+    const L=ox-90, R=ox+W+90, bot=oy+H+70, flot=[...Array(7)].map(()=>({u:Math.random(),v:.2+Math.random()*.5,w:Math.random()<.5?2:3}));
+    const wvAt=(px,wy,t,amp)=>wy+Math.sin(px/26+t/190)*3.2*amp+Math.sin(px/11-t/120)*1.5*amp+Math.sin(px/57+t/420)*2*amp;
+    // pixel water: stepped columns, darker with depth, a foam crest and bits of foam drifting on the surface
+    const water=(lvl,t,amp,extra)=>{ const wy=oy+H*(1-lvl); x.clearRect(0,0,c.width,c.height);
+      const gd=x.createLinearGradient(0,wy,0,bot); gd.addColorStop(0,"rgba(79,150,205,.62)"); gd.addColorStop(.35,"rgba(47,95,158,.72)"); gd.addColorStop(1,"rgba(27,44,94,.86)");
+      for(let px=L;px<R;px+=PX){ const top=Math.round(wvAt(px,wy,t,amp)/3)*3; x.fillStyle=gd; x.fillRect(px,top,PX,bot-top);
+        x.fillStyle="rgba(200,242,232,.95)"; x.fillRect(px,top,PX,3);                                   // crest
+        if(Math.sin(px*.37+t/260)>.72){ x.fillStyle="rgba(255,255,255,.9)"; x.fillRect(px,top-3,PX,3) }   // foam caps
+        if(Math.sin(px*.21-t/330)>.86){ x.fillStyle="rgba(200,242,232,.35)"; x.fillRect(px,top+9+((px/PX)%3)*6,PX*2,2) } }   // light streaks under the surface
+      for(const f of flot){ const fx=L+((f.u*(R-L)+t*.018*(f.w===2?1:.6))%(R-L)); x.fillStyle="rgba(244,250,255,.85)"; x.fillRect(Math.round(fx/PX)*PX,Math.round(wvAt(fx,wy,t,amp)/3)*3-2,PX*f.w,3) }
       // soften the left, right and bottom edges of the water
       x.globalCompositeOperation="destination-in";
-      const gh=x.createLinearGradient(L,0,R,0); gh.addColorStop(0,"rgba(0,0,0,0)"); gh.addColorStop(.18,"#000"); gh.addColorStop(.82,"#000"); gh.addColorStop(1,"rgba(0,0,0,0)");
+      const gh=x.createLinearGradient(L,0,R,0); gh.addColorStop(0,"rgba(0,0,0,0)"); gh.addColorStop(.16,"#000"); gh.addColorStop(.84,"#000"); gh.addColorStop(1,"rgba(0,0,0,0)");
       x.fillStyle=gh; x.fillRect(0,0,c.width,c.height);
-      const gv=x.createLinearGradient(0,wy,0,bot); gv.addColorStop(0,"#000"); gv.addColorStop(.6,"#000"); gv.addColorStop(1,"rgba(0,0,0,0)");
-      x.fillStyle=gv; x.fillRect(0,wy-20,c.width,bot-wy+20); x.globalCompositeOperation="source-over";
+      const gv=x.createLinearGradient(0,wy,0,bot); gv.addColorStop(0,"#000"); gv.addColorStop(.7,"#000"); gv.addColorStop(1,"rgba(0,0,0,0)");
+      x.fillStyle=gv; x.fillRect(0,wy-30,c.width,bot-wy+30); x.globalCompositeOperation="source-over";
       extra&&extra(wy); stepParts(x,P); return wy };
-    await run(1500,(p,t)=>{ const lvl=wlFinal*(1-Math.pow(1-p,2)), wy=water(lvl,t);
-      setMask(top0+H*(1-lvl),(1-p*.5).toFixed(2));
-      if(Math.random()<.5) P.push({x:ox+Math.random()*W,y:oy+H-4,vx:0,vy:-1,l:0,m:Math.max(4,(oy+H-wy)/1),c:"#C8F2E8",s:3}) });
+    const bubble=(bx,by,big)=>P.push({x:bx,y:by,vx:(Math.random()-.5)*.35,vy:-.7-Math.random()*.8,l:0,m:18+Math.random()*22,c:Math.random()<.5?"#E6FAF6":"#C8F2E8",s:big?5:Math.random()<.5?2:3,a:.9});
+    const drop=(dx,dy,vx,vy)=>P.push({x:dx,y:dy,vx,vy,g:.16,l:0,m:26+Math.random()*14,c:Math.random()<.5?"#C8F2E8":"#7FC1F2",s:Math.random()<.5?3:4});
+    const ring=(rx,wy,k)=>{ x.strokeStyle=`rgba(230,250,246,${(.8*(1-k)).toFixed(2)})`; x.lineWidth=2; x.beginPath(); x.ellipse(rx,wy,8+k*46,2+k*6,0,0,7); x.stroke() };
+    // 1) the surge: water climbs the card in two pushes and slaps against its sides
+    let lastSplash=0;
+    await run(1700,(p,t)=>{ const push=p<.45?(p/.45)*.62:.62+((p-.45)/.55)*.38, lvl=wlFinal*(1-Math.pow(1-push,2)), wy=water(lvl,t,1+(1-p)*.8);
+      setMask(top0+H*(1-lvl),(1-p*.45).toFixed(2));
+      dc.style.filter=`saturate(${(1-p*.25).toFixed(2)}) brightness(${(1-p*.12).toFixed(2)})`;          // the card soaks
+      if(t-lastSplash>150&&p<.8){ lastSplash=t; for(const sx of [ox,ox+W]) for(let n=0;n<3;n++) drop(sx+(Math.random()-.5)*8,wy,(sx===ox?-1:1)*(.4+Math.random()*1.2)+(Math.random()-.5)*.6,-1.6-Math.random()*1.8) }
+      if(Math.random()<.5) bubble(ox+Math.random()*W,oy+H-6) });
+    // 2) it floats, rocking, for a moment
     const wlPx=top0+H*(1-wlFinal), dir=Math.random()<.5?-1:1;
-    dc.style.transformOrigin=dir<0?"left bottom":"right bottom";
-    await run(2200,(p,t)=>{ const e=p*p; water(wlFinal,t+1500,wy=>{ if(Math.random()<.35) for(let r=0;r<2;r++){ x.strokeStyle="rgba(200,242,232,.7)"; x.lineWidth=2; const rx=ox+W*(.2+Math.random()*.6); x.beginPath(); x.ellipse(rx,wy,10+p*30,3+p*4,0,0,7); x.stroke() } });
-      dc.style.transform=`translateY(${(e*H*1.15).toFixed(1)}px) rotate(${(dir*Math.min(1,p*1.6)*16).toFixed(2)}deg)`;
-      setMask(wlPx,Math.max(0,.5-p*1.2).toFixed(2));
-      if(Math.random()<.7) P.push({x:ox+Math.random()*W,y:oy+H*(1-wlFinal)+20+Math.random()*30,vx:(Math.random()-.5)*.3,vy:-.9-Math.random()*.6,l:0,m:26,c:"#E6FAF6",s:Math.random()<.5?3:4}) });
-    await run(600,(p,t)=>{ water(wlFinal*(1-p),t+3700); c.style.opacity=String(1-p) });
-    c.remove(); slot.style.maskImage=slot.style.webkitMaskImage="";
+    await run(650,(p,t)=>{ water(wlFinal,t+1700,1); dc.style.transform=`translateY(${(Math.sin(p*Math.PI*2)*4).toFixed(1)}px) rotate(${(Math.sin(p*Math.PI*2+.6)*1.6).toFixed(2)}deg)`; if(Math.random()<.25) bubble(ox+Math.random()*W,oy+H-10) });
+    // 3) then tips to one side and slides under; bubbles stream up and rings spread where it went down
+    dc.style.transformOrigin=dir<0?"left bottom":"right bottom"; const rings=[]; let gulp=false;
+    await run(2300,(p,t)=>{ const e=p*p*(3-2*p);
+      water(wlFinal,t+2350,1+Math.sin(Math.min(1,p*1.4)*Math.PI)*.9,wy=>{ if(Math.random()<.1) rings.push({x:ox+W*(.2+Math.random()*.6),t0:p});
+        if(p>.72&&!gulp){ gulp=true; for(let n=0;n<4;n++) rings.push({x:ox+W*(.3+Math.random()*.4),t0:p+n*.03}); for(let n=0;n<14;n++) drop(ox+W*(.3+Math.random()*.4),wy,(Math.random()-.5)*2.4,-1.5-Math.random()*2.2); for(let n=0;n<10;n++) bubble(ox+W*(.25+Math.random()*.5),wy+10+Math.random()*30,n%3===0) }
+        for(const r of rings){ const k=(p-r.t0)/.3; if(k>0&&k<1) ring(r.x,wy,k) } });
+      dc.style.transform=`translateY(${(e*H*1.18).toFixed(1)}px) rotate(${(dir*Math.min(1,p*1.5)*17).toFixed(2)}deg)`;
+      setMask(wlPx,Math.max(0,.55-p*1.25).toFixed(2));
+      const wyNow=oy+H*(1-wlFinal); if(Math.random()<.8) bubble(ox+Math.random()*W,wyNow+16+Math.random()*Math.min(H*.4,40+p*120),Math.random()<.12) });
+    dc.style.visibility="hidden";
+    // 4) the water drains away
+    await run(750,(p,t)=>{ water(wlFinal*(1-p*p),t+4650,1-p*.6); c.style.opacity=String(1-p*p) });
+    c.remove(); slot.style.maskImage=slot.style.webkitMaskImage=""; dc.style.filter="";
   } else { // quake (unchanged)
     await destroyQuake(dc);
   }
@@ -1554,6 +1598,10 @@ async function destroyQuake(dc){
     frags.push({f,vx:dx/L*sp,vy:dy/L*sp-1.2,rv:(Math.random()-.5)*(s.inner?10:18),delay:s.inner?.06+Math.random()*.1:Math.random()*.08}) }
   dc.style.visibility="hidden"; SFX.hit("quake",false);
   for(let n=0;n<60;n++){ const a=Math.random()*Math.PI*2, sp=1+Math.random()*3; P.push({x:ox+C0[0]*W,y:oy+C0[1]*H,vx:Math.cos(a)*sp,vy:Math.sin(a)*sp-1,g:.06,l:0,m:34+Math.random()*24,c:["#D4BB8A","#A0A8B0","#C9A97A","#5A6270"][n%4],s:Math.random()<.5?4:5}) }
+  // a cloud of dust billows out along the cracks and hangs for a moment; small chips rain down
+  for(const ln of rays.concat(rings)) for(let n=0;n<5;n++){ const q=ln[Math.floor(Math.random()*ln.length)], a=Math.atan2(q[1]-C0[1],q[0]-C0[0])+(Math.random()-.5)*.9, sp=.25+Math.random()*.9;
+    P.push({x:ox+q[0]*W,y:oy+q[1]*H,vx:Math.cos(a)*sp,vy:Math.sin(a)*sp*.7-.25,fr:.965,l:0,m:60+Math.random()*45,c:["#D4BB8A","#C9A97A","#B9A98C","#A0A8B0"][Math.floor(Math.random()*4)],s:8+Math.floor(Math.random()*8),a:.3}) }
+  for(let n=0;n<46;n++) P.push({x:ox+Math.random()*W,y:oy+Math.random()*H*.9,vx:(Math.random()-.5)*1.6,vy:-1-Math.random()*1.6,g:.14,l:0,m:50+Math.random()*30,c:["#5A6270","#8A5A2B","#D4BB8A","#3A3F4A"][n%4],s:Math.random()<.6?3:2});
   await run(1500,(p,t)=>{ for(const q of frags){ const tt=Math.max(0,t/16-q.delay*90); q.f.style.transform=`translate(${q.vx*tt}px,${q.vy*tt+.13*tt*tt}px) rotate(${q.rv*tt*.45}deg)`; q.f.style.opacity=String(1-Math.max(0,p-.45)*1.8) }
     x.clearRect(0,0,c.width,c.height); stepParts(x,P) });
   frags.forEach(q=>q.f.remove()); c.remove();
@@ -1749,8 +1797,8 @@ const FX={
   build(p){ if(reduce())return; const r=pieceRect(p); drops.set(p.id,performance.now());
     setTimeout(()=>emit(14,i=>({x:r.x+Math.random()*r.w,y:r.y+r.h-2,vx:(i%2?1:-1)*(.3+Math.random()*.6),vy:-Math.random()*.4,max:22+rnd(12),col:i%3?"#D4BB8A":"#F1E3C2"})),260) },
   sparkle(p){ if(reduce())return; const r=pieceRect(p); emit(16,()=>({x:r.x+Math.random()*r.w,y:r.y+Math.random()*r.h,vx:0,vy:-.25,max:26+rnd(16),col:Math.random()<.5?"#F2C230":"#F4F4F4",twinkle:1})) },
-  coins(n){ if(reduce()||!n)return; for(const p of S.pieces){ if(p.dmg||!INCOME[p.type])continue; const r=pieceRect(p);
-    for(let i=0;i<Math.min(3,INCOME[p.type]);i++) parts.push({x:r.x+r.w/2-2+i*3,y:r.y+2,vx:0,vy:-.35,life:-i*6,max:34,col:"#F2C230",sz:2,coin:1}) } },
+  coins(n){ if(reduce()||!n)return 0; const fl=flyCoins(); for(const p of S.pieces){ if(p.dmg||!INCOME[p.type])continue; const r=pieceRect(p);
+    for(let i=0;i<Math.min(3,INCOME[p.type]);i++) parts.push({x:r.x+r.w/2-2+i*3,y:r.y+2,vx:0,vy:-.35,life:-i*6,max:34,col:"#F2C230",sz:2,coin:1}) } return fl },
   shield(){ effects.push({type:"shield",t0:performance.now(),dur:1300}) },
   shieldSmall(){ if(reduce())return; emit(24,i=>{const a=i/24*Math.PI*2;return {x:56,y:56,vx:Math.cos(a)*1.1,vy:Math.sin(a)*1.1,max:30,col:"#7FC1F2"}}) },
   disaster(k,cell,hits){
@@ -1812,6 +1860,18 @@ function dmgSprite(key,hz){
   x.putImageData(d,0,0);
   return SPR[id]=c;
 }
+// coins hop out of each earning building and fly to the coin counter (the phone status bar when that is what is on screen)
+function flyCoins(){ try{
+  const ms=$("ministat"), tgt=(ms&&ms.className==="on"&&ms.querySelector("img"))||document.querySelector("#status .coinimg"); if(!tgt||!tgt.animate) return 0;
+  const tr=tgt.getBoundingClientRect(); if(tr.bottom<0||tr.top>innerHeight||tr.width===0) return 0;
+  const cr=cv.getBoundingClientRect(), sc=cr.width/112, list=S.pieces.filter(p=>!p.dmg&&INCOME[p.type]&&!(S.mod.noshop&&p.type==="shop")&&!(S.mod.nofac&&p.type==="factory")); let n=0;
+  for(const p of list){ const r=pieceRect(p), k=Math.min(2,INCOME[p.type]>=4?2:1);
+    for(let i=0;i<k&&n<16;i++,n++){ const el=document.createElement("img"); el.src=URL.coin; el.className="flycoin";
+      const x0=cr.left+(r.x+r.w/2)*sc-9+(i?8:0), y0=cr.top+(r.y+4)*sc-9, dx=tr.left+tr.width/2-9-x0, dy=tr.top+tr.height/2-9-y0, d=n*45;
+      el.style.left=x0+"px"; el.style.top=y0+"px"; document.body.appendChild(el);
+      const an=el.animate([{transform:"translate(0,0) scale(.6)",opacity:0,offset:0},{transform:"translate(0,-16px) scale(1.15)",opacity:1,offset:.18},{transform:`translate(${dx*.55}px,${dy*.55-28}px) scale(1)`,opacity:1,offset:.6},{transform:`translate(${dx}px,${dy}px) scale(.7)`,opacity:.9,offset:1}],{duration:720,delay:d,easing:"cubic-bezier(.45,0,.55,1)",fill:"both"});
+      an.onfinish=()=>{ el.remove(); if(n&&tgt.animate) tgt.animate([{transform:"scale(1.35)"},{transform:"scale(1)"}],{duration:160}) }; setTimeout(()=>el.remove(),d+1200) } }
+  if(n) setTimeout(()=>{ try{SFX.coin()}catch(e){} },Math.min(n,6)*45+560); return n }catch(e){ return 0 } }
 function stageLabel(r,txt,cls){ const st=$("stage"), cvr=cv.getBoundingClientRect(), sr=st.getBoundingClientRect(); const sc=cvr.width/112;
   const el=document.createElement("div"); el.className="hitlab "+cls; el.textContent=txt;
   el.style.left=(cvr.left-sr.left+(r.x+r.w/2)*sc)+"px"; el.style.top=(cvr.top-sr.top+r.y*sc)+"px"; st.appendChild(el); setTimeout(()=>el.remove(),1500) }
