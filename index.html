@@ -1397,29 +1397,39 @@ async function destroyCard(dc,k){
   dc.querySelectorAll("*").forEach(e=>e.style.animation="none"); { const bk=dc.querySelector(".eback"); if(bk) bk.remove(); const fc=dc.querySelector(".dface"); if(fc) fc.style.transform="none" }
   dc.style.webkitTransform="translateZ(0)";
   const P=[];
-  if(k==="fire"||k==="ffire"){ // ragged flame front from the bottom-left corner; each part burns at its own pace
+  if(k==="fire"||k==="ffire"){ // fire catches at the bottom-left corner and eats its way to the top-right: flames, glowing embers, charcoal, then ash
     SFX.hit(k,false);
-    // the burn field is linear down each column (so a clip path can follow it exactly) with a wavy, uneven front across the card
-    const {c,x,W,H}=fullFx(dc), nz=noise2(), NU=96, fine=[...Array(NU+1)].map(()=>Math.random()), sm=fine.map((_,i)=>(fine[Math.max(0,i-1)]+fine[i]*2+fine[Math.min(NU,i+1)])/4);
-    const N1=u=>nz(u,.5)*.3+sm[Math.round(u*NU)]*.09, field=(u,v)=>((u+(1-v))/2)*.62+N1(u);
-    const pct=v=>(v*100).toFixed(2)+"%";
-    await run(2700,p=>{ const q=.02+p*1.0; x.clearRect(0,0,c.width,c.height); const r=dc.getBoundingClientRect(), front=[];
-      for(let i=0;i<=NU;i++){ const u=i/NU; front.push([u,Math.max(0,Math.min(1,u+1-2*(q-N1(u))/.62))]) }   // exactly where field = q
-      dc.style.clipPath=dc.style.webkitClipPath=`polygon(0% 0%,100% 0%,${front.slice().reverse().map(f=>pct(f[0])+" "+pct(f[1])).join(",")})`;
-      // scorch + flame drawn from the burn field itself, so they follow the front in every direction and hide the clip edge
-      const BS=5, nx=Math.ceil(W/BS), ny=Math.ceil(H/BS);
-      for(let j=0;j<ny;j++) for(let i=0;i<nx;i++){ const u=(i+.5)/nx, v=(j+.5)/ny, d=field(u,v)-q; if(d<-.012||d>.085) continue;
-        const px=r.left+i*BS, py=r.top+j*BS;
-        if(d<.006){ x.fillStyle=Math.random()<.5?"#F2C230":"#FFE680"; x.fillRect(px,py,BS,BS) }
-        else if(d<.016){ x.fillStyle=Math.random()<.6?"#E9783A":"#D94A3A"; x.fillRect(px,py,BS,BS) }
-        else if(d<.03){ x.fillStyle="#1B0F0A"; x.globalAlpha=.92; x.fillRect(px,py,BS,BS) }
-        else { x.fillStyle=d<.055?"#3A2214":"#6B4A2E"; x.globalAlpha=Math.max(0,.75-(d-.03)*12); x.fillRect(px,py,BS,BS) }
-        x.globalAlpha=1;
-        if(d<.012&&Math.random()<.03) P.push({x:px,y:py,vx:(Math.random()-.3)*1.2,vy:-1-Math.random()*1.6,l:0,m:24+Math.random()*24,c:["#F2C230","#E9783A","#D94A3A","#FFE680"][Math.floor(Math.random()*4)],s:Math.random()<.5?4:3});
-        if(d<.012&&Math.random()<.004) P.push({x:px,y:py,vx:.3+Math.random()*.4,vy:-.7,l:0,m:60,c:"#2A2D36",s:7,a:.7}) }
+    // Drawn as small blocks on the canvas. Each block goes flame -> ember -> charcoal -> gone at its own moment (direction + smooth noise, so the
+    // front is ragged). The real card underneath is cut away with a straight diagonal clip that always stays hidden inside the charcoal band.
+    const {c,x,W,H,ox,oy}=fullFx(dc), B=Math.max(5,Math.round(W/40)), cols=Math.ceil(W/B), rows=Math.ceil(H/B), nz=noise2(), nz2=noise2(), cells=[];
+    const DIR=.75, NO=.25, CHAR=.05, GONE=.30;                         // GONE >= NO + CHAR keeps the clip line under charcoal
+    for(let r=0;r<rows;r++) for(let q=0;q<cols;q++){ const u=(q+.5)/cols, v=(r+.5)/rows, n=Math.min(1,nz(u,v)*.8+Math.random()*.2);
+      cells.push({q,r, tb:((u+(1-v))/2)*DIR+n*NO, lag:nz2(u,v)*.08, col:["#120C0A","#1B120E","#241812","#1B1B26"][Math.floor(Math.random()*4)], gone:false}) }
+    const END=DIR+NO+GONE+.08+.05, wind=.25+Math.random()*.3, FL=["#FFE680","#F2C230","#F2A23A","#E9783A","#D94A3A"];
+    await run(3400,p=>{ x.clearRect(0,0,c.width,c.height); const pe=p*END, r=dc.getBoundingClientRect(), X0=r.left, Y0=r.top;
+      // real card: everything already burnt through is clipped off (keep base >= thr, base=(u+1-v)/2)
+      const thr=(pe-GONE)/DIR; dc.style.clipPath=dc.style.webkitClipPath=thr<=0?"none":clipHalf(1,-1,2*thr-1);
+      dc.style.transform=`translate(${(Math.random()-.5)*1.5}px,${(Math.random()-.5)*1.5}px)`;
+      // warm light from the fire on what is left of the card
+      { const fx=X0+W*Math.min(1,pe*.9), fy=Y0+H*(1-Math.min(1,pe*.9)), g=x.createRadialGradient(fx,fy,8,fx,fy,W*.75); const a=.28*Math.sin(Math.min(1,p*1.25)*Math.PI)+.04*Math.random();
+        g.addColorStop(0,`rgba(242,162,58,${a.toFixed(3)})`); g.addColorStop(1,"rgba(242,162,58,0)"); x.fillStyle=g; x.fillRect(X0-W*.4,Y0-H*.4,W*1.8,H*1.8) }
+      for(const o of cells){ if(o.gone) continue; const d=pe-o.tb; if(d<-.02) continue; const px=X0+o.q*B, py=Y0+o.r*B;
+        if(d>=GONE+o.lag){ o.gone=true;                                   // burnt through: a few sparks fly up, the rest drifts off as ash
+          const z=Math.random();
+          if(z<.3) P.push({x:px,y:py,vx:wind*(.5+Math.random())+(Math.random()-.5)*.6,vy:-.9-Math.random()*1.3,g:-.004,fr:.985,l:0,m:34+Math.random()*30,c:FL[2+Math.floor(Math.random()*3)],s:Math.max(2,Math.round(B*.45))});
+          else if(z<.75) P.push({x:px,y:py,vx:wind*(.3+Math.random()*.8)+(Math.random()-.5)*.4,vy:-.35-Math.random()*.5,g:.006,fr:.99,l:0,m:60+Math.random()*50,c:["#2A2D36","#3A3F4A","#5A6270","#1B1B2F"][Math.floor(Math.random()*4)],s:Math.random()<.4?B:Math.max(2,Math.round(B*.6)),a:.9});
+          continue }
+        if(d<.035){ x.fillStyle=Math.random()<.5?FL[0]:FL[1] }                                        // flame front
+        else if(d<.075){ x.fillStyle=Math.random()<.6?FL[2]:FL[3] }
+        else if(d<.115){ x.fillStyle=Math.random()<.7?"#B0322A":"#8A2F1E" }                            // red-hot
+        else { x.fillStyle=(d<.22&&Math.random()<.06)?"#B0322A":o.col }                                // charcoal with the odd ember still glowing
+        x.fillRect(px,py,B+.5,B+.5);
+        if(d<.075&&Math.random()<.16){ const hot=d<.035;                                              // tongues of flame licking upward from the front
+          P.push({x:px+(Math.random()-.5)*B,y:py-B*.5,vx:wind*.5+(Math.random()-.5)*.7,vy:-1.3-Math.random()*1.7,fr:.97,l:0,m:11+Math.random()*13,c:hot?FL[Math.floor(Math.random()*2)]:FL[2+Math.floor(Math.random()*3)],s:Math.random()<.5?B:Math.max(3,B-2)}) }
+        if(d>.1&&d<.2&&Math.random()<.004) P.push({x:px,y:py,vx:wind*.6,vy:-.6-Math.random()*.4,l:0,m:70,c:"#2A2D36",s:B+2,a:.4}) }   // smoke
       stepParts(x,P) });
-    dc.style.visibility="hidden";
-    await run(600,()=>{ x.clearRect(0,0,c.width,c.height); stepParts(x,P) });
+    dc.style.visibility="hidden"; dc.style.transform="";
+    await run(1100,()=>{ x.clearRect(0,0,c.width,c.height); stepParts(x,P) });
     c.remove();
   } else if(k==="storm"){ // a big hard lightning strike, the card is electrocuted and charred, then crumbles to dust unevenly
     const {c,x,W,H,ox,oy}=fullFx(dc), hitX=ox+W*(.35+Math.random()*.3), hitY=oy+H*.32;
