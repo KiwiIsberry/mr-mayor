@@ -1312,7 +1312,9 @@ async function drawDisaster(ov){
   if(blocked){ const tk=TOTEM_OF[k];
     dc.insertAdjacentHTML("beforeend",`<div class="stamp">${timg(tk)}<span>${T(TOTEM[tk][0],TOTEM[tk][1])}</span><small>${T("กันได้!","BLOCKED!")}</small></div>`); SFX.blocked();
     await wait(1700); flyTo(dc,$("desk"),650); ov.querySelector(".edeck").classList.add("leave"); await wait(650) }
-  else { ov.querySelector(".edeck").classList.add("leave"); await destroyCard(dc,k) }
+  else { ov.querySelector(".edeck").classList.add("leave");
+    try{ await Promise.race([destroyCard(dc,k), new Promise(r=>setTimeout(r,14000))]) }catch(err){ try{console.error(err)}catch(e2){} }
+    document.querySelectorAll(".cardfx,.frag").forEach(e=>e.remove()); const sl=ov.querySelector(".dslot"); if(sl) sl.style.maskImage=sl.style.webkitMaskImage="" }
   ovClose(); S.busy=false; resolveDisaster(card);
 }
 
@@ -1324,7 +1326,9 @@ function clipHalf(nx,ny,k){ // unit square points with nx*x+ny*y>=k, as CSS poly
   const P=[[0,0],[1,0],[1,1],[0,1]], out=[]; for(let i=0;i<4;i++){ const a=P[i], b=P[(i+1)%4], fa=nx*a[0]+ny*a[1]-k, fb=nx*b[0]+ny*b[1]-k;
     if(fa>=0) out.push(a); if((fa>=0)!==(fb>=0)){ const t=fa/(fa-fb); out.push([a[0]+(b[0]-a[0])*t,a[1]+(b[1]-a[1])*t]) } }
   return out.length?`polygon(${out.map(p=>`${(p[0]*100).toFixed(2)}% ${(p[1]*100).toFixed(2)}%`).join(",")})`:"polygon(0 0,0 0,0 0)" }
-function run(ms,step){ return new Promise(res=>{ const t0=performance.now(); const f=now=>{ const p=Math.min(1,(now-t0)/ms); step(p,now-t0); if(p<1) requestAnimationFrame(f); else res() }; requestAnimationFrame(f) }) }
+function run(ms,step){ return new Promise(res=>{ const t0=performance.now(); const f=now=>{ const p=Math.min(1,(now-t0)/ms);
+    try{ step(p,now-t0) }catch(err){ try{console.error(err)}catch(e2){} res(); return }      // safety: a failing effect ends early, the game goes on
+    if(p<1) requestAnimationFrame(f); else res() }; requestAnimationFrame(f) }) }
 async function destroyCard_v1(dc,k){
   if(reduce()){ dc.style.opacity=0; return }
   SFX.hit(k,false);
@@ -1661,7 +1665,7 @@ function endRound(){
   if(S.practice&&S.round>=PRACTICE.rounds){ practiceDone(); return }
   if(S.round>=ROUNDS){ const n=stars(); S.result=n; S.phase="over"; log(`จบวาระ: ${n} ดาว · ${rankOf(n)[0]}`,`Term over: ${n} stars · ${rankOf(n)[1]}`,n>=4?"good":"bad");
     LB.list=null; render(); const show=()=>{S.modal="end";renderModal()};
-    if(n>=8){ celebrate(show); return }
+    if(n>=8){ try{ celebrate(show) }catch(err){ const pt=$("party"); if(pt) pt.remove(); show() } return }
     if(n>=6){ FX.confetti(); SFX.win() } else if(n>=4) SFX.good(); else SFX.lose();
     setTimeout(show,reduce()||n<6?0:1300); return }
   startRound();
