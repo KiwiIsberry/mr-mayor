@@ -439,6 +439,7 @@ details.log summary{cursor:pointer;font-weight:700}
 #coach .cbtn{display:flex;gap:8px;flex-wrap:wrap} #coach .cbtn button{padding:6px 12px;font-size:13px;min-height:0}
 #coachring{position:fixed;z-index:64;pointer-events:none;display:none;border:3px solid var(--gold);box-shadow:0 0 0 4px var(--ink),0 0 0 9999px rgba(14,15,34,.35);animation:ringblink 1s steps(2) infinite}
 #coachring.on{display:block}
+#coachring.cell{box-shadow:0 0 0 4px var(--ink),0 0 0 9999px rgba(14,15,34,.18);border-width:4px}
 @keyframes ringblink{50%{border-color:#fff}}
 .endm{max-height:94vh} .endm h4.sumh{margin:6px 0 -4px;font-family:var(--f-pix);font-size:13px;letter-spacing:.06em}
 .lessons{margin:0;padding:10px 12px 10px 28px;background:#FFF0B8;border:2px solid var(--ink);font-size:14px;display:flex;flex-direction:column;gap:6px}
@@ -604,6 +605,12 @@ details.log summary{cursor:pointer;font-weight:700}
 #splash .yearbox .yk{font-family:var(--f-pix);font-size:12px;letter-spacing:.1em;color:var(--muted)}
 #splash .yearbox .yn{font-family:var(--f-pix);font-weight:700;font-size:44px;line-height:1.1;color:var(--ink)} #splash .yearbox .yn small{font-size:18px;color:var(--muted);margin-left:8px}
 #splash .yearbox .yr{font-weight:700;font-size:17px;color:var(--red)} #splash .yearbox .yr .pi{height:18px}
+#splash .yearbox .ycmp{display:flex;align-items:center;gap:12px}
+#splash .yearbox .ycmp>div{display:flex;flex-direction:column;align-items:center;border:3px solid var(--ink);background:var(--panel-2);padding:6px 14px;min-width:104px}
+#splash .yearbox .ycmp>div.now{background:#FFE3DC;border-color:var(--red)}
+#splash .yearbox .ycmp small{font-size:13px;font-weight:700;color:var(--muted)} #splash .yearbox .ycmp b{font-family:var(--f-pix);font-size:28px;line-height:1.2} #splash .yearbox .ycmp .now b{color:var(--red)}
+#splash .yearbox .ycmp span{font-size:14px;font-weight:700} #splash .yearbox .ycmp>i{font-style:normal;font-size:26px;font-weight:700}
+#splash .yearbox .ysub{font-size:13.5px;color:var(--muted);line-height:1.35} #splash .yearbox .ytip{font-size:14.5px;font-weight:700;color:var(--go-dk)}
 #splash .yearbox .yv{font-size:16px;font-weight:600} #splash .yearbox .yv s{color:var(--muted);font-family:var(--f-pix)} #splash .yearbox .yv b{font-family:var(--f-pix);font-size:22px;color:var(--red);margin:0 4px} #splash .yearbox .yv span{display:block;font-size:14px;color:var(--muted);font-weight:500}
 #splash .yearbox .ybar{display:grid;grid-template-columns:repeat(11,1fr);gap:3px;width:100%} #splash .yearbox .ybar i{height:12px;border:2px solid var(--ink);background:var(--panel-2)}
 #splash .yearbox .ybar i.on{background:var(--gold)} #splash .yearbox .ybar i.new{background:var(--red);animation:blink2 .5s steps(2) 4}
@@ -648,6 +655,11 @@ details.log summary{cursor:pointer;font-weight:700}
 /* dice */
 #splash .rollbox,#splash .disbox{display:flex;flex-direction:column;align-items:center;gap:12px;width:100%}
 #splash .rrule{color:#F4F4F4;font-size:18px;text-align:center} #splash .rrule b{color:var(--gold)}
+#splash .rrule .rsplit{display:flex;gap:10px;justify-content:center;margin:8px 0 6px}
+#splash .rrule .rsplit span{display:flex;flex-direction:column;align-items:center;border:3px solid var(--ink);box-shadow:3px 3px 0 var(--ink);padding:6px 14px;font-family:var(--f-pix);font-size:17px;line-height:1.2;min-width:96px}
+#splash .rrule .rsplit small{font-family:var(--f-body);font-size:14px;font-weight:700;margin-top:2px}
+#splash .rrule .rsplit .rb{background:var(--red);color:#fff} #splash .rrule .rsplit .rg{background:var(--go);color:#fff}
+#splash .rrule>small{display:block;font-size:13.5px;color:#D8D5EC;margin-top:2px}
 #splash .rchance{display:grid;grid-template-columns:auto auto;align-items:center;gap:4px 12px;background:var(--panel);border:4px solid var(--ink);box-shadow:5px 5px 0 var(--ink);padding:8px 14px;transition:opacity .3s}
 #splash .rchance span{font-weight:700;font-size:15px} #splash .rchance b{font-family:var(--f-pix);font-size:30px;color:var(--red)}
 #splash .rchance i{grid-column:1 / -1;height:12px;border:2px solid var(--ink);background:#E5DBC0;display:block} #splash .rchance u{display:block;height:100%;background:var(--red)}
@@ -1062,6 +1074,10 @@ const year=r=>Math.floor((Math.max(r,1)-1)/3)+1;
 function riskParts(rd){ const b=RISK0+RISK_YEAR*(year(rd)-1), f=RISK_FACTORY*count("factory"), m=S.mod.riskup||0, g=Math.min(PARK_CUT,count("green",1));
   return {b,f,m,g,v:Math.max(RISK_MIN,Math.min(RISK_CAP,b+f+m)-g)} }
 function risk(){ return riskParts(S.round).v }
+// the same breakdown in plain words, for the roll screen
+function riskWhyLong(rd){ const p=riskParts(rd), a=[T(`ปีที่ ${year(rd)} เริ่มที่ ${p.b}`,`year ${year(rd)} starts at ${p.b}`)];
+  if(p.f) a.push(T(`โรงงาน +${p.f}`,`factories +${p.f}`)); if(p.m) a.push(T(`การ์ดเหตุการณ์ +${p.m}`,`event card +${p.m}`)); if(p.g) a.push(T(`สวน −${p.g}`,`parks −${p.g}`));
+  return a.join(" · ")+(p.b+p.f+p.m>RISK_CAP?T(` (สูงสุด ${RISK_CAP})`,` (max ${RISK_CAP})`):"") }
 function riskWhy(rd){ const p=riskParts(rd); let t=T(`ปี ${year(rd)}: ${p.b}`,`Year ${year(rd)}: ${p.b}`);
   if(p.f) t+=T(` + โรงงาน ${p.f}`,` + factories ${p.f}`); if(p.m) t+=T(` + เหตุการณ์ ${p.m}`,` + event ${p.m}`);
   if(p.b+p.f+p.m>RISK_CAP) t+=T(` (สูงสุด ${RISK_CAP})`,` (max ${RISK_CAP})`);
@@ -1198,16 +1214,18 @@ function startRound(){
   if(S.round>1&&year(S.round)!==year(S.round-1)) yearBanner(promptDraw); else promptDraw();
 }
 // a new year: say so, and show that the base risk just went up (rounds 4, 7 and 10)
-function yearBanner(cb){ const y=year(S.round), b0=RISK0+RISK_YEAR*(y-2), b1=RISK0+RISK_YEAR*(y-1), st=S, rd=S.round;
-  const bar=n=>[...Array(11)].map((_,i)=>`<i class="${i+2<=n?(i+2>b0&&n===b1?"on new":"on"):""}"></i>`).join("");
-  ovOpen(`<div class="yearbox"><div class="yk">${T("ขึ้นปีใหม่","A NEW YEAR")}</div><div class="yn">${T(`ปีที่ ${y}`,`Year ${y}`)}<small>/ 4</small></div>
-    <div class="yr">${pi("warn")} ${T("ภัยพิบัติรุนแรงขึ้นทุกปี","Disasters get worse every year")}</div>
-    <div class="yv">${T("ความเสี่ยงพื้นฐาน","Base risk")} <s>${b0}</s> <b>${b1}</b> <span>${T(`(โอกาสเกิดภัย ${chance(b0)}% → ${chance(b1)}%)`,`(disaster chance ${chance(b0)}% → ${chance(b1)}%)`)}</span></div>
+function yearBanner(cb){ const y=year(S.round), st=S, rd=S.round, b0=riskParts(rd-1).v, b1=riskParts(rd).v;
+  const bar=n=>[...Array(11)].map((_,i)=>`<i class="${i+2<=n?(i+2>b0?"on new":"on"):""}"></i>`).join("");
+  ovOpen(`<div class="yearbox"><div class="yk">${T("ขึ้นปีใหม่","A NEW YEAR")}</div><div class="yn">${T(`ปีที่ ${y}`,`Year ${y}`)}<small>${y===4?T("ปีสุดท้าย","final year"):T("จาก 4 ปี","of 4")}</small></div>
+    <div class="yr">${pi("warn")} ${T("ภัยพิบัติเกิดง่ายขึ้นทุกปี","Disasters come more often every year")}</div>
+    <div class="ycmp"><div><small>${T("ปีที่แล้ว","Last year")}</small><b>${b0}</b><span>${T(`เกิดภัย ${chance(b0)}%`,`${chance(b0)}% chance`)}</span></div><i>→</i><div class="now"><small>${T("ปีนี้","This year")}</small><b>${b1}</b><span>${T(`เกิดภัย ${chance(b1)}%`,`${chance(b1)}% chance`)}</span></div></div>
+    <div class="ysub">${T("เลขความเสี่ยงของเมืองคุณ (ทอยได้ไม่เกินเลขนี้ = เกิดภัย)","Your city's risk number (roll this or less = disaster)")}</div>
     <div class="ybar">${bar(b1)}</div>
+    <div class="ytip">${T("รับมือด้วย: สร้างสวน · เสริมอาคาร · ซื้อ Totem","Get ready: build parks · reinforce · buy Totems")}</div>
     <div class="taphint">${T("แตะเพื่อไปต่อ","Tap to continue")}</div></div>`,"wait");
   try{ SFX.alarm() }catch(e){}
   let done=false; const go=()=>{ if(done) return; done=true; clearTimeout(tm); if(S!==st||S.round!==rd||S.phase!=="draw") return; ovClose(); cb() };
-  const tm=setTimeout(go,reduce()?1800:4200); onTap(go) }
+  const tm=setTimeout(go,reduce()?2500:6000); onTap(go) }
 function promptDraw(){
   const ov=ovOpen(`<div class="evsplash"><div class="evhead">${T(`รอบ ${S.round} · ปีที่ ${year(S.round)}`,`Round ${S.round} · Year ${year(S.round)}`)}</div>
     <div class="ovtitle">${T("จั่วการ์ดเหตุการณ์","Draw the event cards")}</div>
@@ -1263,7 +1281,9 @@ function promptRoll(){
   const r=risk(), pc=chance(r);
   const ov=ovOpen(`<div class="rollbox"><div class="evhead">${T(`รอบ ${S.round} · ปีที่ ${year(S.round)}`,`Round ${S.round} · Year ${year(S.round)}`)}</div>
     <div class="ovtitle">${T("ทอยลูกเต๋าความเสี่ยง","Roll the risk dice")}</div>
-    <div class="rrule">${T(`ทอย 2 ลูก ได้ <b>${r} หรือน้อยกว่า</b> = เกิดภัย`,`Roll 2 dice: <b>${r} or less</b> = disaster`)}<br><small>${riskWhy(S.round)}</small></div>
+    <div class="rrule">${T("ทอย 2 ลูกแล้ว<b>บวกแต้ม</b>","Roll 2 dice and <b>add them up</b>")}
+      <div class="rsplit"><span class="rb">${r>=2?T(`รวม 2–${r}<small>เกิดภัย</small>`,`2–${r}<small>disaster</small>`):T("ไม่มีทาง<small>เกิดภัย</small>","no way<small>to be hit</small>")}</span><span class="rg">${r<12?T(`รวม ${r+1}–12<small>รอด</small>`,`${r+1}–12<small>safe</small>`):T("ไม่มีทาง<small>รอด</small>","no way<small>to be safe</small>")}</span></div>
+      <small>${T(`เลขความเสี่ยง ${r} มาจาก: `,`Risk ${r} comes from: `)}${riskWhyLong(S.round)}</small></div>
     <div class="rchance"><span>${T("โอกาสเกิดภัย","Disaster chance")}</span><b>${pc}%</b><i><u style="width:${pc}%"></u></i></div>
     ${pcap("roll")}<div class="dice big">${dieHTML(3)}${dieHTML(4)}</div><div class="rverdict"></div>
     <div class="taphint">${T("แตะที่ไหนก็ได้เพื่อทอย","Tap anywhere to roll")}</div></div>`,"wait");
@@ -2006,6 +2026,12 @@ function lifeDraw(now,dt){
     if(q.h){ const y=ROAD*TILE+(q.side?12:0); person(Math.round(q.p),y,q.col,q.hair,step) }
     else { const x=ROAD*TILE+(q.side?14:1); person(x,Math.round(q.p),q.col,q.hair,step) } }
 }
+// practice: the exact lot(s) to tap blink in gold, with a faint preview of the building
+function practiceTarget(now){ const st=TUT.on&&S.practice&&TSTEPS[TUT.step]; if(!st||!st.cells||S.phase!=="build"||S.busy) return; const tc=st.cells(); if(!tc) return;
+  const on=Math.floor(now/320)%2===0, rs=tc.map(c=>c[0]), cs=tc.map(c=>c[1]), x0=Math.min(...cs)*TILE, y0=Math.min(...rs)*TILE, w=(Math.max(...cs)-Math.min(...cs)+1)*TILE, h=(Math.max(...rs)-Math.min(...rs)+1)*TILE;
+  if(PRICE[st.tool]){ const key=SIZE[st.tool]?st.tool+(S.orient==="v"?"_v":"_h"):st.tool; if(SPR[key]){ cx.globalAlpha=on?.55:.3; cx.drawImage(SPR[key],x0,y0); cx.globalAlpha=1 } }
+  cx.fillStyle=on?"#F2C230":"#FFF6D6"; cx.fillRect(x0,y0,w,2); cx.fillRect(x0,y0+h-2,w,2); cx.fillRect(x0,y0,2,h); cx.fillRect(x0+w-2,y0,2,h);
+  const ax=x0+w/2, ay=y0-2-(on?1:0); cx.fillStyle="#1B1B2F"; cx.fillRect(ax-4,ay-6,9,4); cx.fillRect(ax-2,ay-2,5,2); cx.fillStyle="#F2C230"; cx.fillRect(ax-3,ay-5,7,2); cx.fillRect(ax-1,ay-3,3,2) }
 function lifeBldg(now){
   if(S.busy&&S.zone) return;
   for(const p of S.pieces){ if(p.dmg) continue; const r=pieceRect(p);
@@ -2051,6 +2077,7 @@ function loop(now){
   const ps=S.pieces.slice().sort((a,b)=>Math.min(...a.cells.map(x=>x[0]))-Math.min(...b.cells.map(x=>x[0])));
   for(const p of ps) drawPiece(p,now);
   if(!reduce()) lifeBldg(now);
+  practiceTarget(now);
   // ambient smoke: factories (working) and damaged pieces
   if(!reduce()&&Math.random()<.25*dt) for(const p of S.pieces){
     if(p.type==="factory"&&!p.dmg&&Math.random()<.5){ const r=pieceRect(p), ch=SPR.chimney[sprKey(p)]; parts.push({x:r.x+ch[0]+Math.random()*3,y:r.y+ch[1],vx:.12,vy:-.3,life:0,max:40,col:"#C9CED6",sz:2,fade:1}) }
@@ -2165,8 +2192,12 @@ cv.addEventListener("pointerleave",()=>{ if(isTouch()) return; hover=null; hover
 function whyNot(t,r,c,o){ if(why(t)) return why(t); if(!fits(t,r,c,o)) return SIZE[t]?T("ต้องมี 2 ช่องว่างติดกัน และข้ามถนนไม่ได้ กดหมุนเพื่อเปลี่ยนทิศ","Needs 2 free lots side by side, not across a road. Rotate to turn it."):T("ช่องนี้วางไม่ได้","You can't build here");
   if(!nearHome(t,r,c,o)) return T(`${nm(t)}ต้องวางติดด้านข้างกับบ้านหรือคอนโด`,`A ${nm(t).toLowerCase()} must share a side with a house or apartment block`); if(!zoneOK(t,r,c,o)) return zoneMsg(t); return "" }
 cv.addEventListener("click",e=>{ const t=tileAt(e); if(!t) return; hover=t;
+  // practice: only the blinking target counts, and one tap is enough
+  let pTarget=false; { const st=TUT.on&&S.practice&&TSTEPS[TUT.step]; const tc=st&&st.cells&&S.phase==="build"&&!S.busy&&st.cells();
+    if(tc){ if(!tc.some(c=>c[0]===t[0]&&c[1]===t[1])){ toast(T(`แตะช่องที่กระพริบสีเหลือง (${cellTxt(tc)})`,`Tap the blinking lot (${cellTxt(tc)})`),"bad"); return }
+      pTarget=true; if(PRICE[S.tool]&&tc.length>1){ t[0]=Math.min(...tc.map(c=>c[0])); t[1]=Math.min(...tc.map(c=>c[1])) } } }
   if(S.phase==="build"&&!S.busy&&PRICE[S.tool]){ if(isRoad(t[0],t[1])){toast(T("สร้างบนถนนไม่ได้","You can't build on a road"),"bad");return}
-    if(isTouch()){ const same=pendingAt&&pendingAt[0]===t[0]&&pendingAt[1]===t[1]&&pendingAt[2]===S.tool;
+    if(isTouch()&&!pTarget){ const same=pendingAt&&pendingAt[0]===t[0]&&pendingAt[1]===t[1]&&pendingAt[2]===S.tool;
       if(!same){ pendingAt=[t[0],t[1],S.tool]; hoverInfo(); const w=whyNot(S.tool,t[0],t[1],S.orient);
         toast(w||T(`แตะ ${code(t[0],t[1])} อีกครั้งเพื่อวาง${SIZE[S.tool]?" · กดหมุนเพื่อเปลี่ยนทิศ":""}`,`Tap ${code(t[0],t[1])} again to build${SIZE[S.tool]?" · Rotate to turn it":""}`),w?"bad":""); return }
       pendingAt=null }
@@ -2329,7 +2360,7 @@ function renderTray(){
     else tip=T(`<b>${S.coins} เหรียญ</b> · เลือกอาคารแล้วแตะแผนที่ ซื้อ Totem เสริม หรือซ่อม แล้วกดจบรอบ`,`<b>${S.coins} coins</b> · pick a building and tap the map, buy a Totem, reinforce or repair, then end the round`)
       +(S.mod.freehouse?` · <span class="w">${T("มีบ้านฟรี 1 หลัง","1 free house")}</span>`:"")+(S.mod.buildcost?` · <span class="w">${T(`ก่อสร้าง +${S.mod.buildcost}`,`build +${S.mod.buildcost}`)}</span>`:"")+(S.mod.totemdisc?` · <span class="w">${T(`Totem ลด ${S.mod.totemdisc}`,`Totem −${S.mod.totemdisc}`)}</span>`:"");
   } else if(S.busy&&S.zone) tip=T("ภัยกำลังเกิดขึ้น…","Disaster in progress…");
-  else if(S.phase==="roll") tip=T(`ทอยได้ <b>${risk()} หรือน้อยกว่า</b> = เกิดภัย (โอกาส ${chance(risk())}%)`,`Roll <b>${risk()} or less</b> = disaster (${chance(risk())}% chance)`);
+  else if(S.phase==="roll") tip=T(`ทอย 2 ลูกแล้วบวกแต้ม · รวมไม่เกิน <b>${risk()}</b> = เกิดภัย · มากกว่านั้น = รอด (โอกาสเกิดภัย ${chance(risk())}%)`,`Roll 2 dice and add · total <b>${risk()}</b> or less = disaster, more = safe (${chance(risk())}% chance)`);
   else if(S.phase==="ready") tip=T("กดปุ่มเพื่อเริ่มวาระนายกฯ 12 รอบ","Press the button to start your 12-round term.");
   $("trayin").innerHTML=`<div class="tray-in"><div class="tip">${tip}</div><div class="pal">${pal}</div><div>${act}</div></div>`;
 }
@@ -2571,48 +2602,63 @@ function bTable(lg){ const th=lg==="th", c=pi("coin");
   return `<b>${th?"อาคารที่สร้างได้":"What you can build"}</b><table class="ptab"><tr><th></th><th>${th?"ราคา":"Cost"}</th><th>${th?"ได้/รอบ":"Per round"}</th><th>${th?"อื่นๆ":"Also"}</th></tr>`+
     rows.map(r=>`<tr><td>${pi(r[0])} <b>${r[1]}</b></td><td>${c}${r[2]}</td><td>${r[3]==="–"?"–":c+r[3]}</td><td>${r[4]}</td></tr>`).join("")+
     `</table><small>${th?"ได้/รอบ = เหรียญที่อาคารให้ทุกต้นรอบ · ที่อยู่นับดาวด้านสังคม":"Per round = coins it pays at the start of every round · homes count for Society stars"}</small>` }
+// practice targets: the exact lot / building the player should tap (falls back to the nearest valid one if the preferred is taken)
+function pick(t,prefs,o){ for(const [r,c] of prefs) if(canPlace(t,r,c,o)) return [r,c];
+  const [pr,pc]=prefs[0]; let best=null,bd=1e9; for(const [r,c] of LOTS) if(canPlace(t,r,c,o)){ const d=Math.abs(r-pr)+Math.abs(c-pc); if(d<bd){bd=d;best=[r,c]} } return best }
+const tgtPlace=(t,prefs,o)=>()=>{ const a=pick(t,prefs,o||"h"); return a?cellsFor(t,a[0],a[1],o||"h"):null };
+const riverHome=()=>{ const ok=p=>(p.type==="house"||p.type==="shop")&&!p.dmg&&zoneOf(p.cells[0][0],p.cells[0][1])==="river";
+  return S.pieces.find(p=>ok(p)&&p.cells[0][0]===1&&p.cells[0][1]===4)||S.pieces.find(ok) };
+const dmgPiece=()=>S.pieces.find(p=>p.dmg&&p.type==="house")||S.pieces.find(p=>p.dmg);
+const cellTxt=cs=>cs?cs.map(([r,c])=>code(r,c)).join("–"):"";
+// a "go to the map" step: the tool is chosen for the player, the target blinks, other lots are ignored
+const MAPSTEP=(tool,cells,th,en,o)=>Object.assign({sel:"#stage",cells,tool,enter:()=>{ if(S.tool!==tool){ S.tool=tool; if(SIZE[tool]) S.orient=(o&&o.orient)||"h"; render() } }},o||{},{th,en});
 const TSTEPS=[
  // round 1 — build a town
  PT("นี่คือ <b>เหรียญ</b> ของเมือง อาคารที่ไม่พังให้รายได้ทุกต้นรอบ<br>รอบนี้ได้ +4 จากเมือง และการ์ด +3 กับ −3 หักลบกันพอดี",
     "These are your <b>coins</b>. Every undamaged building pays you at the start of each round.<br>+4 from the town this round; the +3 and −3 cards cancel out.",{sel:"#status .stat:nth-child(2)",next:1,r:1}),
  PT(bTable("th"),bTable("en"),{sel:"#trayin .pal",next:1,r:1,wide:1}),
- PT("มาสร้างเมืองกัน แตะปุ่ม <b>บ้าน</b>","Let's build. Tap <b>House</b>.",{sel:'[data-buy="house"]',r:1,enter:()=>topUp(4),done:()=>S.tool==="house"||cnt("house")>2}),
- PT("แตะ<b>ช่องว่าง</b>บนแผนที่เพื่อวางบ้าน (ถนนวางไม่ได้)","Tap an <b>empty lot</b> on the map to place it (not on a road).",{sel:"#stage",r:1,done:()=>cnt("house")>2}),
- PT("ต่อไปแตะ <b>ร้านค้า</b> แล้ววาง<b>ติดด้านข้าง</b>กับบ้านหรือคอนโด (ทแยงไม่นับ) เพราะร้านต้องมีคนอยู่ใกล้ๆ มาซื้อของ",
-    "Now tap <b>Shop</b> and place it <b>sharing a side</b> with a house (corners don't count): shops need customers living next door.",{sel:'[data-buy="shop"]',r:1,enter:()=>topUp(7),done:()=>cnt("shop")>1}),
- PT("เยี่ยม! กด <b>จบรอบ</b> รอบหน้าจะเริ่มทอยลูกเต๋าความเสี่ยง","Nice! Press <b>End round</b>. Next round the risk dice start.",{sel:"#act",r:1,end:1,done:()=>S.round>=2}),
+ PT("มาสร้างบ้านกัน · แตะปุ่ม <b>"+pi("house")+" บ้าน</b> ที่กระพริบอยู่","Let's build a house · tap the blinking <b>"+pi("house")+" House</b> button.",{sel:'[data-buy="house"]',r:1,enter:()=>topUp(4),done:()=>S.tool==="house"||cnt("house")>2}),
+ MAPSTEP("house",tgtPlace("house",[[2,4]]),"แตะช่อง <b>{c}</b> ที่กระพริบสีเหลืองบนแผนที่ เพื่อวางบ้าน","Tap the blinking lot <b>{c}</b> on the map to build the house.",{r:1,done:()=>cnt("house")>2}),
+ PT("ต่อไปสร้าง <b>ร้านค้า</b> · แตะปุ่ม <b>"+pi("shop")+" ร้านค้า</b>","Next, a <b>shop</b> · tap the <b>"+pi("shop")+" Shop</b> button.",{sel:'[data-buy="shop"]',r:1,enter:()=>topUp(7),done:()=>S.tool==="shop"||cnt("shop")>1}),
+ MAPSTEP("shop",tgtPlace("shop",[[2,6],[0,4]]),"แตะช่อง <b>{c}</b> ที่กระพริบ เพื่อวางร้านค้า<br><small>ร้านค้าต้องอยู่<b>ติดกับบ้าน</b> (ด้านข้าง ไม่ใช่มุมทแยง) เพราะต้องมีคนอยู่ใกล้ๆ มาซื้อของ</small>",
+    "Tap the blinking lot <b>{c}</b> to build the shop.<br><small>A shop must <b>share a side with a house</b> (not a corner): it needs customers living next door.</small>",{r:1,done:()=>cnt("shop")>1}),
+ PT("เยี่ยม! กดปุ่มสีเขียว <b>จบรอบ 1</b> ด้านล่าง<br><small>รอบหน้าจะเริ่มทอยลูกเต๋า</small>","Nice! Press the green <b>End round 1</b> button.<br><small>Next round the dice start.</small>",{sel:"#act",r:1,end:1,done:()=>S.round>=2}),
  // round 2 — industry and risk
- PT("<b>ความเสี่ยง</b> ตั้งแต่รอบ 2 ทอยลูกเต๋าทุกรอบ ได้<b>ไม่เกินตัวเลขนี้</b> = เกิดภัย<br><span class=\"bad\">ความเสี่ยงสูงขึ้นทุกปี</span> ปี 1–4 = 4 · 6 · 8 · 10<br>บรรทัดล่างบอกที่มาของตัวเลข",
-    "<b>Risk</b>: from round 2 you roll every round. Roll <b>this number or less</b> and a disaster strikes.<br><span class=\"bad\">Risk rises every year</span>: years 1–4 = 4 · 6 · 8 · 10<br>The bottom line shows where the number comes from.",{sel:"#status .riskbox",next:1,r:2}),
- PT("<b>โรงงาน</b> ได้เงินมากที่สุด (+4) แตะปุ่มโรงงานเลย","A <b>factory</b> earns the most (+4). Tap Factory.",{sel:'[data-buy="factory"]',r:2,enter:()=>topUp(8),done:()=>S.tool==="factory"||cnt("factory")>0}),
- PT("วางโรงงาน (ใช้ 2 ช่อง กด <b>↔︎ หมุน</b> เพื่อเปลี่ยนแนว)<br><span class=\"bad\">โรงงานห้ามติดบ้านหรือคอนโด</span> เพราะมีเสียง ควัน และเสี่ยงไฟไหม้ ลองวางติดบ้านดูก็ได้ เกมจะไม่ยอม",
-    "Place the factory (2 lots; tap <b>↔︎ Rotate</b> to turn it).<br><span class=\"bad\">Factories can't touch houses or apartments</span>: noise, smoke and fire risk. Try next to a house — the game won't let you.",{sel:"#stage",r:2,done:()=>cnt("factory")>0}),
- PT("ดูความเสี่ยง: <span class=\"bad\">โรงงาน +1</span> และกองการ์ดภัยมี<b>ไฟไหม้โรงงาน</b>เพิ่มอีก 1 ใบ (โรงงานพังพร้อมอาคารที่ติดกัน)",
-    "Look at the risk: <span class=\"bad\">factory +1</span>, and a <b>factory fire</b> card joined the disaster deck (the factory and everything touching it).",{sel:"#status .riskbox",next:1,r:2}),
- PT("ลดความเสี่ยงกลับด้วย <b>สวน</b> แตะสวนแล้ววางที่ไหนก็ได้<br><span class=\"good\">สวนแห่งละ −1 (สูงสุด −3)</span> พื้นที่สีเขียวช่วยซับน้ำ ลดความร้อน และกั้นไฟ",
-    "Bring the risk back down with a <b>park</b>. Tap Park and place it anywhere.<br><span class=\"good\">Each park −1 (up to −3)</span>: green space soaks up rain, cools the city and breaks fires.",{sel:'[data-buy="green"]',r:2,enter:()=>topUp(4),done:()=>cnt("green")>1}),
- PT("ความเสี่ยงลดลงแล้ว กด <b>จบรอบ</b>","Risk is back down. Press <b>End round</b>.",{sel:"#act",r:2,end:1,done:()=>S.round>=3}),
+ PT("<b>เลขความเสี่ยง</b> ของเมืองอยู่ตรงนี้<br>ทุกรอบเราทอยลูกเต๋า 2 ลูก ถ้า<b>แต้มรวมไม่เกินเลขนี้</b> เมืองจะเจอภัย<br><span class=\"bad\">เลขนี้สูงขึ้นทุกปี</span> (ปีที่ 1–4 เริ่มที่ 4 · 6 · 8 · 10)",
+    "Your city's <b>risk number</b> is here.<br>Every round you roll 2 dice: <b>a total of this number or less</b> means a disaster.<br><span class=\"bad\">It goes up every year</span> (years 1–4 start at 4 · 6 · 8 · 10).",{sel:"#status .riskbox",next:1,r:2}),
+ PT("<b>โรงงาน</b> ให้เงินมากที่สุด (+4 ต่อรอบ) · แตะปุ่ม <b>"+pi("factory")+" โรงงาน</b>","A <b>factory</b> earns the most (+4 a round) · tap the <b>"+pi("factory")+" Factory</b> button.",{sel:'[data-buy="factory"]',r:2,enter:()=>topUp(8),done:()=>S.tool==="factory"||cnt("factory")>0}),
+ MAPSTEP("factory",tgtPlace("factory",[[4,4],[5,4]],"h"),"แตะช่อง <b>{c}</b> ที่กระพริบ เพื่อวางโรงงาน (โรงงานใช้ 2 ช่อง)<br><small><span class=\"bad\">โรงงานห้ามอยู่ติดบ้าน</span> เพราะมีเสียง ควัน และเสี่ยงไฟไหม้ เลยต้องตั้งให้ห่างแบบนี้</small>",
+    "Tap the blinking lots <b>{c}</b> to build the factory (it takes 2 lots).<br><small><span class=\"bad\">Factories can't touch houses</span>: noise, smoke and fire risk, so it goes over here.</small>",{r:2,orient:"h",done:()=>cnt("factory")>0}),
+ PT("ดูเลขความเสี่ยง: <span class=\"bad\">เพิ่มขึ้น 1</span> เพราะโรงงาน<br><small>และมีการ์ด <b>ไฟไหม้โรงงาน</b> เพิ่มเข้ากองภัย 1 ใบด้วย</small>",
+    "Look at the risk number: <span class=\"bad\">up by 1</span> because of the factory.<br><small>A <b>factory fire</b> card also joined the disaster deck.</small>",{sel:"#status .riskbox",next:1,r:2}),
+ PT("ทำให้ความเสี่ยงลดลงด้วย <b>สวน</b> · แตะปุ่ม <b>"+pi("green")+" พื้นที่สีเขียว</b>","Bring the risk down with a <b>park</b> · tap the <b>"+pi("green")+" Park</b> button.",{sel:'[data-buy="green"]',r:2,enter:()=>topUp(4),done:()=>S.tool==="green"||cnt("green")>1}),
+ MAPSTEP("green",tgtPlace("green",[[4,6],[5,6]]),"แตะช่อง <b>{c}</b> ที่กระพริบ เพื่อวางสวน<br><small><span class=\"good\">สวน 1 แห่ง = ความเสี่ยงลด 1</span> (ลดได้สูงสุด 3) เพราะต้นไม้ช่วยซับน้ำ ลดความร้อน และกั้นไฟ</small>",
+    "Tap the blinking lot <b>{c}</b> to plant the park.<br><small><span class=\"good\">Each park = risk −1</span> (up to −3): trees soak up rain, cool the city and stop fires spreading.</small>",{r:2,done:()=>cnt("green")>1}),
+ PT("ความเสี่ยงลดลงแล้ว · กดปุ่มสีเขียว <b>จบรอบ 2</b>","Risk is back down · press the green <b>End round 2</b> button.",{sel:"#act",r:2,end:1,done:()=>S.round>=3}),
  // round 3 — zones and protection
- PT("เมืองมี <b>4 โซน</b> แต่ละโซนเจอภัยคนละแบบ (ดูป้ายบนและล่างแผนที่)<br>เมืองฝึกของเราอยู่<b>ริมแม่น้ำ</b> ซึ่งเสี่ยง<b>น้ำท่วม</b> และน้ำท่วมทำให้บ้าน ร้านค้า และโรงงานพัง",
-    "The city has <b>4 zones</b>, each with its own hazard (see the bars above and below the map).<br>Our town is in <b>Riverside</b>, which <b>floods</b> — and floods wreck houses, shops and factories.",{sel:"#zbar-top",r:3,next:1,enter:()=>{ S.tool=null; render() }}),
- PT("เตรียมรับภัย: แตะ <b>"+pi("shield")+" เสริม</b> (3 เหรียญ) อาคารที่เสริมแล้วจะรอดภัยได้ 1 ครั้ง ถูกกว่าซ่อมมาก",
-    "Get ready: tap <b>"+pi("shield")+" Reinforce</b> (3 coins). A reinforced building survives one disaster — far cheaper than repairing.",{sel:"#reinforce",r:3,enter:()=>topUp(3),done:()=>S.tool==="reinforce"||riverRF()}),
- PT("แตะ<b>บ้านหรือร้านค้าในโซนริมแม่น้ำ</b> 1 หลังเพื่อเสริม","Tap one <b>house or shop in Riverside</b> to reinforce it.",{sel:"#stage",r:3,done:riverRF}),
- PT("พร้อมแล้ว กด <b>จบรอบ</b><br><small>ถ้าวางผิด กด <b>↶ ย้อน</b> ได้ก่อนจบรอบ · <b>✖︎ รื้อ</b> ฟรี แต่ไม่ได้เงินคืน</small>",
-    "Ready. Press <b>End round</b>.<br><small>Placed something wrong? <b>↶ Undo</b> works until you end the round · <b>✖︎ Demolish</b> is free but refunds nothing.</small>",{sel:"#act",r:3,end:1,done:()=>S.round>=4}),
+ PT("แผนที่แบ่งเป็น <b>4 โซน</b> แต่ละโซนเจอภัยคนละแบบ (ดูป้ายบนและล่างแผนที่)<br>เมืองฝึกอยู่ <b>ริมแม่น้ำ</b> ซึ่งเสี่ยง <b>น้ำท่วม</b> ทำให้บ้าน ร้านค้า และโรงงานพังได้",
+    "The map has <b>4 zones</b>, each with its own hazard (see the bars above and below the map).<br>Our town is in <b>Riverside</b>, which <b>floods</b> — floods wreck houses, shops and factories.",{sel:"#zbar-top",r:3,next:1,enter:()=>{ S.tool=null; render() }}),
+ PT("เตรียมรับภัยด้วยการ <b>เสริมความแข็งแรง</b> (3 เหรียญ) · แตะปุ่ม <b>"+pi("shield")+" เสริม</b><br><small>อาคารที่เสริมแล้วจะรอดภัยได้ 1 ครั้ง ถูกกว่าซ่อมมาก</small>",
+    "Prepare by <b>reinforcing</b> a building (3 coins) · tap the <b>"+pi("shield")+" Reinforce</b> button.<br><small>A reinforced building survives one disaster — far cheaper than repairing.</small>",{sel:"#reinforce",r:3,enter:()=>topUp(3),done:()=>S.tool==="reinforce"||riverRF()}),
+ MAPSTEP("reinforce",()=>{ const p=riverHome(); return p?p.cells:null },"แตะ<b>บ้านที่ช่อง {c}</b> ที่กระพริบ เพื่อเสริมความแข็งแรง<br><small>จะมีโล่สีฟ้าขึ้นบนบ้าน</small>",
+    "Tap the blinking <b>house at {c}</b> to reinforce it.<br><small>A blue shield appears on it.</small>",{r:3,done:riverRF}),
+ PT("พร้อมแล้ว · กดปุ่มสีเขียว <b>จบรอบ 3</b><br><small>ถ้าวางผิด กด <b>↶ ย้อน</b> ได้ก่อนจบรอบ · <b>✖︎ รื้อ</b> ฟรีแต่ไม่ได้เงินคืน</small>",
+    "Ready · press the green <b>End round 3</b> button.<br><small>Placed something wrong? <b>↶ Undo</b> works until you end the round · <b>✖︎ Demolish</b> is free but refunds nothing.</small>",{sel:"#act",r:3,end:1,done:()=>S.round>=4}),
  // round 4 — the disaster
- PT("<b>น้ำท่วมริมแม่น้ำ!</b> อาคารที่<span class=\"good\">เสริมไว้รอด</span> (โล่ใช้ไปแล้ว ต้องเสริมใหม่) ที่เหลือ<span class=\"bad\">พัง</span><br>อาคารที่พัง<b>ไม่ให้เงินและไม่นับดาว</b>จนกว่าจะซ่อม",
-    "<b>Riverside flood!</b> The <span class=\"good\">reinforced building survived</span> (its shield is used up). The rest are <span class=\"bad\">damaged</span>.<br>Damaged buildings <b>earn nothing and don't count for stars</b> until repaired.",{sel:"#stage",r:4,next:1,skip:()=>r4ready()&&!S.pieces.some(p=>p.dmg)}),
- PT("<b>น้ำท่วมริมแม่น้ำ!</b> แต่เมืองเรา<span class=\"good\">ไม่พังเลย</span> เพราะเตรียมรับมือไว้ก่อน (Totem กันได้ทั้งใบ · หลังที่เสริมไว้รอดแต่โล่ใช้ไปแล้ว ต้องเสริมใหม่)<br>ถ้าอาคารพัง จะ<b>ไม่ให้เงินและไม่นับดาว</b>จนกว่าจะซ่อม (ค่าซ่อม = ราคาสร้าง)",
-    "<b>Riverside flood!</b> But <span class=\"good\">nothing was damaged</span> because you prepared (a Totem blocks the whole card · reinforced buildings survive, but the shield is used up).<br>A damaged building <b>earns nothing and doesn't count for stars</b> until repaired (repair = building price).",{sel:"#stage",r:4,next:1,skip:()=>r4ready()&&(S.pieces.some(p=>p.dmg)||S.undo.some(u=>u.kind==="repair"))}),
- PT("การ์ด<b>อาสาสมัครซ่อมเมือง</b>ให้ซ่อมฟรี 1 หลัง แตะ <b>✚ ซ่อม</b> แล้วแตะอาคารที่พัง<br><small>ปกติค่าซ่อม = ราคาสร้าง</small>",
-    "The <b>Repair volunteers</b> card gives one free repair. Tap <b>✚ Repair</b>, then a damaged building.<br><small>Normally a repair costs the full building price.</small>",{sel:"#repair",r:4,done:()=>S.undo.some(u=>u.kind==="repair"),skip:()=>r4ready()&&!S.pieces.some(p=>p.dmg)}),
- PT("<b>Totem</b> กันภัยแบบหนึ่งได้<b>ทั้งใบ ตลอดเกม</b> (ราคาแพงขึ้นทุกอัน 8 → 12 → 16 → 20)<br>การ์ด<b>รัฐอุดหนุน</b>ลดให้ 3 ซื้อ <b>คันกั้นน้ำ</b>เลย ถ้ามีตั้งแต่แรก น้ำท่วมเมื่อกี้จะไม่ทำอะไรเมืองเลย",
-    "A <b>Totem</b> blocks one hazard <b>completely, for the whole game</b> (each costs more: 8 → 12 → 16 → 20).<br>The <b>Safety subsidy</b> takes 3 off. Buy the <b>Flood wall</b> — with it, that flood would have done nothing.",{sel:"#totem-panel",r:4,enter:()=>topUp(totemPrice()),done:()=>S.totems.length>0}),
+ PT("<b>น้ำท่วมริมแม่น้ำ!</b> บ้านที่<span class=\"good\">เสริมไว้รอด</span> (โล่ใช้ไปแล้ว ต้องเสริมใหม่) ที่เหลือ<span class=\"bad\">พัง</span> (ป้ายสีแดงบนแผนที่)<br>อาคารที่พัง<b>ไม่ให้เงินและไม่นับดาว</b>จนกว่าจะซ่อม",
+    "<b>Riverside flood!</b> The <span class=\"good\">reinforced house survived</span> (its shield is used up). The rest are <span class=\"bad\">damaged</span> (red signs on the map).<br>Damaged buildings <b>earn nothing and don't count for stars</b> until repaired.",{sel:"#stage",r:4,next:1,skip:()=>r4ready()&&!S.pieces.some(p=>p.dmg)}),
+ PT("<b>น้ำท่วมริมแม่น้ำ!</b> แต่เมืองเรา<span class=\"good\">ไม่พังเลย</span> เพราะเตรียมรับมือไว้ก่อน (Totem กันได้ทั้งใบ · บ้านที่เสริมไว้รอด แต่โล่ใช้ไปแล้ว)<br>ถ้าอาคารพัง จะ<b>ไม่ให้เงินและไม่นับดาว</b>จนกว่าจะซ่อม",
+    "<b>Riverside flood!</b> But <span class=\"good\">nothing was damaged</span> because you prepared (a Totem blocks the whole card · reinforced buildings survive, but the shield is used up).<br>A damaged building <b>earns nothing and doesn't count for stars</b> until repaired.",{sel:"#stage",r:4,next:1,skip:()=>r4ready()&&S.pieces.some(p=>p.dmg)}),
+ PT("การ์ด <b>อาสาสมัครซ่อมเมือง</b> ให้ซ่อมฟรี 1 หลัง · แตะปุ่ม <b>✚ ซ่อม</b><br><small>ปกติค่าซ่อม = ราคาสร้าง</small>",
+    "The <b>Repair volunteers</b> card gives one free repair · tap the <b>✚ Repair</b> button.<br><small>Normally a repair costs the full building price.</small>",{sel:"#repair",r:4,done:()=>S.tool==="repair"||S.undo.some(u=>u.kind==="repair"),skip:()=>r4ready()&&!S.pieces.some(p=>p.dmg)&&!S.undo.some(u=>u.kind==="repair")}),
+ MAPSTEP("repair",()=>{ const p=dmgPiece(); return p?p.cells:null },"แตะ<b>อาคารที่พังที่ช่อง {c}</b> (กระพริบอยู่) เพื่อซ่อมฟรี","Tap the blinking <b>damaged building at {c}</b> to repair it for free.",
+    {r:4,done:()=>S.undo.some(u=>u.kind==="repair"),skip:()=>r4ready()&&!S.pieces.some(p=>p.dmg)&&!S.undo.some(u=>u.kind==="repair")}),
+ PT("<b>Totem</b> กันภัยแบบหนึ่งได้<b>ทั้งใบ ตลอดเกม</b><br>การ์ด <b>รัฐอุดหนุน</b> ลดราคาให้ 3 · แตะการ์ด <b>คันกั้นน้ำ</b> ที่กระพริบอยู่ เพื่อซื้อ<br><small>ถ้ามีคันกั้นน้ำตั้งแต่แรก น้ำท่วมเมื่อกี้จะไม่ทำอะไรเมืองเลย · Totem แพงขึ้นทุกอัน 8 → 12 → 16 → 20</small>",
+    "A <b>Totem</b> blocks one hazard <b>completely, for the whole game</b>.<br>The <b>Safety subsidy</b> card takes 3 off · tap the blinking <b>Flood wall</b> card to buy it.<br><small>With it, that flood would have done nothing · each Totem costs more: 8 → 12 → 16 → 20</small>",{sel:'[data-totem="flood"]',r:4,enter:()=>{ S.tool=null; topUp(totemPrice()); render() },done:()=>S.totems.length>0}),
  PT("<b>เป้าหมาย</b>: เก็บดาว 4 ด้าน ด้านละ 2 ดวง<br>เศรษฐกิจ (รายได้) · สังคม (ที่อยู่) · สิ่งแวดล้อม (สวน) · พร้อมรับภัย (Totem)<br>นับตอนจบรอบ 12 · ครบ <b>8 ดาว = Best Mayor "+pi("crown")+"</b>",
     "<b>Your goal</b>: 2 stars in each of 4 areas<br>Economy (income) · Society (housing) · Environment (parks) · Preparedness (Totems)<br>Counted after round 12 · <b>8 stars = Best Mayor "+pi("crown")+"</b>",{sel:"#goal-panel",r:4,next:1}),
- PT("ฝึกครบแล้ว! กด <b>จบการฝึก</b> แล้วเริ่มวาระจริง 12 รอบ","Practice complete! Press <b>Finish practice</b> to start your real 12-round term.",{sel:"#act",r:4,end:1}),
-];
+ PT("ฝึกครบแล้ว! กดปุ่มสีเขียว <b>จบการฝึก</b> แล้วเริ่มเกมจริง 12 รอบ","Practice complete! Press the green <b>Finish practice</b> button to start your real 12-round term.",{sel:"#act",r:4,end:1}),
+];;
 const built=()=>S.undo.some(u=>u.kind==="piece");
 function freshPractice(){ const s=fresh(); const L=START_MAPS.find(m=>m.id===PRACTICE.map), Z=ZONES[L.z], at=([r,c])=>[[Z.r[0]+r,Z.c[0]+c]];
   s.pieces=[]; s.nextId=1; const add=(type,cells)=>s.pieces.push({id:s.nextId++,type,cells,dmg:false,rf:false});
@@ -2630,8 +2676,8 @@ function tutEnd(done){ TUT.on=false; coach(); if(S.practice&&!done) realStart(fa
 // practice captions inside the full-screen draw / roll / disaster screens
 function pcap(kind){ if(!S.practice) return ""; const r=S.round, t={
   draw1:["ทุกต้นรอบ จั่ว<b>การ์ดเหตุการณ์ 2 ใบ</b> ใบเขียวให้เงิน ใบแดงหักเงินหรือเปลี่ยนกติกาเฉพาะรอบนั้น","Every round starts with <b>2 event cards</b>. Green ones help, red ones cost coins or change a rule for that round."],
-  roll2:["ตั้งแต่รอบ 2 ทอยลูกเต๋า 2 ลูกทุกรอบ ได้<b>ไม่เกินความเสี่ยง</b> = เกิดภัย ได้มากกว่า = รอด","From round 2 you roll every round: <b>risk or less</b> = disaster, more = safe."],
-  roll4:["ปีที่ 2 แล้ว <b>ความเสี่ยงสูงขึ้น</b> ทุกปี ลุ้นกัน...","Year 2 now — <b>risk rises</b> every year. Fingers crossed..."],
+  roll2:["ตั้งแต่รอบ 2 ต้องทอยลูกเต๋าทุกรอบ · <b>แต้มน้อย = เกิดภัย</b> แต้มมาก = รอด<br>ตอนนี้เลขความเสี่ยงต่ำ โอกาสรอดสูง ลองแตะเพื่อทอยดู","From round 2 you roll every round · <b>low total = disaster</b>, high total = safe.<br>The risk is low right now, so you'll probably be fine. Tap to roll."],
+  roll4:["ขึ้นปีที่ 2 เลขความเสี่ยงจึงสูงขึ้น ช่องสีแดงกว้างขึ้น · ลุ้นกัน...","Year 2: the risk number went up, so the red range is wider. Fingers crossed..."],
   dis4:["การ์ดภัยบอก 3 อย่าง: <b>ภัยอะไร · โซนไหน · อาคารแบบไหนพัง</b>","A disaster card tells you 3 things: <b>what · which zone · which building types</b>."]}[kind+r];
   return t?`<div class="pcap"><span>${T("โหมดฝึก","PRACTICE")}</span>${T(t[0],t[1])}</div>`:"" }
 function tutTick(){
@@ -2649,11 +2695,16 @@ function coach(){
   const blocked=!st||S.modal||S.busy||$("splash").className.includes("show")||(st.show&&!st.show())||(!st.show&&S.phase!=="build");
   const tgt=st&&!blocked&&document.querySelector(st.sel);
   if(!tgt){ el.className=""; ring.className=""; return }
+  const tc=st.cells?st.cells():null;                                   // exact lots to tap on the map
+  if(st.cells&&st.tool&&S.tool!==st.tool&&!S.busy){ S.tool=st.tool; if(SIZE[st.tool]) S.orient=st.orient||"h"; render(); return }
   const phone=!matchMedia("(min-width:821px) and (orientation:landscape)").matches, onMap=phone&&st.sel==="#stage";
   if(el.dataset.k!==String(TUT.step)){ el.dataset.k=TUT.step; if(onMap) mapIntoView(); else try{tgt.scrollIntoView({block:"center",behavior:"smooth"})}catch(e){}
-    el.innerHTML=`<div class="cstep">${T("โหมดฝึก","Practice")} · ${T("รอบ","round")} ${S.round}/${PRACTICE.rounds}</div><p>${T(st.th,st.en)}</p><div class="cbtn">${st.next?`<button type="button" class="primary" data-tut="next">${T("ถัดไป ▶︎","Next ▶︎")}</button>`:""}<button type="button" class="ghostbtn" data-tut="skip">${T("ข้ามไปเกมจริง","Skip to the real game")}</button></div>` }
-  const r=tgt.getBoundingClientRect(), vw=innerWidth, vh=innerHeight;
-  ring.className="on"; Object.assign(ring.style,{left:r.left-6+"px",top:r.top-6+"px",width:r.width+12+"px",height:r.height+12+"px"});
+    el.innerHTML=`<div class="cstep">${T("โหมดฝึก","Practice")} · ${T("รอบ","round")} ${S.round}/${PRACTICE.rounds}</div><p>${T(st.th,st.en).replace(/\{c\}/g,cellTxt(tc))}</p><div class="cbtn">${st.next?`<button type="button" class="primary" data-tut="next">${T("ถัดไป ▶︎","Next ▶︎")}</button>`:""}<button type="button" class="ghostbtn" data-tut="skip">${T("ข้ามไปเกมจริง","Skip to the real game")}</button></div>` }
+  let r=tgt.getBoundingClientRect(); const vw=innerWidth, vh=innerHeight;
+  if(tc){ const cr=cv.getBoundingClientRect(), k=cr.width/N, rs=tc.map(c=>c[0]), cs=tc.map(c=>c[1]);
+    const L=cr.left+Math.min(...cs)*k, Tp=cr.top+Math.min(...rs)*k, Rt=cr.left+(Math.max(...cs)+1)*k, Bt=cr.top+(Math.max(...rs)+1)*k;
+    ring.className="on cell"; Object.assign(ring.style,{left:L-4+"px",top:Tp-4+"px",width:Rt-L+8+"px",height:Bt-Tp+8+"px"}) }
+  else { ring.className="on"; Object.assign(ring.style,{left:r.left-6+"px",top:r.top-6+"px",width:r.width+12+"px",height:r.height+12+"px"}) }
   el.className="on"+(phone?" ph":""); const w=Math.min(st.wide?400:320,vw-24); el.style.width=w+"px"; el.style.maxHeight=""; let h=el.offsetHeight;
   if(onMap){ // phones: keep the whole map visible, the bubble sits under it (scrolls inside itself if space is short)
     const left0=Math.max(12,(vw-w)/2); let top0=r.bottom+8; if(vh-top0-8<120) top0=vh-128;
@@ -2855,7 +2906,7 @@ function start(data){
 }
 try{ window.claude?.hot?.snapshot?.(()=>({state:JSON.parse(JSON.stringify(S))})) }catch(e){}
 window.claude?.hot?.ready ? window.claude.hot.ready(start) : start(window.claude?.hot?.data ?? {});
-window.__mm={get S(){return S},booth:()=>BOOTH,idle:()=>idleLeft,setLastInput:t=>{lastInput=t},tut:()=>({on:TUT.on,step:TUT.step,n:TSTEPS.length,sel:TSTEPS[TUT.step]&&TSTEPS[TUT.step].sel,next:!!(TSTEPS[TUT.step]&&TSTEPS[TUT.step].next),end:!!(TSTEPS[TUT.step]&&TSTEPS[TUT.step].end)}),get cars(){return cars},get peds(){return peds},setZoning:v=>{ZONING=!!v},buyTotem:k=>buyTotem(k),totemPrice:()=>totemPrice(),priceOf:t=>priceOf(t),STAR,LOTS,cellsFor:(t,r,c,o)=>cellsFor(t,r,c,o),income:()=>income(),housing:()=>housing(),stars:()=>stars(),canPlace:(t,r,c,o)=>canPlace(t,r,c,o),why:t=>why(t),place:(r,c)=>place(r,c),repair:id=>repair(id),cityImage:n=>cityImage(n),dis:(k,z)=>resolveDisaster({k,z})};
+window.__mm={get S(){return S},booth:()=>BOOTH,idle:()=>idleLeft,setLastInput:t=>{lastInput=t},tut:()=>({on:TUT.on,step:TUT.step,n:TSTEPS.length,sel:TSTEPS[TUT.step]&&TSTEPS[TUT.step].sel,next:!!(TSTEPS[TUT.step]&&TSTEPS[TUT.step].next),end:!!(TSTEPS[TUT.step]&&TSTEPS[TUT.step].end),cells:(TSTEPS[TUT.step]&&TSTEPS[TUT.step].cells)?TSTEPS[TUT.step].cells():null,tool:TSTEPS[TUT.step]&&TSTEPS[TUT.step].tool||null}),get cars(){return cars},get peds(){return peds},setZoning:v=>{ZONING=!!v},buyTotem:k=>buyTotem(k),totemPrice:()=>totemPrice(),priceOf:t=>priceOf(t),STAR,LOTS,cellsFor:(t,r,c,o)=>cellsFor(t,r,c,o),income:()=>income(),housing:()=>housing(),stars:()=>stars(),canPlace:(t,r,c,o)=>canPlace(t,r,c,o),why:t=>why(t),place:(r,c)=>place(r,c),repair:id=>repair(id),cityImage:n=>cityImage(n),dis:(k,z)=>resolveDisaster({k,z})};
 })();
 </script>
 
