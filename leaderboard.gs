@@ -3,7 +3,10 @@
 // Execute as: Me, Who has access: Anyone. Put the web-app URL into LB_URL in index.html.
 // Rows go to the first sheet: time | name | stars | pts | id. Delete a row in the Sheet to remove a fake score.
 
-function doGet(e) { return out(top_()); }
+function doGet(e) {
+  var n = Math.max(1, Math.min(20, Number(e && e.parameter && e.parameter.n) || 10));
+  return out(top_(n));
+}
 
 function doPost(e) {
   var d = {};
@@ -16,7 +19,7 @@ function doPost(e) {
   var lock = LockService.getScriptLock();
   lock.waitLock(5000);
   try { sheet_().appendRow([new Date(), name, stars, pts, id]); } finally { lock.releaseLock(); }
-  return out(top_());
+  return out(top_(10));
 }
 
 // Same simple word list as the game: rude names are stored as "Mayor".
@@ -31,12 +34,14 @@ function rude_(n) {
 
 function sheet_() { return SpreadsheetApp.getActiveSpreadsheet().getSheets()[0]; }
 
-function top_() {
+// top: best n rows · total: every score sent · best: how many Best Mayors (8 stars) — board.html shows the last two
+function top_(n) {
   var rows = sheet_().getDataRange().getValues().filter(function (r) {
     return r[1] !== '' && r[1] !== 'name';
   });
   rows.sort(function (a, b) { return (b[2] - a[2]) || (b[3] - a[3]) || (new Date(a[0]) - new Date(b[0])); });
-  return { top: rows.slice(0, 10).map(function (r) {
+  return { total: rows.length, best: rows.filter(function (r) { return Number(r[2]) >= 8; }).length,
+    top: rows.slice(0, n || 10).map(function (r) {
     return { name: String(r[1]), stars: Number(r[2]), pts: Number(r[3]), id: String(r[4]) };
   }) };
 }
