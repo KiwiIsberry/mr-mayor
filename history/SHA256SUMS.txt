@@ -1,0 +1,15 @@
+# SHA-256 ของไฟล์ต้นฉบับ (คัดลอกจาก ~/Documents/MrMayor ของผู้สร้าง เมื่อ 13 พ.ย. 2026 โดยไม่แก้เนื้อหา)
+# ไฟล์ที่เปลี่ยนชื่อตอนคัดลอก: ดูตาราง "ไฟล์ในโฟลเดอร์นี้มาจากไหน" ใน HISTORY.md
+e9073bad19d744bdfb200286d1e29815abe493aeb84b8a6f0d63800016337f6b  ./2026-10-07_v1-board-game/mr-mayor-event-cards.pdf
+13a4216e1e9b757cfdd850fd155e8ee21baf5d05e3edfe6e6982dc3234a1ae1d  ./2026-10-07_v1-board-game/mr-mayor-rulebook.pdf
+12481719b25820897cdb9c0452c9cbb98dfc51eb5d0a6f5bffefe2526b1bea93  ./2026-10-07_v1-board-game/prototype-v1.html
+eea0609061a7b990e54848cca4185d3d10236dfebce7d1f95e21c318cc2572b5  ./2026-10-07_v1-board-game/rules_v1.md
+e24128ef9e9e76fa10d291c75c29debe58a172bb30dbbfab9f8580cd2cb78bd8  ./2026-10-18_disaster-redesign/CLAUDE_2026-10-18.md
+f5af1ce27be44e1a44f923cc173d70882b97fda173c2047dc113e3145822fade  ./2026-10-18_disaster-redesign/MrMayor_HowToPlay.pdf
+e38c90686079a109a860e95912aca357d2bf85f86ff7aeed473d7bf07e235157  ./2026-11-02_v4-print-and-sim/CLAUDE_2026-11-03.md
+93ad45d63a4984a8f8b4cf0ae4ab1e329a98813c29437500154cb8603084a5a8  ./2026-11-02_v4-print-and-sim/MrMayor_QR.png
+6e92b6c217017ee264e5ac85f5c7abad8326aeb602014d4b868ebe873208022a  ./2026-11-02_v4-print-and-sim/MrMayor_v4_Board_A3_Color.pdf
+c38782f5ae6648d7ad7d2e706fadfc8e5e994e9dba9d4bbed0359af40e0ec15c  ./2026-11-02_v4-print-and-sim/MrMayor_v4_Cards_Color.pdf
+668f82695041246e3298d1eec8c47b69576da1cd1f4bc2bceb2f9bc8bda40f56  ./2026-11-02_v4-print-and-sim/rules_v4.1.md
+1f7da330a71495955aabc7a73e9e73ec27629c277326e1313c7e4608fadb04b8  ./2026-11-02_v4-print-and-sim/v4sim.py
+95793cc797d2cf9be43280258dd572fba9e017e36a0e4fd10cc5c63bfc72e9d6  ./2026-11-03_first-web-game/index.html

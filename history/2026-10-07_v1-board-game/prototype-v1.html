@@ -1,0 +1,190 @@
+<!doctype html>
+<html lang="th"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Mr. Mayor: Build the City!</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link href="https://fonts.googleapis.com/css2?family=Mitr:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#e3ece7;--ink:#1c2a28;--mut:#566663;--pan:#f6faf8;--line:#c3d1cb;--road:#3b4046;--land:#cfe0d6;--acc:#f2b705;--ok:#1f8a4c;--no:#c43d3d;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media(prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#101a18;--ink:#e6f0ec;--mut:#9bb0aa;--pan:#1a2826;--line:#2e4440;--road:#2a2e33;--land:#26403a;--ok:#4fd187;--no:#ff7a7a}}
+:root[data-theme="dark"]{--bg:#101a18;--ink:#e6f0ec;--mut:#9bb0aa;--pan:#1a2826;--line:#2e4440;--road:#2a2e33;--land:#26403a;--ok:#4fd187;--no:#ff7a7a}
+*{box-sizing:border-box}html,body{margin:0}
+body{background:var(--bg);color:var(--ink);font:400 15px/1.5 Mitr,system-ui,sans-serif;padding:14px;max-width:520px;margin:auto}
+h1{font-size:22px;font-weight:500;margin:0}.sub{color:var(--mut);font-size:13px;margin:0 0 10px}
+.pan{background:var(--pan);border:1px solid var(--line);border-radius:14px;padding:10px 12px;margin:10px 0}
+.row{display:flex;gap:8px;align-items:center;flex-wrap:wrap}.sp{flex:1}
+button,select{font:inherit;border:1px solid var(--line);background:var(--pan);color:var(--ink);border-radius:10px;padding:6px 11px;cursor:pointer}
+button:focus-visible,select:focus-visible{outline:3px solid var(--acc);outline-offset:1px}
+#timer{font-size:26px;font-weight:500;min-width:76px}#timer.out{color:var(--no)}
+#board{display:grid;grid-template-columns:repeat(6,1fr);gap:3px;width:min(100%,440px);aspect-ratio:1;margin:10px auto;padding:6px;background:var(--line);border-radius:14px}
+.cell{border-radius:7px;position:relative;display:grid;place-items:center;min-width:0}
+.land{background:var(--land);cursor:pointer}.land:hover,.land.hov{box-shadow:inset 0 0 0 3px var(--acc)}.land.nbr{box-shadow:inset 0 0 0 3px #3a8fd9}
+.road{background:var(--road)}.road.h{background-image:linear-gradient(90deg,#e8e0b0 50%,transparent 0);background-size:14px 3px;background-repeat:repeat-x;background-position:center}
+.road.v{background-image:linear-gradient(#e8e0b0 50%,transparent 0);background-size:3px 14px;background-repeat:repeat-y;background-position:center}
+.pc{width:84%;height:84%;display:grid;place-items:center;font-size:clamp(18px,6.4vw,30px);border-radius:8px;background:var(--c);box-shadow:inset 0 -6px 0 rgba(0,0,0,.22),0 3px 0 rgba(0,0,0,.3)}
+.new{outline:3px dashed var(--ink);outline-offset:-3px}.bad{outline:3px solid var(--no);outline-offset:-3px}
+.zsel{background-image:repeating-linear-gradient(45deg,transparent 0 6px,rgba(242,183,5,.5) 6px 9px)}
+.lk{position:absolute;color:var(--no);font-size:26px;pointer-events:none}.zl{position:absolute;font-style:normal;font-size:11px;color:var(--mut);top:2px;left:5px}
+#tools button{padding:6px 9px}#tools button.on{background:var(--acc);color:#1c2a28;border-color:var(--acc)}
+.k{font-size:12px;border-radius:99px;padding:1px 9px;color:#fff;margin-right:6px}.req{background:#2e8b57}.con{background:#c0504d}.opp{background:#3a74c2}
+.card{border-left:6px solid var(--line);margin:8px 0}.card.cur{border-left-color:var(--acc)}.card h3{margin:2px 0;font-size:16px;font-weight:500}.card p{margin:2px 0;font-size:13.5px}.mut{color:var(--mut)}
+.ck{list-style:none;margin:0;padding:0}.ck li{padding:3px 0;display:flex;gap:8px}.ck small{color:var(--mut);display:block}
+.ok{color:var(--ok)}.no{color:var(--no)}
+#mainBtn{background:var(--acc);color:#1c2a28;border-color:var(--acc);font-weight:500;width:100%;padding:11px;font-size:16px;margin-top:8px}
+#toastEl{min-height:22px;color:var(--no);font-size:14px;text-align:center}
+#resEl{text-align:center;font-size:20px;font-weight:500}
+</style></head><body>
+<h1>Mr. Mayor: Build the City!</h1>
+<p class="sub">SDG 11 · เกมสร้างเมืองบนกริด 6×6</p>
+
+<div class="pan"><div class="mut" style="font-size:13px">ภารกิจเริ่มต้น</div>
+<div>วาง <b>🏠×4 🏢×2 🏪×2 🌳×2</b> ให้ครบ 10 ชิ้น โดย <b id="mis"></b></div></div>
+
+<div class="pan row"><span id="timer">2:00</span>
+<select id="tsel" aria-label="เวลา"><option value="60">60 วิ</option><option value="90">90 วิ</option><option value="120" selected>120 วิ</option><option value="180">180 วิ</option></select>
+<button id="tgo">เริ่มเวลา</button><span class="sp"></span><button id="newm">ภารกิจใหม่</button><button id="rst">รีเซ็ต</button></div>
+
+<div id="board"></div>
+<div id="tools" class="row" style="justify-content:center"></div>
+<div id="toastEl" role="status"></div>
+<button id="mainBtn"></button>
+<div id="handEl"></div>
+<div class="pan"><div class="mut" style="font-size:13px;margin-bottom:4px">เช็กลิสต์</div><ul class="ck" id="ck"></ul><div id="resEl"></div></div>
+<p class="sub">กรอบเส้นประ = ชิ้นที่เปลี่ยนในการ์ดนี้ · กรอบฟ้า = ช่องที่ติดกัน (ซ้าย/ขวา/บน/ล่าง เท่านั้น ไม่นับทแยง)</p>
+
+<script>
+const T={H:{e:'🏠',c:'#f2c230'},B:{e:'🏢',c:'#c8553d'},S:{e:'🏪',c:'#ef8a2b'},G:{e:'🌳',c:'#4da35a'},F:{e:'🏭',c:'#6b5fa8'}};
+const RC=2,road=i=>(i/6|0)===RC||i%6===RC;
+const nb=i=>{const r=i/6|0,c=i%6,o=[];if(r>0)o.push(i-6);if(r<5)o.push(i+6);if(c>0)o.push(i-1);if(c<5)o.push(i+1);return o};
+const zone=Array(36).fill(-1);let zc=0;
+for(let i=0;i<36;i++){if(road(i)||zone[i]>=0)continue;const q=[i];zone[i]=zc;while(q.length){const x=q.pop();nb(x).forEach(y=>{if(!road(y)&&zone[y]<0){zone[y]=zc;q.push(y)}})}zc++}
+let G,pool,phase,mi,hand,res,bef,lockI,zp,tool='H',warned,tl,run=null;
+const adj=(i,t)=>nb(i).some(j=>G[j]===t),adjR=i=>nb(i).some(road),cnt=(t,a=G)=>a.filter(v=>v===t).length;
+const all=(t,f)=>G.every((v,i)=>v!==t||f(i));
+const MIS=[
+{t:'ทุก House ติด Green Space หรือ Shop',f:()=>all('H',i=>adj(i,'G')||adj(i,'S'))},
+{t:'ทุก Shop ติดถนน',f:()=>all('S',adjR)},
+{t:'ทุก Green Space ติด House',f:()=>all('G',i=>adj(i,'H'))},
+{t:'ทุก Building ติดถนน',f:()=>all('B',adjR)}];
+const C=(id,k,e,t,ev,d,rule,opt)=>({id,k,e,t,ev,d,rule,opt});
+const CARDS=[
+C(1,'req','🏠','ต้องการที่อยู่อาศัย','คนย้ายเข้าเมืองมากขึ้น','สร้าง House 1 หลัง','ต้องติด Shop หรือ Green'),
+C(2,'req','🌳','เพิ่มพื้นที่สีเขียว','ชาวบ้านอยากได้สวนมากขึ้น','สร้าง Green 1 ช่อง','ต้องติด House อย่างน้อย 1'),
+C(3,'req','🏪','ร้านค้าท้องถิ่น','มีผู้ประกอบการอยากเปิดร้าน','สร้าง Shop 1 ร้าน','ต้องติด House'),
+C(4,'req','🏭','ลงทุนอุตสาหกรรม','บริษัทอยากลงทุนสร้างงาน','สร้าง Factory 1 โรง','ติดถนน และห้ามติด House'),
+C(5,'req','🌳','โครงการสีเขียวชุมชน','ได้งบสนับสนุนสวนชุมชน','สร้าง Green 1 ช่อง (ฟรี)','ต้องติด House อย่างน้อย 1'),
+C(6,'con','💰','งบพัฒนาถูกตัด','งบพัฒนาเมืองลดลง','ห้ามสร้าง Building / Shop / Factory เพิ่ม','ย้ายชิ้นเดิมได้',1),
+C(7,'con','🏭','มลพิษจากโรงงาน','ชาวบ้านกังวลมลพิษ','ย้าย Factory','ต้องติดถนน และห้ามติด House'),
+C(8,'con','🏠','ปกป้องย่านที่อยู่อาศัย','ชาวบ้านไม่อยากอยู่ใกล้โรงงาน','ห้าม Factory ติด House','ถ้าที่มีอยู่ผิดกฎ ต้องย้าย',1),
+C(9,'con','🚫','ที่ดินจำกัด','เมืองมีที่ดินให้พัฒนาน้อย','เลือก 1 โซน (A–D)','ห้ามมีชิ้นใหม่ในโซนนั้น'),
+C(10,'con','🏢','ย่านแออัด','ย่านหนึ่งแน่นเกินไป','เอา House หรือ Building ออก 1 ชิ้น','ช่องที่ว่างต้องว่างจนจบเกม'),
+C(11,'con','🌳','คุ้มครองพื้นที่สีเขียว','ชาวบ้านอยากรักษาสวนเดิม','ห้ามเอา Green ออก','ห้าม Factory ติด Green',1),
+C(12,'opp','🏢','ฟื้นฟูเมืองเก่า','ย่านเก่าพร้อมปรับปรุง','รื้อ House/Shop/Building 1 ชิ้น แล้วสร้าง Building ใหม่แทน','Building ใหม่ต้องติดถนน'),
+C(13,'opp','🏪','ธุรกิจเติบโต','ร้านค้าเติบโตต้องการร้านเพิ่ม','สร้าง Shop 1 ร้าน','ต้องติด House · ติด Green ด้วย = โบนัส'),
+C(14,'opp','🏭','โอกาสสร้างงาน','บริษัทเสนอจ้างงานถ้ามีที่ให้','สร้าง Factory 1 โรง','ติดถนน และห้ามติด House'),
+C(15,'opp','🌳','ตกแต่งเมืองให้สวย','ได้งบปรับปรุงสิ่งแวดล้อม','สร้าง Green 1 ช่อง','ต้องติด House · ติด House 2 หลัง = โบนัส')];
+const CONF=[[6,3],[6,4],[6,13],[6,12],[6,14]];
+
+function evalCard(c){
+ const nw=t=>G.reduce((a,v,i)=>(v===t&&bef[i]!==t&&a.push(i),a),[]);
+ const fOK=i=>adjR(i)&&!adj(i,'H'),F=()=>G.map((v,i)=>v==='F'?i:-1).filter(i=>i>=0);
+ const R=(ok,m,b)=>({ok,m:ok?'':m,b});
+ switch(c.id){
+ case 1:return R(nw('H').some(i=>adj(i,'S')||adj(i,'G')),'สร้าง House ใหม่ให้ติด Shop หรือ Green');
+ case 2:case 5:return R(nw('G').some(i=>adj(i,'H')),'สร้าง Green ใหม่ให้ติด House');
+ case 3:return R(nw('S').some(i=>adj(i,'H')),'สร้าง Shop ใหม่ให้ติด House');
+ case 4:return R(nw('F').some(fOK),'สร้าง Factory ใหม่ติดถนน และไม่ติด House');
+ case 6:return R(['B','S','F'].every(t=>cnt(t)<=cnt(t,bef)),'ห้ามเพิ่ม Building/Shop/Factory');
+ case 7:return R(F().length>=cnt('F',bef)&&F().every(fOK)&&nw('F').length>0,'ย้าย Factory ไปช่องใหม่ที่ติดถนน และไม่ติด House');
+ case 8:return R(F().every(i=>!adj(i,'H')),'Factory ยังติด House อยู่');
+ case 9:return zp<0?R(false,'เลือกโซนก่อน'):R(!G.some((v,i)=>v&&!bef[i]&&zone[i]===zp),'มีชิ้นใหม่ในโซน '+'ABCD'[zp]);
+ case 10:return R(lockI>=0,'เอา House หรือ Building ออก 1 ชิ้น (ช่องนั้นจะถูกล็อก)');
+ case 11:return R(cnt('G')>=cnt('G',bef)&&F().every(i=>!adj(i,'G')),'ห้ามเอา Green ออก และห้าม Factory ติด Green');
+ case 12:return R(bef.some((v,i)=>'HSB'.includes(v||'-')&&G[i]!==v)&&nw('B').some(adjR),'รื้อ House/Shop/Building 1 ชิ้น แล้วสร้าง Building ใหม่ที่ติดถนน');
+ case 13:return R(nw('S').some(i=>adj(i,'H')),'สร้าง Shop ใหม่ให้ติด House',nw('S').some(i=>adj(i,'H')&&adj(i,'G')));
+ case 14:return R(nw('F').some(fOK),'สร้าง Factory ใหม่ติดถนน และไม่ติด House');
+ case 15:return R(nw('G').some(i=>adj(i,'H')),'สร้าง Green ใหม่ให้ติด House',nw('G').some(i=>nb(i).filter(j=>G[j]==='H').length>=2));
+ }}
+
+function init(newMission){
+ G=Array(36).fill(null);pool={H:4,B:2,S:2,G:2,F:0};phase='build';hand=[];res=[];bef=null;lockI=-1;zp=-1;warned=false;tool='H';
+ if(newMission||mi==null)mi=Math.random()*MIS.length|0;
+ stopT();tl=+tsel.value;render();}
+const left=()=>Object.values(pool).reduce((a,b)=>a+b,0);
+const toast=m=>{toastEl.textContent=m;clearTimeout(toast.h);toast.h=setTimeout(()=>toastEl.textContent='',3500)};
+function drawCard(){
+ const have=hand.map(c=>c.id),hasF=G.includes('F');
+ const ok=CARDS.filter(c=>!have.includes(c.id)&&(c.id!==7||hasF)&&!CONF.some(([a,b])=>(c.id===a&&have.includes(b))||(c.id===b&&have.includes(a))));
+ hand.push(ok[Math.random()*ok.length|0]);bef=G.slice();zp=-1;warned=false;}
+function main(){
+ if(phase==='build'){
+  if(left()>0)return toast('วางให้ครบ 10 ชิ้นก่อน (เหลือ '+left()+')');
+  if(!MIS[mi].f())return toast('ยังไม่ผ่านภารกิจเริ่มต้น: '+MIS[mi].t);
+  phase='event';drawCard();tool='H';
+ }else if(phase==='event'){
+  const n=hand.length;
+  if(res.length<n){const r=evalCard(hand[n-1]);
+   if(!r.ok&&!warned){warned=true;return toast('ยังไม่ผ่าน: '+r.m+' — กดอีกครั้งเพื่อยอมรับผล')}
+   res.push(r);
+  }else if(n<3)drawCard();else{phase='done';stopT()}
+ }render();}
+function stopT(){clearInterval(run);run=null;tgo.textContent='เริ่มเวลา'}
+function fmt(){const s=Math.max(0,tl);timer.textContent=(s/60|0)+':'+String(s%60).padStart(2,'0');timer.className=tl<=0?'out':''}
+function render(){
+ const cur=phase==='event'&&res.length<hand.length?hand[hand.length-1]:null;
+ mis.textContent=MIS[mi].t;
+ const bad=new Set();
+ hand.forEach((c,k)=>{if(res[k])return;
+  if([4,7,8,14].includes(c.id))G.forEach((v,i)=>{if(v==='F'&&adj(i,'H'))bad.add(i)});
+  if(c.id===11)G.forEach((v,i)=>{if(v==='F'&&adj(i,'G'))bad.add(i)})});
+ const zlab=cur&&cur.id===9;
+ board.innerHTML=G.map((v,i)=>{
+  if(road(i)){const r=i/6|0,c=i%6;return`<div class="cell road ${r===RC&&c===RC?'x':r===RC?'h':'v'}"></div>`}
+  const cl=['cell','land'];if(v&&bef&&bef[i]!==v)cl.push('new');if(zp>=0&&zone[i]===zp&&zlab)cl.push('zsel');if(bad.has(i))cl.push('bad');
+  return`<div class="${cl.join(' ')}" data-i="${i}">${v?`<span class="pc" style="--c:${T[v].c}">${T[v].e}</span>`:''}${i===lockI?'<b class="lk">✕</b>':''}${zlab&&!v?`<i class="zl">${'ABCD'[zone[i]]}</i>`:''}</div>`}).join('');
+ tools.innerHTML=['H','B','S','G','F'].map(t=>`<button data-t="${t}" class="${tool===t?'on':''}" ${phase==='build'&&pool[t]===0||phase==='done'?'disabled':''} aria-label="${t}">${T[t].e}${phase==='build'?' '+pool[t]:''}</button>`).join('')+`<button data-t="X" class="${tool==='X'?'on':''}" ${phase==='done'?'disabled':''}>🗑️ เอาออก</button>`;
+ hand.forEach(()=>0);
+ handEl.innerHTML=hand.map((c,k)=>{const r=res[k],isCur=cur===c,kn={req:'บังคับ',con:'เงื่อนไข',opp:'โอกาส'}[c.k];
+  const live=isCur?evalCard(c):r;
+  const zb=isCur&&c.id===9?`<div class="row" style="margin-top:6px">${'ABCD'.split('').map((l,z)=>`<button data-z="${z}" ${zp===z?'class="on" style="background:var(--acc);color:#1c2a28"':''}>โซน ${l}</button>`).join('')}</div>`:'';
+  return`<div class="pan card ${isCur?'cur':''}"><span class="k ${c.k}">${kn}</span><span class="mut">การ์ด ${k+1}/3</span><h3>${c.e} ${c.t}</h3><p class="mut">${c.ev}</p><p><b>${c.d}</b></p><p>กติกา: ${c.rule}</p>${zb}</div>`}).join('');
+ const mOK=phase==='build'?MIS[mi].f()&&left()===0:MIS[mi].f();
+ const row=(ok,t,s)=>`<li><span class="${ok===true?'ok':ok===false?'no':'mut'}">${ok===true?'✓':ok===false?'✗':'○'}</span><span>${t}${s?`<small>${s}</small>`:''}</span></li>`;
+ let h=row(phase==='build'&&!mOK?null:mOK,'ภารกิจเริ่มต้น',MIS[mi].t);
+ for(let k=0;k<3;k++){const c=hand[k];if(!c){h+=row(null,'การ์ดใบที่ '+(k+1),'ยังไม่ได้จั่ว');continue}
+  const r=res[k]||evalCard(c);h+=row(r.ok,c.t+(res[k]?'':' (กำลังทำ)'),(r.ok?(r.b?'ได้โบนัส ⭐':'ผ่าน'):r.m))}
+ ck.innerHTML=h;
+ const allOK=mOK&&res.length===3&&res.every(r=>r.ok);
+ resEl.innerHTML=phase==='done'?(allOK?'🏆 Best Mayor!<br><small>ผ่านทุกเงื่อนไข</small>':'🌱 นายกฯ มือใหม่<br><small>ยังไม่ครบ ลองรอบหน้าใหม่</small>'):'';
+ mainBtn.textContent=phase==='build'?'ล็อกเมือง & จั่วการ์ดใบที่ 1':phase==='done'?'จบเกม':res.length<hand.length?'จบการ์ดใบนี้ ✓':hand.length<3?'จั่วการ์ดใบที่ '+(hand.length+1):'ประกาศผล';
+ mainBtn.disabled=phase==='done';fmt();}
+
+function click(i){
+ const v=G[i];
+ if(phase==='done'||(phase==='event'&&res.length===hand.length&&hand.length>0&&false))return;
+ const cur=phase==='event'&&res.length<hand.length?hand[hand.length-1]:null;
+ if(phase==='event'&&!cur)return toast('กดปุ่มด้านล่างเพื่อจั่วการ์ดใบต่อไป');
+ if(tool==='X'){
+  if(!v)return;
+  if(cur&&cur.id===11&&v==='G')return toast('การ์ดนี้ห้ามเอา Green ออก');
+  if(phase==='build')pool[v]++;
+  if(cur&&cur.id===10&&lockI<0&&(v==='H'||v==='B'))lockI=i;
+  G[i]=null;
+ }else{
+  if(i===lockI)return toast('ช่องนี้ถูกล็อกจนจบเกม');
+  if(v===tool)return;
+  if(phase==='build'){if(pool[tool]<1)return;if(v)pool[v]++;pool[tool]--}
+  if(cur&&cur.id===9&&zp<0)return toast('เลือกโซนก่อน (ปุ่มโซน A–D)');
+  G[i]=tool;warned=false;
+ }
+ render();}
+board.addEventListener('click',e=>{const c=e.target.closest('[data-i]');if(c)click(+c.dataset.i)});
+board.addEventListener('mouseover',e=>{board.querySelectorAll('.hov,.nbr').forEach(x=>x.classList.remove('hov','nbr'));const c=e.target.closest('[data-i]');if(!c)return;const i=+c.dataset.i;c.classList.add('hov');nb(i).forEach(j=>board.children[j].classList.add('nbr'))});
+board.addEventListener('mouseleave',()=>board.querySelectorAll('.hov,.nbr').forEach(x=>x.classList.remove('hov','nbr')));
+tools.addEventListener('click',e=>{const b=e.target.closest('[data-t]');if(b&&!b.disabled){tool=b.dataset.t;render()}});
+handEl.addEventListener('click',e=>{const b=e.target.closest('[data-z]');if(b){zp=+b.dataset.z;warned=false;render()}});
+mainBtn.addEventListener('click',main);
+newm.onclick=()=>init(true);rst.onclick=()=>init(false);
+tsel.onchange=()=>{stopT();tl=+tsel.value;fmt()};
+tgo.onclick=()=>{if(run)return stopT();if(tl<=0)tl=+tsel.value;tgo.textContent='หยุดเวลา';run=setInterval(()=>{tl--;fmt();if(tl<=0)stopT()},1000)};
+init(true);
+</script></body></html>
