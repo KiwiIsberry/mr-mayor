@@ -64,6 +64,7 @@ body{background:radial-gradient(var(--dot) 1.2px,transparent 1.4px) 0 0/14px 14p
 .rules div{display:flex;align-items:center;gap:8px}
 .rules .n{font-family:var(--f-pix);font-size:13px;background:var(--ink);color:var(--panel);padding:4px 6px;min-width:52px;text-align:center}
 .rules .n.g{background:var(--gold);color:var(--ink);box-shadow:inset 0 0 0 2px var(--ink)}
+.tie{margin:10px 0 0;font-size:14px;font-weight:700;color:var(--go-dk);line-height:1.35}
 #stats{display:none;grid-template-columns:1fr 1fr;gap:10px}
 #stats.on{display:grid}
 #stats div{background:var(--panel-2);border:3px solid var(--ink);padding:8px;text-align:center}
@@ -154,11 +155,12 @@ body{background:radial-gradient(var(--dot) 1.2px,transparent 1.4px) 0 0/14px 14p
       <div><span class="n">6–7</span><span>นายกฯ ฝีมือดี</span></div>
       <div><span class="n">4–5</span><span>ผ่าน</span></div>
       <div><span class="n">0–3</span><span>ไม่ได้รับเลือกตั้งอีกสมัย</span></div></div>
+      <p class="tie">ดาวเท่ากัน ใครใช้เวลาน้อยกว่าได้อันดับสูงกว่า (จับเวลาตั้งแต่รอบ 2)</p>
       <div id="stats" style="margin-top:12px"><div><b id="sTotal">0</b><small>นายกฯ ทั้งหมด</small></div><div><b id="sBest">0</b><small>Best Mayor</small></div></div>
     </div>
   </aside>
   <main id="main">
-    <div class="bar"><span class="c1">อันดับ</span><span class="c2">นายกฯ</span><span class="c3">ดาว</span><span class="c4">คะแนน</span></div>
+    <div class="bar"><span class="c1">อันดับ</span><span class="c2">นายกฯ</span><span class="c3">ดาว</span><span class="c4">เวลา</span></div>
     <div id="list"><div id="empty"><div class="ic" data-px="crown"></div>ยังไม่มีใครส่งคะแนน<br>มาเป็นนายกฯ คนแรกกันเลย!</div></div>
   </main>
   <footer id="ft">
@@ -194,6 +196,7 @@ function px(name){ const rows=SP[name]; let s="";
 const PXC={}; const pxc=n=>PXC[n]||(PXC[n]=px(n));
 document.querySelectorAll("[data-px]").forEach(e=>e.innerHTML=pxc(e.dataset.px));
 const starsHTML=n=>{ let s=""; for(let i=0;i<8;i++) s+=`<i>${pxc(i<n?"star":"starOff")}</i>`; return s };
+const fmtT=s=>{ s=Math.max(0,Math.round(s)); return Math.floor(s/60)+":"+String(s%60).padStart(2,"0") };
 const title=n=>n>=8?"Best Mayor":n>=6?"นายกฯ ฝีมือดี":n>=4?"ผ่าน":"ไม่ได้รับเลือกตั้งอีกสมัย";
 
 /* ---------- QR to the game ---------- */
@@ -225,7 +228,7 @@ function makeRow(){ const el=document.createElement("div"); el.className="row";
 function fill(el,e,i){ el.querySelector(".rk").textContent=i+1; el.querySelector(".nm b").textContent=e.name||"Mayor";
   const n=Math.max(0,Math.min(8,e.stars|0)); el.querySelector(".nm small span").textContent=title(n);
   const st=el.querySelector(".st"); if(st.dataset.n!==String(n)){ st.dataset.n=n; st.innerHTML=starsHTML(n) }
-  el.querySelector(".pt").innerHTML=`${e.pts|0}<small>คะแนน</small>`;
+  el.querySelector(".pt").innerHTML=e.sec>0?`${fmtT(e.sec)}<small>นาที:วินาที</small>`:`–<small>&nbsp;</small>`;
   el.classList.toggle("r1",i===0); el.classList.toggle("r2",i===1); el.classList.toggle("r3",i===2); el.classList.toggle("best",n>=8) }
 function mark(el,dir,n){ el.classList.remove("up","down"); el.offsetWidth; el.classList.add(dir);
   el.querySelector(".mv").innerHTML=`<i>${pxc(dir)}</i>${n}`; clearTimeout(el._mv); el._mv=setTimeout(()=>el.classList.remove(dir),6000) }
@@ -254,7 +257,7 @@ function banner(html){ bq.push(html); if(!bOn) nextBanner() }
 function nextBanner(){ const h=bq.shift(); const b=$("ban"); if(!h){ bOn=false; b.classList.remove("on"); return }
   bOn=true; b.querySelector("span").innerHTML=h; b.classList.add("on"); setTimeout(()=>{ b.classList.remove("on"); setTimeout(nextBanner,600) },6500) }
 const NEWS=["สแกน QR ทางซ้ายเพื่อเล่นบนมือถือ · ใช้เวลาประมาณ 15–20 นาที","เก็บดาวให้ครบ 8 ดวง (เศรษฐกิจ · สังคม · สิ่งแวดล้อม · พร้อมรับภัย) = Best Mayor","SDG 11 · เมืองและชุมชนที่ยั่งยืน: เมืองที่ดีต้องรับมือภัยพิบัติได้",
-  "ทิป: สวนลดความเสี่ยง · เสริมอาคารก่อนภัยมาถูกกว่าซ่อม · Totem กันภัยได้ทั้งใบ","ตารางนี้อัปเดตเองทุกไม่กี่วินาที ส่งคะแนนแล้วรอดูชื่อขึ้นได้เลย"];
+  "ทิป: สวนลดความเสี่ยง · เสริมอาคารก่อนภัยมาถูกกว่าซ่อม · Totem กันภัยได้ทั้งใบ","ตารางนี้อัปเดตเองทุกไม่กี่วินาที ส่งคะแนนแล้วรอดูชื่อขึ้นได้เลย","ดาวเท่ากัน ใครเร็วกว่าได้อันดับสูงกว่า · เริ่มจับเวลาตั้งแต่รอบ 2 ถึงจบรอบ 12"];
 let latest=null, ni=0;
 function tick(){ const s=$("tick").querySelector("span"); let m=NEWS[ni%NEWS.length]; ni++;
   if(latest&&ni%3===0) m=`ล่าสุด: นายกฯ ${esc(latest.name)} ได้ ${latest.stars|0} ดาว · ${title(latest.stars|0)}`;
@@ -282,7 +285,7 @@ function setStats(j){ if(typeof j.total!=="number") return; const s=$("stats"); 
     el.textContent=v; if(was!=null&&v>was){ const p=document.createElement("span"); p.className="plus"; p.textContent="+"+(v-was); el.appendChild(p); setTimeout(()=>p.remove(),1700) } meta[k]=v }) }
 let busy=false, sig="";
 async function handle(j,fromCache){
-  const top=(Array.isArray(j.top)?j.top:[]).slice(0,10).map(e=>({name:String(e.name||"Mayor").slice(0,20),stars:Math.max(0,Math.min(8,e.stars|0)),pts:e.pts|0,id:e.id?String(e.id):""}));
+  const top=(Array.isArray(j.top)?j.top:[]).slice(0,10).map(e=>({name:String(e.name||"Mayor").slice(0,20),stars:Math.max(0,Math.min(8,e.stars|0)),pts:e.pts|0,sec:Math.max(0,e.sec|0),id:e.id?String(e.id):""}));
   const s=JSON.stringify(top); const prevTotal=meta.total; setStats(j);
   if(s===sig){ if(!fromCache&&typeof j.total==="number"&&prevTotal!=null&&j.total>prevTotal) banner(`มีนายกฯ คนใหม่ส่งคะแนนแล้ว · สู้ต่อ ยังไม่ถึง 10 อันดับแรก!`); return }
   const initial=first, oldKeys=new Set(cur.map(key));
@@ -311,10 +314,10 @@ try{ const c=JSON.parse(localStorage.getItem("mm-board")||"null"); if(c&&Array.i
 /* ---------- demo / rehearsal mode: ?demo ---------- */
 const DN=["ต้นกล้า","Mint","พี่บิว","Nong Fah","ปลายฟ้า","Kiwi","น้ำหวาน","Tony","ข้าวหอม","Bank","ใบเตย","Ploy","ก้อง","Jay","แพรวา","Ice","ฟ้าใส","Beam"];
 let demo=null, dn=0;
-function demoStep(){ if(!demo){ demo=[]; for(let i=0;i<7;i++) demo.push({name:DN[dn++%DN.length],stars:3+(i*7)%5,pts:20+i*9,id:"d"+dn,t:dn}); }
+function demoStep(){ if(!demo){ demo=[]; for(let i=0;i<7;i++) demo.push({name:DN[dn++%DN.length],stars:3+(i*7)%5,pts:20+i*9,sec:480+(i*97)%400,id:"d"+dn,t:dn}); }
   else if(dn<40){ const r=Math.random(), n=r<.18?8:r<.6?5+(Math.random()*3|0):2+(Math.random()*4|0);
-    demo.push({name:DN[dn%DN.length]+(dn>=DN.length?" "+(dn/DN.length|0):""),stars:n,pts:15+(Math.random()*60|0),id:"d"+(++dn),t:dn}) }
-  const all=demo.slice().sort((a,b)=>b.stars-a.stars||b.pts-a.pts||a.t-b.t);
+    demo.push({name:DN[dn%DN.length]+(dn>=DN.length?" "+(dn/DN.length|0):""),stars:n,pts:15+(Math.random()*60|0),sec:420+(Math.random()*600|0),id:"d"+(++dn),t:dn}) }
+  const all=demo.slice().sort((a,b)=>b.stars-a.stars||a.sec-b.sec||b.pts-a.pts||a.t-b.t);
   return {top:all.slice(0,10),total:all.length,best:all.filter(e=>e.stars>=8).length} }
 if(DEMO){ document.title+=" · DEMO"; NEWS.unshift("โหมดทดลอง: ข้อมูลในหน้านี้เป็นข้อมูลสมมติ ไม่ใช่คะแนนจริง") }
 

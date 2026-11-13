@@ -78,6 +78,7 @@ button:focus-visible{outline:3px solid var(--gold);outline-offset:2px}
 .stat .v{font-family:var(--f-pix);font-weight:700;font-size:26px;line-height:1.15;display:flex;align-items:center;gap:8px}
 .stat .v small{font-size:12px;color:var(--muted);font-weight:400}
 .stat .s{font-size:12.5px;color:var(--muted)}
+.stat .v .ptime{margin-left:10px;font-family:var(--f-body);font-weight:700;color:var(--muted)} #ptime{font-family:var(--f-pix);color:var(--ink)}
 .coinimg{width:22px;height:22px;image-rendering:pixelated}
 .track{display:flex;gap:4px;margin-top:6px}
 .track .yr{display:flex;gap:2px;flex:1}
@@ -446,9 +447,10 @@ details.log summary{cursor:pointer;font-weight:700}
 .row2{display:grid;grid-template-columns:1fr 1fr;gap:8px}
 .lbin{display:flex;gap:8px;align-items:stretch} .lbin button{flex:0 0 auto;width:auto;padding-left:18px;padding-right:18px} .lbin input{flex:1 1 auto;width:100%;min-width:0;font:inherit;font-size:16px;padding:8px 10px;border:3px solid var(--ink);background:#fff}
 .lb{list-style:none;margin:0;padding:0;border:3px solid var(--ink);background:#fff}
-.lb li{display:grid;grid-template-columns:34px 1fr auto;gap:8px;align-items:center;padding:6px 10px;border-bottom:2px dotted #CBBF9F;font-size:15px}
+.ptend{margin:-4px 0 10px;font-size:15px;color:var(--muted)} .ptend b{font-family:var(--f-pix);color:var(--ink)}
+.lb li{display:grid;grid-template-columns:34px 1fr auto auto;gap:8px;align-items:center;padding:6px 10px;border-bottom:2px dotted #CBBF9F;font-size:15px}
 .lb li:last-child{border-bottom:0} .lb li.me{background:#FFF0B8;font-weight:700}
-.lb .lr{font-family:var(--f-pix);text-align:center} .lb .ln{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.lb .lr{font-family:var(--f-pix);text-align:center} .lb .lt{font-family:var(--f-pix);font-size:12px;color:var(--muted);min-width:44px;text-align:right} .lb .ln{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .lb .ls{color:var(--gold);text-shadow:1px 1px 0 var(--ink);letter-spacing:-1px;white-space:nowrap} .lb .ls small{color:var(--ink);text-shadow:none;margin-left:6px;font-weight:700;letter-spacing:0}
 .lbnote{margin:2px 0 0;font-size:12px;color:var(--muted);text-align:center} .lbdone{margin:0;font-weight:700;text-align:center}
 .endm.gold{border-color:#F2C230;box-shadow:0 0 0 3px var(--ink),0 0 40px 8px rgba(242,194,48,.7);animation:pop .25s ease-out,goldglow 1.6s ease-in-out infinite}
@@ -2254,7 +2256,7 @@ function renderStatus(){
   const g=[...Array(11)].map((_,i)=>{const v=i+2;return `<i class="${v<=rk?"on":""}${v<=rk&&v>=8?" hi":""}"></i>`}).join("");
   const d=bumpQ; bumpQ=0;
   $("status").innerHTML=`
-   <div class="box stat"><div class="k">${S.practice?`<b class="ptag">${T("โหมดฝึก","PRACTICE")}</b> `:""}${T("รอบ","Round")} · ${T("ปีที่","Year")} ${year(r)}/4</div><div class="v">${S.round||"–"}<small>/ ${S.practice?PRACTICE.rounds:12}</small></div><div class="track">${track}</div></div>
+   <div class="box stat"><div class="k">${S.practice?`<b class="ptag">${T("โหมดฝึก","PRACTICE")}</b> `:""}${T("รอบ","Round")} · ${T("ปีที่","Year")} ${year(r)}/4</div><div class="v">${S.round||"–"}<small>/ ${S.practice?PRACTICE.rounds:12}</small>${S.practice?"":`<small class="ptime">${T("เวลา","time")} <span id="ptime">${S.tOn?fmtT((S.playMs||0)/1000):"–"}</span></small>`}</div><div class="track">${track}</div></div>
    <div class="box stat"><div class="k">${T("เหรียญ","Coins")}</div><div class="v">${img("coin","coinimg")}${S.coins}</div><div class="s">${T("รายได้","Income")} +${income()} ${T("ต่อรอบ","/ round")} · ${pi("star")} ${stars()}/8</div>${d?`<span class="float ${d>0?"up":"down"}">${d>0?"+":""}${d}</span>`:""}</div>
    <div class="box stat riskbox"><div class="k">${T("ความเสี่ยง · ทอย 2 ลูก","Risk · 2 dice")}</div><div class="v">${rk}<small>${T("โอกาสเกิดภัย","disaster chance")} ${S.round<=1?0:chance(rk)}%</small></div><div class="s rwhy">${riskWhy(r)}</div><div class="gauge">${g}</div></div>`;
 }
@@ -2453,7 +2455,8 @@ function renderModal(){
        <tr><td>${img("green")}${T("สวน","Parks")}</td><td>${STAR.green[0]}</td><td>${STAR.green[1]}</td></tr>
        <tr><td>${timg("fire")}Totem</td><td>${STAR.totems[0]}</td><td>${STAR.totems[1]}</td></tr></table>
       <p class="sm">${T("เช่น มีบ้าน 6 หลัง + คอนโด 2 ตึก = 6 + 8 = 14 ครอบครัว → ได้ "+pi("star")+" ด้านที่อยู่อาศัย · อาคารที่พังอยู่ตอนจบไม่นับ","e.g. 6 houses + 2 blocks = 6 + 8 = 14 families → "+pi("star")+" for housing. Damaged buildings at the end don't count.")}</p>
-      <p class="rk"><b>8</b> Best Mayor ${pi("crown")} · <b>6–7</b> ${T("ฝีมือดี","Skilled")} · <b>4–5</b> ${T("ผ่าน","Pass")} · <b>0–3</b> ${T("ไม่ได้รับเลือกตั้งอีกสมัย","Not re-elected")}</p>`}];
+      <p class="rk"><b>8</b> Best Mayor ${pi("crown")} · <b>6–7</b> ${T("ฝีมือดี","Skilled")} · <b>4–5</b> ${T("ผ่าน","Pass")} · <b>0–3</b> ${T("ไม่ได้รับเลือกตั้งอีกสมัย","Not re-elected")}</p>
+      <p>${T("<b>ตารางนายกฯ</b> เรียงตามดาวก่อน ถ้าดาวเท่ากัน <b>ใครใช้เวลาน้อยกว่าได้อันดับสูงกว่า</b> · เริ่มจับเวลาตอนเริ่มรอบ 2 จนจบรอบ 12","The <b>leaderboard</b> ranks by stars; on equal stars <b>the faster mayor ranks higher</b> · the timer runs from round 2 to the end of round 12")}</p>`}];
     const n=pages.length, i=Math.max(0,Math.min(n-1,introPage));
     const ex=o.querySelector(".modal.intro");
     if(ex&&ex.dataset.lang===lang){ showIntroPage(i); return }   // pre-rendered: just flip to the page
@@ -2475,7 +2478,7 @@ function miniStat(){ const el=$("ministat"); if(!el) return;
   let on=phone&&S&&S.round>0&&S.phase!=="over"&&!S.modal&&scrollY>40;
   if(on){ const st=$("status").getBoundingClientRect(), tr=document.querySelector(".tray"), tt=tr?tr.getBoundingClientRect().top:innerHeight; on=st.bottom<36||st.top>tt-24 }
   if(on){ const rk=risk(), pc=S.round<=1?0:chance(rk);
-    el.innerHTML=`<span>${T("รอบ","Round")} ${S.round}<small>/${S.practice?PRACTICE.rounds:12}</small></span><span>${pi("coin")}${S.coins}<small>+${income()}</small></span><span class="rk${pc>=70?" hi":""}">${pi("warn")}${T("เสี่ยง","Risk")} ${rk}<small>${pc}%</small></span><span>${pi("star")}${stars()}<small>/8</small></span>` }
+    el.innerHTML=`<span>${T("รอบ","Round")} ${S.round}<small>/${S.practice?PRACTICE.rounds:12}${!S.practice&&S.tOn?" · "+fmtT((S.playMs||0)/1000):""}</small></span><span>${pi("coin")}${S.coins}<small>+${income()}</small></span><span class="rk${pc>=70?" hi":""}">${pi("warn")}${T("เสี่ยง","Risk")} ${rk}<small>${pc}%</small></span><span>${pi("star")}${stars()}<small>/8</small></span>` }
   el.className=on?"on":""; document.body.classList.toggle("ms-on",!!on) }
 addEventListener("scroll",()=>miniStat(),{passive:true}); addEventListener("resize",()=>miniStat());
 function mapIntoView(){ if(matchMedia("(min-width:821px) and (orientation:landscape)").matches) return; fitCanvas(); const mb=document.querySelector(".mapbox"); if(!mb) return;
@@ -2787,7 +2790,7 @@ const URL_=window.URL;
 const LB_URL="https://script.google.com/macros/s/AKfycbwMMhNWf0rFotOf5leoOPpS9kLx1zDJiQ0hNjqsPV7PL1MGajFGqV4dab6yzy8q8jtBdg/exec";   // Google Apps Script web-app URL goes here
 const LB={list:null,global:false,loading:false,err:false};
 const lbLocal=()=>{ try{return JSON.parse(localStorage.getItem("mm-lb")||"[]")}catch(e){return []} };
-function lbSort(a){ return a.sort((p,q)=>q.stars-p.stars||q.pts-p.pts||(p.t||0)-(q.t||0)).slice(0,10) }
+function lbSort(a){ return a.sort((p,q)=>q.stars-p.stars||(p.sec>0?p.sec:1e9)-(q.sec>0?q.sec:1e9)||q.pts-p.pts||(p.t||0)-(q.t||0)).slice(0,10) }
 async function lbFetch(entry){
   LB.loading=true; LB.err=false; lbPaint();
   if(entry){ try{ const l=lbLocal(); l.push(entry); localStorage.setItem("mm-lb",JSON.stringify(lbSort(l).concat([]).slice(0,10))) }catch(e){} }
@@ -2809,7 +2812,7 @@ async function lbFetch(entry){
 function lbRows(){
   if(LB.loading&&!LB.list) return `<p class="lbnote">${T("กำลังโหลด…","Loading…")}</p>`;
   if(!LB.list||!LB.list.length) return `<p class="lbnote">${T("ยังไม่มีใครส่งคะแนน เป็นคนแรกเลย!","No scores yet. Be the first!")}</p>`;
-  return `<ol class="lb">${LB.list.map((e,i)=>`<li class="${e.id&&e.id===S.lbId?"me":""}"><span class="lr">${i===0?pi("crown"):i+1}</span><span class="ln">${esc(e.name)}</span><span class="ls">${pi("star").repeat(Math.min(8,e.stars|0))}<small>${e.stars|0}</small></span></li>`).join("")}</ol>
+  return `<ol class="lb">${LB.list.map((e,i)=>`<li class="${e.id&&e.id===S.lbId?"me":""}"><span class="lr">${i===0?pi("crown"):i+1}</span><span class="ln">${esc(e.name)}</span><span class="ls">${pi("star").repeat(Math.min(8,e.stars|0))}<small>${e.stars|0}</small></span><span class="lt">${e.sec>0?fmtT(e.sec):""}</span></li>`).join("")}</ol>
     <p class="lbnote">${LB.global?T("ตารางรวมทุกเครื่อง","All devices"):T("คะแนนในเครื่องนี้","This device only")}${LB.err?T(" · เชื่อมต่อตารางรวมไม่ได้",""+" · couldn't reach the shared board"):""}</p>`;
 }
 function lbPaint(){ const el=$("lbbox"); if(el) el.innerHTML=lbRows() }
@@ -2826,7 +2829,7 @@ function lbSubmit(){
   if(S.lbId){ return }
   S.lbName=name; S.lbId=Math.random().toString(36).slice(2,10);
   const n=typeof S.result==="number"?S.result:stars();
-  lbFetch({name,stars:n,pts:income()+housing(),id:S.lbId,t:Date.now(),map:S.startMap});
+  lbFetch({name,stars:n,pts:income()+housing(),sec:S.tOn?Math.round((S.playMs||0)/1000):0,id:S.lbId,t:Date.now(),map:S.startMap});
   const f=$("lbform"); if(f) f.innerHTML=`<p class="lbdone">${T(`ส่งคะแนนแล้ว · นายกฯ ${esc(name)}`,`Score sent · Mayor ${esc(name)}`)}</p>`;
 }
 function boardModal(){
@@ -2842,6 +2845,7 @@ function endModal(){
     <div class="big" style="color:${n>=6?"var(--go)":n>=4?"var(--ink)":"var(--red)"};text-shadow:3px 3px 0 ${n>=4&&n<6?"var(--gold)":"var(--ink)"}">${pi("star")} ${n}/8</div>
     <div class="starrow">${[...Array(8)].map((_,i)=>`<i class="${i<n?"on":""}" style="animation-delay:${.2+i*.14}s"><img src="${URL.star}" alt=""></i>`).join("")}</div>
     <p class="lead" style="font-size:20px;font-weight:700;color:var(--ink)">${T(rk[0],rk[1])}</p>
+    ${S.tOn?`<p class="ptend">${T(`เวลาที่ใช้ <b>${fmtT((S.playMs||0)/1000)}</b> (นับตั้งแต่รอบ 2) · ดาวเท่ากัน ใครเร็วกว่าได้อันดับสูงกว่า`,`Time <b>${fmtT((S.playMs||0)/1000)}</b> (from round 2) · on equal stars, faster ranks higher`)}</p>`:""}
     <div class="stats3 s4">${rows}</div>
     <h4 class="sumh">${T("วาระของคุณ","Your term")}</h4>
     <div class="stats3 s4"><div><b>${st.dis}</b><span>${T("ภัยที่เจอ","disasters")}</span></div><div><b>${st.blocked}</b><span>${T("Totem กันได้","blocked")}</span></div><div><b>${st.saved}</b><span>${T("เสริมแล้วรอด","saved")}</span></div><div><b>${st.hits}</b><span>${T("อาคารที่พัง","hit")}</span></div></div>
@@ -2892,6 +2896,16 @@ if(BOOTH){
   if(br){ br.addEventListener("pointerdown",()=>{ br.classList.add("hold"); holdT=setTimeout(()=>{ br.classList.remove("hold"); boothReset(); toast(T("รีเซ็ตเกมแล้ว","Game reset"),"good") },3000) });
     ["pointerup","pointerleave","pointercancel"].forEach(ev=>br.addEventListener(ev,()=>{ br.classList.remove("hold"); clearTimeout(holdT) })) }
 }
+/* ---------- play timer (leaderboard tie-break): starts when round 2's build phase begins, stops at the end of round 12.
+   Counts only while the page is on screen and no menu/dialog is open, so a city left open in round 1 or a locked phone costs nothing. */
+function fmtT(s){ s=Math.max(0,Math.round(s)); return Math.floor(s/60)+":"+String(s%60).padStart(2,"0") }
+let tLast=performance.now();
+setInterval(()=>{ const now=performance.now(), dt=Math.min(1500,now-tLast); tLast=now;
+  if(!S||S.practice||S.round<2) return;
+  if(!S.tOn){ if(S.phase==="build"&&!S.busy&&!S.modal){ S.tOn=true; S.playMs=0; toast(T("เริ่มจับเวลาแล้ว · ดาวเท่ากัน ใครเร็วกว่าได้อันดับสูงกว่า","Timer started · on equal stars, the faster mayor ranks higher")) } return }
+  if(S.phase==="over"||S.modal||document.visibilityState!=="visible") return;
+  S.playMs=(S.playMs||0)+dt; const e=$("ptime"); if(e) e.textContent=fmtT(S.playMs/1000);
+  if($("ministat")&&$("ministat").className==="on") miniStat() },500);
 function saveNow(){ if(S&&(S.practice||BOOTH)) return; try{ if(S&&S.round>0&&S.phase!=="over") localStorage.setItem(SAVE_KEY,JSON.stringify(S)); else localStorage.removeItem(SAVE_KEY) }catch(e){} }
 function loadSave(){ try{ const d=JSON.parse(localStorage.getItem(SAVE_KEY)||"null"); return d&&d.v===6&&d.round>0&&d.phase!=="over"?d:null }catch(e){ return null } }
 function start(data){
