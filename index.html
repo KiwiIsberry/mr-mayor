@@ -16,7 +16,13 @@ body.se{--dot:#4A3F2A}
 .sebadge{display:inline-flex;align-items:center;gap:6px;background:#F2C230;color:#1B1B2F;border:2px solid #1B1B2F;box-shadow:2px 2px 0 #1B1B2F;padding:2px 8px;font-family:var(--f-pix);font-size:12px;letter-spacing:.06em;white-space:nowrap}
 .sebadge img{width:18px;image-rendering:pixelated}
 .se #ministat{background:linear-gradient(90deg,#3A2A07,#1B1B2F 45%)}
-#sewel{position:fixed;inset:0;z-index:80;display:flex;align-items:center;justify-content:center;pointer-events:none;background:radial-gradient(circle,rgba(27,27,47,.55),rgba(27,27,47,.85));animation:sefade 3.6s ease forwards}
+.se .mapbox{border-color:#5A3805;box-shadow:5px 5px 0 #5A3805,0 0 0 3px #F2C230,5px 5px 0 3px #5A3805}
+.se .die{background:#FFE27A;border-color:#5A3805;box-shadow:3px 3px 0 #5A3805}.se .die i.p{background:#7A4A06}
+.se #party{background:radial-gradient(circle at 50% 45%,#6B4A07 0,#1A1204 72%)}
+.se #party .ptitle{font-size:min(9vw,64px);flex-wrap:wrap;justify-content:center;text-align:center}
+.endm .se2{margin:6px 0 2px;padding:6px 10px;border:2px solid #5A3805;background:linear-gradient(180deg,#FFF6CC,#F7DB6B);font-weight:700;font-size:14.5px;line-height:1.45}
+.endm .se2.lost{background:var(--panel-2);border-color:var(--ink);font-weight:600}
+#sewel{position:fixed;inset:0;z-index:80;display:flex;align-items:center;justify-content:center;pointer-events:none;background:radial-gradient(circle,rgba(27,27,47,.55),rgba(27,27,47,.85));animation:sefade 4.6s ease forwards}
 #sewel .in{text-align:center;background:linear-gradient(180deg,#FFF6CC,#F2C230);border:3px solid #1B1B2F;box-shadow:6px 6px 0 #1B1B2F;padding:18px 22px;max-width:min(420px,88vw);animation:sedrop .7s cubic-bezier(.3,1.6,.5,1) both}
 #sewel img{width:72px;image-rendering:pixelated;display:block;margin:0 auto 6px}
 #sewel b{display:block;font-family:var(--f-pix);font-size:13px;letter-spacing:.12em;color:#B5650A}
@@ -2073,6 +2079,7 @@ function loop(now){
   frz=!!S.modal;
   if(now-last<33) return; const dt=Math.min(3,(now-last)/33); last=now;
   cx.setTransform(1,0,0,1,0,0); cx.drawImage(BG,0,0); drawSignals(now);
+  if(SE&&!BOOTH&&!reduce()&&Math.random()<.12) parts.push({x:Math.random()*112,y:Math.random()*112,vx:0,vy:-.08,life:0,max:22,col:Math.random()<.65?"#FFE680":"#F4F4F4",sz:1,g:0,twinkle:1});
   // city life: traffic and people grow with the city
   if(!reduce()) lifeDraw(now,dt);
   // cars: stop at the red light, queue behind each other, ease off and pull away
@@ -2769,7 +2776,7 @@ function celebrate(cb){
   SFX.fanfare();
   if(reduce()){ setTimeout(cb,600); return }
   const o=document.createElement("div"); o.id="party";
-  o.innerHTML=`<canvas></canvas><div class="rays"></div><div class="flash"></div><div class="pcrown">${pi("crown")}</div><div class="ptitle"><span>BEST</span><span>MAYOR</span></div><div class="psub">${T("นายกฯ ที่ดีที่สุด · ครบ 8 ดาว","A perfect 8-star term")}</div><div class="pstars">${[...Array(8)].map((_,i)=>`<i style="animation-delay:${1.1+i*.12}s">${pi("star")}</i>`).join("")}</div>`;
+  o.innerHTML=`<canvas></canvas><div class="rays"></div><div class="flash"></div><div class="pcrown">${pi("crown")}</div><div class="ptitle">${seOn()?"<span>LEGENDARY</span><span>MAYOR</span>":"<span>BEST</span><span>MAYOR</span>"}</div><div class="psub">${seOn()?T(`นายกฯ ในตำนาน · ครองตำแหน่ง 2 สมัย · No.${SE}`,`Two perfect terms · Mayor No.${SE}`):T("นายกฯ ที่ดีที่สุด · ครบ 8 ดาว","A perfect 8-star term")}</div><div class="pstars">${[...Array(8)].map((_,i)=>`<i style="animation-delay:${1.1+i*.12}s">${pi("star")}</i>`).join("")}</div>`;
   document.body.appendChild(o);
   const cvs=o.querySelector("canvas"), x=cvs.getContext("2d"); let W,H; const fit=()=>{W=cvs.width=Math.ceil(innerWidth/4);H=cvs.height=Math.ceil(innerHeight/4)}; fit();
   const P=[], cols=["#F2C230","#FFE680","#D94A3A","#7FC1F2","#5CB85C","#F4F4F4","#C58CF2"];
@@ -2779,7 +2786,7 @@ function celebrate(cb){
   const t0=performance.now(); let lastB=0, done=false;
   const end=()=>{ if(done) return; done=true; o.classList.add("out"); setTimeout(()=>{o.remove();cb()},450) };
   o.addEventListener("click",end);
-  const frame=now=>{ if(done) return; const t=now-t0; if(t-lastB>380&&t<4200){ burst(); lastB=t }
+  const frame=now=>{ if(done) return; const t=now-t0; if(t-lastB>(seOn()?220:380)&&t<(seOn()?5000:4200)){ burst(); if(seOn()) burst(); lastB=t }
     x.clearRect(0,0,W,H);
     for(let i=P.length-1;i>=0;i--){ const p=P[i]; p.l++; p.x+=p.vx; p.y+=p.vy; if(!p.conf){p.vy+=.025;p.vx*=.985} else p.x+=Math.sin((p.l+i)/12)*.2;
       if(p.l>p.m||p.y>H+4){P.splice(i,1);continue} x.globalAlpha=p.conf?1:Math.max(0,1-p.l/p.m); x.fillStyle=p.c; x.fillRect(Math.round(p.x),Math.round(p.y),p.conf?2:1,p.conf?1+(p.l>>3)%2:1) }
@@ -2852,9 +2859,10 @@ function lbSubmit(){
   if(name&&rudeName(name)){ toast(T("ชื่อนี้ใช้ไม่ได้ ลองชื่ออื่นนะครับ","That name isn't allowed. Try another."),"bad"); if(inp){ inp.value=""; inp.focus() } return }
   if(!name){ toast(T("ใส่ชื่อก่อนนะครับ","Type a name first"),"bad"); inp&&inp.focus(); return }
   if(S.lbId){ return }
+  const sendName=seOn()?name.slice(0,13).trim()+" 👑":name;
   S.lbName=name; S.lbId=Math.random().toString(36).slice(2,10);
   const n=typeof S.result==="number"?S.result:stars();
-  lbFetch({name,stars:n,pts:income()+housing(),sec:S.tOn?Math.round((S.playMs||0)/1000):0,id:S.lbId,t:Date.now(),map:S.startMap});
+  lbFetch({name:sendName,stars:n,pts:income()+housing(),sec:S.tOn?Math.round((S.playMs||0)/1000):0,id:S.lbId,t:Date.now(),map:S.startMap});
   const f=$("lbform"); if(f) f.innerHTML=`<p class="lbdone">${T(`ส่งคะแนนแล้ว · นายกฯ ${esc(name)}`,`Score sent · Mayor ${esc(name)}`)}</p>`;
 }
 function boardModal(){
@@ -2869,7 +2877,8 @@ function endModal(){
     ${best?`<div class="crownhead">${pi("crown")}</div>`:""}
     <div class="big" style="color:${n>=6?"var(--go)":n>=4?"var(--ink)":"var(--red)"};text-shadow:3px 3px 0 ${n>=4&&n<6?"var(--gold)":"var(--ink)"}">${pi("star")} ${n}/8</div>
     <div class="starrow">${[...Array(8)].map((_,i)=>`<i class="${i<n?"on":""}" style="animation-delay:${.2+i*.14}s"><img src="${URL.star}" alt=""></i>`).join("")}</div>
-    <p class="lead" style="font-size:20px;font-weight:700;color:var(--ink)">${T(rk[0],rk[1])}</p>
+    <p class="lead" style="font-size:20px;font-weight:700;color:var(--ink)">${seOn()&&best?T("นายกฯ ในตำนาน","Legendary Mayor"):T(rk[0],rk[1])}</p>
+    ${seOn()?(best?`<p class="se2">${pi("crown")} ${T(`ท่านนายกฯ ${SE} ครองตำแหน่ง Best Mayor ได้ 2 สมัยติด!`,`Mayor No.${SE} held the Best Mayor title for a second term!`)}</p>`:`<p class="se2 lost">${T("แพ้เลือกตั้งสมัยที่ 2 · บัตรทองยังเป็นของคุณ ลองใหม่ได้เสมอ","Lost the re-election · your gold card is still yours, try again any time")}</p>`):""}
     ${S.tOn?`<p class="ptend">${T(`เวลาที่ใช้ <b>${fmtT((S.playMs||0)/1000)}</b> (นับตั้งแต่รอบ 2) · ดาวเท่ากัน ใครเร็วกว่าได้อันดับสูงกว่า`,`Time <b>${fmtT((S.playMs||0)/1000)}</b> (from round 2) · on equal stars, faster ranks higher`)}</p>`:""}
     <div class="stats3 s4">${rows}</div>
     <h4 class="sumh">${T("วาระของคุณ","Your term")}</h4>
@@ -2938,8 +2947,8 @@ function seInit(){
   document.body.classList.add("se");
   const h=document.querySelector(".brand h1"); if(h&&!document.querySelector(".sebadge")) h.insertAdjacentHTML("afterend",`<span class="sebadge">${pi("crown")}MAYOR No.${SE}</span>`);
   const w=document.createElement("div"); w.id="sewel";
-  w.innerHTML=`<div class="in"><img src="${URL.crown||SPR.crown.toDataURL()}" alt=""><b>SPECIAL EDITION</b><strong>${T(`ยินดีต้อนรับกลับ<br>ท่านนายกฯ หมายเลข ${SE}`,`Welcome back,<br>Mayor No.${SE}`)}</strong><span>${T("ฉบับพิเศษสำหรับเจ้าของบัตรทอง","An edition just for gold-card holders")}</span></div>`;
-  setTimeout(()=>{ document.body.appendChild(w); setTimeout(()=>w.remove(),3700) },350);
+  w.innerHTML=`<div class="in"><img src="${URL.crown||SPR.crown.toDataURL()}" alt=""><b>SPECIAL EDITION</b><strong>${T(`ยินดีต้อนรับกลับ<br>ท่านนายกฯ หมายเลข ${SE}`,`Welcome back,<br>Mayor No.${SE}`)}</strong><span>${T("ลงสมัครสมัยที่ 2 · ได้ 8 ดาวอีกครั้งเพื่อเป็น <b style=\"display:inline;font-family:inherit;letter-spacing:0;font-size:inherit\">นายกฯ ในตำนาน</b>","Running for a 2nd term · get 8 stars again to become a <b style=\"display:inline;font-family:inherit;letter-spacing:0;font-size:inherit\">Legendary Mayor</b>")}</span></div>`;
+  setTimeout(()=>{ document.body.appendChild(w); setTimeout(()=>w.remove(),4700) },350);
 }
 function start(data){
   let resumed=false;
