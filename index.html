@@ -4,7 +4,28 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<style>html,body{margin:0}:root{padding-top:env(safe-area-inset-top,0px)}</style>
+<style>html,body{margin:0}:root{padding-top:env(safe-area-inset-top,0px)}
+/* ---------- Special Edition (opened from a gold Mayor ID card: ?card=001) ---------- */
+body.se{--dot:#4A3F2A}
+.se .modal.start{background:linear-gradient(180deg,#FFF6CC 0%,#F7DB6B 100%);border-color:#5A3805;box-shadow:5px 5px 0 #5A3805,0 0 0 4px #F2C230,9px 9px 0 4px #5A3805}
+.se .modal.start h3 span{color:#B5650A}
+.seribbon{display:flex;align-items:center;justify-content:center;gap:8px;margin:-2px auto 10px;padding:5px 12px;width:fit-content;max-width:100%;background:#1B1B2F;color:#F2C230;border:2px solid #5A3805;font-family:var(--f-pix);font-size:12px;letter-spacing:.08em;position:relative;overflow:hidden}
+.seribbon img{width:20px;image-rendering:pixelated}
+.seribbon::after{content:"";position:absolute;inset:0;background:linear-gradient(115deg,transparent 35%,rgba(255,255,255,.55) 50%,transparent 62%);transform:translateX(-120%);animation:seshine 2.8s 1s ease-in-out infinite}
+@keyframes seshine{0%{transform:translateX(-120%)}55%,100%{transform:translateX(120%)}}
+.sebadge{display:inline-flex;align-items:center;gap:6px;background:#F2C230;color:#1B1B2F;border:2px solid #1B1B2F;box-shadow:2px 2px 0 #1B1B2F;padding:2px 8px;font-family:var(--f-pix);font-size:12px;letter-spacing:.06em;white-space:nowrap}
+.sebadge img{width:18px;image-rendering:pixelated}
+.se #ministat{background:linear-gradient(90deg,#3A2A07,#1B1B2F 45%)}
+#sewel{position:fixed;inset:0;z-index:80;display:flex;align-items:center;justify-content:center;pointer-events:none;background:radial-gradient(circle,rgba(27,27,47,.55),rgba(27,27,47,.85));animation:sefade 3.6s ease forwards}
+#sewel .in{text-align:center;background:linear-gradient(180deg,#FFF6CC,#F2C230);border:3px solid #1B1B2F;box-shadow:6px 6px 0 #1B1B2F;padding:18px 22px;max-width:min(420px,88vw);animation:sedrop .7s cubic-bezier(.3,1.6,.5,1) both}
+#sewel img{width:72px;image-rendering:pixelated;display:block;margin:0 auto 6px}
+#sewel b{display:block;font-family:var(--f-pix);font-size:13px;letter-spacing:.12em;color:#B5650A}
+#sewel strong{display:block;font-size:22px;line-height:1.3;margin:4px 0}
+#sewel span{font-size:14px;color:#5A3805}
+@keyframes sedrop{0%{transform:translateY(-40vh) scale(.7);opacity:0}100%{transform:none;opacity:1}}
+@keyframes sefade{0%,80%{opacity:1}100%{opacity:0}}
+@media (prefers-reduced-motion:reduce){#sewel,#sewel .in,.seribbon::after{animation:none}}
+</style>
 <title>Mr. Mayor · เกมสร้างเมืองรับมือภัยพิบัติ (SDG 11)</title>
 <meta name="description" content="เป็นนายกฯ 4 ปี สร้างเมืองให้เติบโตและรับมือน้ำท่วม ไฟไหม้ แผ่นดินไหว และพายุ · เกม 8-bit เรื่อง SDG 11 เล่นฟรีบนมือถือและคอม">
 <meta name="theme-color" content="#1B1B2F">
@@ -1012,6 +1033,10 @@ const BG=draw(112,112,(R)=>{
 /* ======================= TEXT ======================= */
 let lang="th"; try{const s=localStorage.getItem("mm4-lang"); if(s==="en"||s==="th") lang=s}catch(e){}
 const T=(th,en)=>lang==="th"?th:en;
+// gold Mayor ID cards open the game as ?card=001&lang=th (Special Edition); ?lang= skips the language picker
+const QS=(()=>{ try{ return new URLSearchParams(location.search) }catch(e){ return null } })();
+const LANGQ=(()=>{ const l=QS&&QS.get("lang"); if(l==="th"||l==="en"){ lang=l; try{localStorage.setItem("mm4-lang",l)}catch(e){} return true } return false })();
+const SE=(()=>{ const c=QS?(QS.get("card")||"").replace(/\D/g,"").slice(0,3):""; return c?c.padStart(3,"0"):"" })();
 const NAME={house:["บ้าน","House"],shop:["ร้านค้า","Shop"],factory:["โรงงาน","Factory"],condo:["ตึกคอนโด","Apartments"],green:["พื้นที่สีเขียว","Park"]};
 const nm=t=>T(NAME[t][0],NAME[t][1]);
 const DIS={
@@ -2401,7 +2426,7 @@ function renderModal(){
       <div class="menu"><button type="button" class="primary" data-confirm="no">${T("เล่นต่อ","Keep playing")}</button>
         <button type="button" class="ghostbtn" data-confirm="yes">${T("เริ่มใหม่","Start over")}</button></div></div></div>`; return }
   if(S.modal==="menu"){
-    o.innerHTML=`<div class="overlay"><div class="box modal start" role="dialog" aria-modal="true"><h3><span>MR.</span>MAYOR</h3>
+    o.innerHTML=`<div class="overlay"><div class="box modal start" role="dialog" aria-modal="true"><h3><span>MR.</span>MAYOR</h3>${seOn()?`<div class="seribbon">${pi("crown")}SPECIAL EDITION · MAYOR No.${SE}</div>`:""}
       <div class="startart"><img src="${art("quiet")}" alt=""></div>
       <p class="lead">${T("เป็นนายกฯ 4 ปี สร้างเมืองให้เติบโตและรับมือภัยพิบัติได้","Run a city for 4 years. Grow it and keep it safe from disasters.")}</p>
       <div class="menu"><button type="button" class="primary pulse" data-menu="tut">▶︎ ${T("ลองเล่นก่อน · โหมดฝึก 4 รอบ","Try it first · 4-round practice")} <small>${T("แนะนำสำหรับครั้งแรก ราว 4 นาที","best for first-timers · about 4 min")}</small></button>
@@ -2478,7 +2503,7 @@ function miniStat(){ const el=$("ministat"); if(!el) return;
   let on=phone&&S&&S.round>0&&S.phase!=="over"&&!S.modal&&scrollY>40;
   if(on){ const st=$("status").getBoundingClientRect(), tr=document.querySelector(".tray"), tt=tr?tr.getBoundingClientRect().top:innerHeight; on=st.bottom<36||st.top>tt-24 }
   if(on){ const rk=risk(), pc=S.round<=1?0:chance(rk);
-    el.innerHTML=`<span>${T("รอบ","Round")} ${S.round}<small>/${S.practice?PRACTICE.rounds:12}${!S.practice&&S.tOn?" · "+fmtT((S.playMs||0)/1000):""}</small></span><span>${pi("coin")}${S.coins}<small>+${income()}</small></span><span class="rk${pc>=70?" hi":""}">${pi("warn")}${T("เสี่ยง","Risk")} ${rk}<small>${pc}%</small></span><span>${pi("star")}${stars()}<small>/8</small></span>` }
+    el.innerHTML=`<span>${seOn()?pi("crown"):""}${T("รอบ","Round")} ${S.round}<small>/${S.practice?PRACTICE.rounds:12}${!S.practice&&S.tOn?" · "+fmtT((S.playMs||0)/1000):""}</small></span><span>${pi("coin")}${S.coins}<small>+${income()}</small></span><span class="rk${pc>=70?" hi":""}">${pi("warn")}${T("เสี่ยง","Risk")} ${rk}<small>${pc}%</small></span><span>${pi("star")}${stars()}<small>/8</small></span>` }
   el.className=on?"on":""; document.body.classList.toggle("ms-on",!!on) }
 addEventListener("scroll",()=>miniStat(),{passive:true}); addEventListener("resize",()=>miniStat());
 function mapIntoView(){ if(matchMedia("(min-width:821px) and (orientation:landscape)").matches) return; fitCanvas(); const mb=document.querySelector(".mapbox"); if(!mb) return;
@@ -2908,11 +2933,21 @@ setInterval(()=>{ const now=performance.now(), dt=Math.min(1500,now-tLast); tLas
   if($("ministat")&&$("ministat").className==="on") miniStat() },500);
 function saveNow(){ if(S&&(S.practice||BOOTH)) return; try{ if(S&&S.round>0&&S.phase!=="over") localStorage.setItem(SAVE_KEY,JSON.stringify(S)); else localStorage.removeItem(SAVE_KEY) }catch(e){} }
 function loadSave(){ try{ const d=JSON.parse(localStorage.getItem(SAVE_KEY)||"null"); return d&&d.v===6&&d.round>0&&d.phase!=="over"?d:null }catch(e){ return null } }
+function seOn(){ return !!SE&&!BOOTH }
+function seInit(){
+  document.body.classList.add("se");
+  const h=document.querySelector(".brand h1"); if(h&&!document.querySelector(".sebadge")) h.insertAdjacentHTML("afterend",`<span class="sebadge">${pi("crown")}MAYOR No.${SE}</span>`);
+  const w=document.createElement("div"); w.id="sewel";
+  w.innerHTML=`<div class="in"><img src="${URL.crown||SPR.crown.toDataURL()}" alt=""><b>SPECIAL EDITION</b><strong>${T(`ยินดีต้อนรับกลับ<br>ท่านนายกฯ หมายเลข ${SE}`,`Welcome back,<br>Mayor No.${SE}`)}</strong><span>${T("ฉบับพิเศษสำหรับเจ้าของบัตรทอง","An edition just for gold-card holders")}</span></div>`;
+  setTimeout(()=>{ document.body.appendChild(w); setTimeout(()=>w.remove(),3700) },350);
+}
 function start(data){
   let resumed=false;
   if(data&&data.state&&data.state.v===6) S=data.state;
   else { const sv=BOOTH?null:loadSave(); if(sv){ S=sv; S.modal=null; S.tool=null; S.zone=null; resumed=true } else S=fresh() }
   if(BOOTH&&!resumed) S.modal="attract";
+  if(!BOOTH&&!resumed&&LANGQ&&S.modal==="lang") S.modal="menu";
+  if(seOn()) seInit();
   S.busy=false; fitCanvas(); render(); fitCanvas(); requestAnimationFrame(loop); setTimeout(fitCanvas,300); setTimeout(preloadArt,50);
   if(resumed){
     S.modal="resume"; renderModal();
