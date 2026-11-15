@@ -2844,9 +2844,11 @@ async function lbFetch(entry){
 function lbRows(){
   if(LB.loading&&!LB.list) return `<p class="lbnote">${T("กำลังโหลด…","Loading…")}</p>`;
   if(!LB.list||!LB.list.length) return `<p class="lbnote">${T("ยังไม่มีใครส่งคะแนน เป็นคนแรกเลย!","No scores yet. Be the first!")}</p>`;
-  return `<ol class="lb">${LB.list.map((e,i)=>`<li class="${e.id&&e.id===S.lbId?"me":""}"><span class="lr">${i===0?pi("crown"):i+1}</span><span class="ln">${esc(e.name)}</span><span class="ls">${pi("star").repeat(Math.min(8,e.stars|0))}<small>${e.stars|0}</small></span><span class="lt">${e.sec>0?fmtT(e.sec):""}</span></li>`).join("")}</ol>
+  return `<ol class="lb">${LB.list.map((e,i)=>`<li class="${e.id&&e.id===S.lbId?"me":""}"><span class="lr">${i===0?pi("crown"):i+1}</span><span class="ln">${lbName(e.name)}</span><span class="ls">${pi("star").repeat(Math.min(8,e.stars|0))}<small>${e.stars|0}</small></span><span class="lt">${e.sec>0?fmtT(e.sec):""}</span></li>`).join("")}</ol>
     <p class="lbnote">${LB.global?T("ตารางรวมทุกเครื่อง","All devices"):T("คะแนนในเครื่องนี้","This device only")}${LB.err?T(" · เชื่อมต่อตารางรวมไม่ได้",""+" · couldn't reach the shared board"):""}</p>`;
 }
+const GOLDRX=/\s*\u{1F451}\uFE0F?\s*$/u;
+function lbName(n){ const s=String(n||"Mayor"); return GOLDRX.test(s)?esc(s.replace(GOLDRX,"")||"Mayor")+" "+pi("crown","lbc"):esc(s) }
 function lbPaint(){ const el=$("lbbox"); if(el) el.innerHTML=lbRows() }
 // names with rude words are refused (simple word list, Thai + English; booth staff can still delete rows in the Sheet)
 const BADWORDS=["ควย","เหี้ย","เหี้ย","สัส","เย็ด","หี","แตด","ดอกทอง","อีดอก","แม่ง","ระยำ","ชิบหาย","เชี่ย","กระหรี่","ส้นตีน","เงี่ยน","หำ","เสือก","สถุน","fuck","shit","bitch","cunt","dick","pussy","asshole","nigg","fag","cock","slut","whore","porn","rape","nazi","hitler","penis","vagina","bastard"];

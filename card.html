@@ -138,7 +138,7 @@ img.px{image-rendering:pixelated;image-rendering:crisp-edges}
 .cta{text-align:center;padding:18px 16px}
 .cta .pbtn{display:block;margin:0 auto;width:100%;max-width:420px;font-size:19px;color:var(--ink);text-decoration:none}
 .t-best .cta .pbtn{background:linear-gradient(180deg,#FFE27A,#F2C230)}
-.cta small{display:block;margin-top:10px;color:var(--muted)}
+.cta small{display:block;margin-top:10px;color:var(--muted)}.cta small img.sc{width:18px;vertical-align:-3px}
 .foot{text-align:center;color:#C9C6E0;font-size:12.5px;line-height:1.6;padding:4px 8px 10px}
 .foot b{font-family:var(--f-pix);color:var(--gold)}
 .langsw{border:0;background:none;color:#C9C6E0;text-decoration:underline;font-size:13px;padding:6px;align-self:center}
@@ -301,7 +301,7 @@ const TIERS={
    praise:["ขอบคุณที่มาเล่น Mr. Mayor! คุณเก็บ<b>ครบ 8 ดาว</b> ได้ตำแหน่ง <b>Best Mayor</b> เมืองของคุณทั้งเติบโต มีบ้านพอให้ทุกคนอยู่ รักษาพื้นที่สีเขียวไว้ได้ และพร้อมรับภัยพิบัติ ซึ่งก็คือสิ่งที่ SDG 11 อยากให้ทุกเมืองเป็น คนที่ทำได้แบบนี้มีไม่มากครับ",
            "Thank you for playing Mr. Mayor! You collected <b>all 8 stars</b> and earned the title <b>Best Mayor</b>. Your city grew, housed its people, kept its green space and stood ready for disasters — exactly what SDG 11 asks of every city. Not many players manage that."],
    play:["▶ เล่น Special Edition","▶ Play the Special Edition"],
-   playSub:["ลงสมัครสมัยที่ 2: ได้ 8 ดาวอีกครั้งเพื่อเป็นนายกฯ ในตำนาน · ชื่อบนตารางคะแนนจะมี 👑","Run for a 2nd term: get 8 stars again to become a Legendary Mayor · your name gets a 👑 on the leaderboard"]},
+   playSub:["ลงสมัครสมัยที่ 2: ได้ 8 ดาวอีกครั้งเพื่อเป็นนายกฯ ในตำนาน · ชื่อบนตารางคะแนนจะมีมงกุฎทอง","Run for a 2nd term: get 8 stars again to become a Legendary Mayor · your name gets a gold crown on the leaderboard"]},
  deputy:{em:"crown_s",stars:6,starsTxt:"6–7",
    name:["รองนายกฯ","DEPUTY MAYOR"],
    win:["MAYOR ID · รองนายกฯ","MAYOR ID · DEPUTY"],
@@ -424,7 +424,7 @@ function info(){
     <ul class="tips">${(lang==="th"?["รู้ว่าบ้านเราเสี่ยงภัยแบบไหน","เตรียมกระเป๋าฉุกเฉิน และนัดจุดนัดพบกับครอบครัว","ติดตามประกาศเตือนภัยจากหน่วยงานรัฐ","ช่วยกันรักษาต้นไม้และพื้นที่สีเขียวในชุมชน"]:["Find out which hazards your area faces","Pack an emergency bag and agree on a family meeting point","Follow official warnings","Protect the trees and green spaces in your neighbourhood"]).map(t=>`<li>${t}</li>`).join("")}</ul></div>
 
   <div class="box cta"><a class="pbtn" href="${playURL}">${L(TIERS.play)}</a>
-    ${L(TIERS.playSub)?`<small>${L(TIERS.playSub)}</small>`:""}</div>
+    ${L(TIERS.playSub)?`<small>${L(TIERS.playSub)} ${NO?IM("crown","sc"):""}</small>`:""}</div>
   <button type="button" class="langsw" id="sw">${lang==="th"?"Change to English":"เปลี่ยนเป็นภาษาไทย"}</button>
   <div class="foot"><b>MR. MAYOR</b> · SDG 11 · ${T("กลุ่ม 321B G.4 · English Major Showcase มหาวิทยาลัยกรุงเทพ · 17 พ.ย. 2569","Group 321B G.4 · English Major Showcase, Bangkok University · 17 Nov 2026")}</div>`;
   document.documentElement.lang=lang;

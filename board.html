@@ -137,6 +137,7 @@ body{background:radial-gradient(var(--dot) 1.2px,transparent 1.4px) 0 0/14px 14p
 #fan .t{font-size:clamp(17px,2.2vw,24px);font-weight:700;color:var(--muted)}
 @keyframes zoom{0%{transform:scale(.2)}100%{transform:scale(1)}}
 @media (prefers-reduced-motion:reduce){ .row{transition-duration:.01s} .row.new,.row.up,#fan .box,.cr{animation:none} }
+.gc{display:inline-block;width:1.25em;height:.95em;margin-left:.3em;vertical-align:-.08em;font-style:normal}.gc svg{width:100%;height:100%;display:block}
 </style>
 </head>
 <body>
@@ -179,6 +180,10 @@ const Q=new URLSearchParams(location.search), DEMO=Q.has("demo"), POLL=Math.max(
 const $=id=>document.getElementById(id);
 const esc=s=>String(s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 const reduce=()=>matchMedia("(prefers-reduced-motion: reduce)").matches;
+// gold Mayor ID players are sent as "name 👑": show the name plus a pixel crown, never the emoji
+const GOLDRX=/\s*\u{1F451}\uFE0F?\s*$/u;
+const plain=n=>String(n||"Mayor").replace(GOLDRX,"")||"Mayor";
+const isGold=n=>GOLDRX.test(String(n||""));
 
 /* ---------- 8-bit sprites (drawn as SVG pixels) ---------- */
 const PAL={k:"#1B1B2F",y:"#F2C230",d:"#C9971C",r:"#D94A3A",w:"#FFF6D6",g:"#5A5F82",h:"#3B3F63",b:"#5FA8E8",G:"#3FAE5A",W:"#FFFFFF"};
@@ -225,7 +230,7 @@ function layout(){ H=listEl.clientHeight; rh=Math.max(34,Math.floor(H/10)); docu
 addEventListener("resize",()=>{ clearTimeout(layout.t); layout.t=setTimeout(layout,120) });
 function makeRow(){ const el=document.createElement("div"); el.className="row";
   el.innerHTML=`<div class="cr">${pxc("crown")}</div><div class="rk"></div><div class="nm"><b></b><small><span></span><em class="nw">NEW</em></small></div><div class="st"></div><div class="pt"></div><div class="mv"></div>`; return el }
-function fill(el,e,i){ el.querySelector(".rk").textContent=i+1; el.querySelector(".nm b").textContent=e.name||"Mayor";
+function fill(el,e,i){ el.querySelector(".rk").textContent=i+1; const nb=el.querySelector(".nm b"); nb.textContent=plain(e.name); if(isGold(e.name)) nb.insertAdjacentHTML("beforeend",`<i class="gc">${pxc("crown")}</i>`);
   const n=Math.max(0,Math.min(8,e.stars|0)); el.querySelector(".nm small span").textContent=title(n);
   const st=el.querySelector(".st"); if(st.dataset.n!==String(n)){ st.dataset.n=n; st.innerHTML=starsHTML(n) }
   el.querySelector(".pt").innerHTML=e.sec>0?`${fmtT(e.sec)}<small>นาที:วินาที</small>`:`–<small>&nbsp;</small>`;
@@ -260,14 +265,14 @@ const NEWS=["สแกน QR ทางซ้ายเพื่อเล่นบ
   "ทิป: สวนลดความเสี่ยง · เสริมอาคารก่อนภัยมาถูกกว่าซ่อม · Totem กันภัยได้ทั้งใบ","ตารางนี้อัปเดตเองทุกไม่กี่วินาที ส่งคะแนนแล้วรอดูชื่อขึ้นได้เลย","ดาวเท่ากัน ใครเร็วกว่าได้อันดับสูงกว่า · เริ่มจับเวลาตั้งแต่รอบ 2 ถึงจบรอบ 12"];
 let latest=null, ni=0;
 function tick(){ const s=$("tick").querySelector("span"); let m=NEWS[ni%NEWS.length]; ni++;
-  if(latest&&ni%3===0) m=`ล่าสุด: นายกฯ ${esc(latest.name)} ได้ ${latest.stars|0} ดาว · ${title(latest.stars|0)}`;
+  if(latest&&ni%3===0) m=`ล่าสุด: นายกฯ ${esc(plain(latest.name))}${isGold(latest.name)?`<i class="gc">${pxc("crown")}</i>`:""} ได้ ${latest.stars|0} ดาว · ${title(latest.stars|0)}`;
   s.style.opacity="0"; setTimeout(()=>{ s.innerHTML=m; s.style.opacity="1" },400) }
 tick(); setInterval(tick,7000);
 
 let fanOn=false;
 function fanfare(e,i){ return new Promise(res=>{ const f=$("fan"); fanOn=true;
   f.querySelector(".k").textContent=(e.stars|0)>=8?(i===0?"NEW #1 · BEST MAYOR!":"BEST MAYOR!"):"NEW #1!";
-  f.querySelector(".nm").textContent=e.name||"Mayor";
+  const fn=f.querySelector(".nm"); fn.textContent=plain(e.name); if(isGold(e.name)) fn.insertAdjacentHTML("beforeend",`<i class="gc">${pxc("crown")}</i>`);
   f.querySelector(".ss").innerHTML=starsHTML(e.stars|0);
   f.querySelector(".t").textContent=i===0?`ขึ้นอันดับ 1 ของตารางนายกฯ · ${e.stars|0} ดาว`:`ได้ครบ 8 ดาว · ติดอันดับ ${i+1}`;
   f.classList.add("on"); SFX.fan(); confetti(5200);
@@ -293,7 +298,7 @@ async function handle(j,fromCache){
   if(!initial){ const big=top.map((e,i)=>[e,i]).filter(([e,i])=>!oldKeys.has(key(e))&&(i===0||e.stars>=8));
     for(const [e,i] of big.slice(0,2)) await fanfare(e,i) }
   sig=s; const ev=apply(top);
-  if(!initial){ ev.added.forEach(([e,i])=>{ latest=e; banner(`${pxc("star").replace('class="px"','class="px" style="width:28px;height:28px;display:inline-block;vertical-align:-5px"')} ยินดีด้วย! นายกฯ <b>${esc(e.name)}</b> ได้ ${e.stars|0} ดาว ติดอันดับ <b>${i+1}</b>`) });
+  if(!initial){ ev.added.forEach(([e,i])=>{ latest=e; banner(`${pxc("star").replace('class="px"','class="px" style="width:28px;height:28px;display:inline-block;vertical-align:-5px"')} ยินดีด้วย! นายกฯ <b>${esc(plain(e.name))}${isGold(e.name)?`<i class="gc">${pxc("crown")}</i>`:""}</b> ได้ ${e.stars|0} ดาว ติดอันดับ <b>${i+1}</b>`) });
     if(ev.added.length) setTimeout(SFX.add,450); else if(ev.up) SFX.up(); else if(ev.down) SFX.down() }
   if(!fromCache) try{ localStorage.setItem("mm-board",JSON.stringify({top,total:j.total,best:j.best,at:Date.now()})) }catch(e){} }
 async function poll(){
