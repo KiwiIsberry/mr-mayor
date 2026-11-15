@@ -51,10 +51,12 @@ ol,ul{margin:0;padding-left:20px;line-height:1.65;font-size:15px}
 .sch tr.us td{background:#FFF1B8;font-weight:700}
 .note{font-size:12.5px;color:var(--muted);margin:8px 0 0;line-height:1.45}
 /* credits */
-.cred{background:#0E0A1C;color:#fff;border:3px solid var(--ink);box-shadow:5px 5px 0 #120C24;position:relative;height:420px;overflow:hidden}
+.cred{background:#0E0A1C;color:#fff;border:3px solid var(--ink);box-shadow:5px 5px 0 #120C24;position:relative;height:460px;overflow:hidden;cursor:pointer}
 .cred .roll{position:absolute;left:0;right:0;top:100%;text-align:center;padding:0 18px}
-.cred.on .roll{animation:roll 38s linear forwards}
-@keyframes roll{to{transform:translateY(calc(-100% - 440px))}}
+.cred.on .roll{animation:roll 95s linear forwards}
+.cred.paused .roll{animation-play-state:paused}
+.cred .hint{position:absolute;right:8px;bottom:6px;font-size:11px;color:#8B80B8;display:none}.cred.on .hint{display:block}
+@keyframes roll{to{transform:translateY(calc(-100% - 480px))}}
 .cred h3{font-family:var(--f-pix);color:var(--gold);font-size:24px;margin:0 0 4px}
 .cred .k{font-family:var(--f-pix);font-size:11px;color:#B9AEDB;letter-spacing:.1em;margin-top:26px}
 .cred .v{font-size:17px;font-weight:700;margin-top:4px;line-height:1.4}
@@ -235,29 +237,65 @@ document.getElementById("app").innerHTML=`
 
 <div class="cred" id="cred"><div class="roll">
   <div class="sp">${IM("crown")}</div>
-  <h3>MR. MAYOR</h3><div class="v"><small>8-bit disaster-resilience city builder · SDG 11.5</small></div>
+  <h3>MR. MAYOR</h3><div class="v"><small>เกมสร้างเมืองให้รอดจากภัยพิบัติ · 8-bit disaster-resilience city builder</small></div>
+  <div class="k">MADE FOR</div><div class="v">SDG 11 · Target 11.5<small>ลดความสูญเสียจากภัยพิบัติ · Reduce disaster losses</small></div>
   <div class="k">A GAME BY</div><div class="v">กลุ่ม 321B G.4<small>ENL511 · English Major Showcase · Bangkok University</small></div>
-  <div class="k">IDEA &amp; GAME DESIGN</div><div class="v">Alex (KiwiIsberry)</div>
-  <div class="k">BOOTH TEAM</div><div class="v">ทีมงานศาลาว่าการทุกคน<small>Every staff member holding this pass</small></div>
+  <div class="k">IDEA · GAME DESIGN · RULES</div><div class="v">Alex<small>KiwiIsberry · ตัดสินใจกติกาทุกข้อ</small></div>
+  <div class="k">BOOTH TEAM</div><div class="v">ทีมงานศาลาว่าการทุกคน<small>ผู้ถือ Staff Pass ใบนี้ · every holder of this pass</small></div>
+
   <div class="sp">${IM("fire")}${IM("flood")}${IM("quake")}${IM("storm")}</div>
+  <div class="k">THE CITY</div>
+  <div class="v">แผนที่ 7 × 7<small>ถนนกากบาท แบ่งเมืองเป็น 4 โซน</small></div>
+  <div class="v">4 โซน · 4 ภัย<small>ย่านเก่า–ไฟไหม้ · ริมแม่น้ำ–น้ำท่วม · ดินอ่อน–แผ่นดินไหว · ที่โล่ง–พายุ</small></div>
+  <div class="v">อาคาร 5 แบบ<small>บ้าน · ร้านค้า · คอนโด · โรงงาน · สวน</small></div>
+  <div class="v">Totem 4 แบบ<small>รถดับเพลิง · คันกั้นน้ำ · วิศวกรโครงสร้าง · หอเตือนภัย</small></div>
+  <div class="v">การ์ดเหตุการณ์ 17 แบบ<small>นักท่องเที่ยว · นักลงทุน · น้ำขึ้นสูง · ประท้วง · วันหยุด และอีกมาก</small></div>
+  <div class="v">12 รอบ = 4 ปี<small>ความเสี่ยงสูงขึ้นทุกปี · ลูกเต๋า 2 ลูกตัดสินว่าภัยจะมาไหม</small></div>
+  <div class="v">ดาว 4 ด้าน · 8 ดวง<small>เศรษฐกิจ · ที่อยู่อาศัย · สิ่งแวดล้อม · ความพร้อมรับภัย</small></div>
+
+  <div class="sp">${IM("house")}${IM("shop")}${IM("green")}${IM("coin")}</div>
+  <div class="k">INSPIRED BY REAL EVENTS</div>
+  <div class="v">2532 · ไต้ฝุ่นเกย์ ชุมพร</div>
+  <div class="v">2554 · น้ำท่วมใหญ่ ภาคกลางและกรุงเทพฯ</div>
+  <div class="v">2564 · ไฟไหม้โรงงาน บางพลี<small>ที่มาของกฎ "ห้ามตั้งโรงงานติดบ้าน"</small></div>
+  <div class="v">2568 · แผ่นดินไหวเมียนมา สั่นถึงกรุงเทพฯ<small>ที่มาของการ "เสริมอาคาร"</small></div>
+
   <div class="k">THE JOURNEY</div>
-  <div class="v">ก.ย. 2026<small>ไอเดียแรก: เกมกระดานสร้างเมือง วางบล็อก 3 มิติ</small></div>
-  <div class="v">7 ต.ค.<small>v1 "Build the City!" · พรีเซนต์ครั้งแรก · อาจารย์บอกว่าสั้นและกว้างไป</small></div>
-  <div class="v">18 ต.ค.<small>หันมาเน้นภัยพิบัติ · ลูกเต๋า ความเสี่ยง Totem</small></div>
-  <div class="v">2 พ.ย.<small>v4 · 4 โซน 4 ภัย · ทดสอบสมดุลด้วยบอทจำลองหลายพันเกม</small></div>
+  <div class="v">ก.ย. 2026<small>ไอเดียแรก: เกมกระดาน A2 วางบล็อก 3 มิติ จั่วการ์ดกติกา</small></div>
+  <div class="v">7 ต.ค.<small>v1 "Build the City!" กระดาน 6×6 · พรีเซนต์ครั้งแรก<br>อาจารย์: "สั้นไป กว้างไป เลือกปัญหาเดียว"</small></div>
+  <div class="v">18 ต.ค.<small>เปลี่ยนมาเน้นภัยพิบัติ · รายได้ทุกรอบ · ลูกเต๋าเทียบความเสี่ยง · Totem</small></div>
+  <div class="v">19–28 ต.ค.<small>v2 ฤดูกาล · ลองเกมแนวอื่นอีกหลายแบบ · v3 กระดาน 7×7</small></div>
+  <div class="v">2 พ.ย.<small>v4 กติกาหลักปัจจุบัน · บอท 4 แบบ เล่นจำลองแบบละ 2,000 เกมเพื่อปรับสมดุล</small></div>
   <div class="v">3 พ.ย.<small>เกมเว็บ 8-bit ขึ้นออนไลน์ครั้งแรก</small></div>
   <div class="v">4 พ.ย.<small>อาจารย์อนุมัติให้บูธเป็นเกมเว็บ</small></div>
-  <div class="v">13 พ.ย.<small>โหมดฝึก · จอตารางนายกฯ</small></div>
-  <div class="v">15 พ.ย.<small>บัตร MAYOR ID · Special Edition · ศาลาว่าการจากกล่องลัง</small></div>
-  <div class="v">17 พ.ย.<small>วันจริง!</small></div>
-  <div class="sp">${IM("house")}${IM("shop")}${IM("green")}${IM("coin")}</div>
-  <div class="k">THANK YOU</div><div class="v">อาจารย์ทุกท่าน · เพื่อนที่ช่วยเทสต์<small>และนายกฯ ทุกคนที่มาเล่น</small></div>
-  <div class="sp">${IM("crown")}</div><h3>THE END</h3><div class="v"><small>…or is it? Play again →</small></div>
- </div><button type="button" class="go" id="go"><b>▶ CREDITS</b>เครดิตทีมงาน · แตะเพื่อเล่น</button></div>
+  <div class="v">4–12 พ.ย.<small>เมืองมีชีวิต (รถ คน ไฟจราจร) · เอฟเฟคภัย · ตารางคะแนนรวม</small></div>
+  <div class="v">13 พ.ย.<small>โหมดฝึก 4 รอบ · จอตารางนายกฯ สำหรับ iPad</small></div>
+  <div class="v">15 พ.ย.<small>บัตร MAYOR ID 4 ระดับ · Special Edition · Legendary Mayor<br>ศาลาว่าการจากกล่องลังกับโฟมที่เหลือจากการสั่งโต๊ะ</small></div>
+  <div class="v">17 พ.ย. · วันงาน<small>Diamond Hall</small></div>
+
+  <div class="sp">${IM("trophy")}${IM("star")}</div>
+  <div class="k">BY THE NUMBERS</div>
+  <div class="v">~4,000 บรรทัดโค้ด<small>เกม · หน้าบัตร · จอตาราง · หน้าสตาฟ</small></div>
+  <div class="v">ภาพพิกเซลในเกมวาดด้วยโค้ดทุกชิ้น<small>ทั้งอาคาร การ์ด ภัย และ Totem</small></div>
+  <div class="v">เล่นได้แม้ไม่มีเน็ต<small>ทั้งเกมอยู่ในไฟล์เดียว</small></div>
+  <div class="v">Best Mayor ~15%<small>ของเกมที่บอทวางแผนดีเล่น · คนจริงได้น้อยกว่านั้น</small></div>
+
+  <div class="k">BUILT WITH</div><div class="v">HTML · JavaScript · GitHub Pages · Google Sheets<small>AI ช่วยเขียนโค้ด · ไอเดียและการตัดสินใจเป็นของทีม</small></div>
+  <div class="k">BOOTH MADE FROM</div><div class="v">บอร์ดชานอ้อย · กระดาษสี · กล่องลังเก่า<small>ไม่ใช้พลาสติกใหม่ · กระดาษเก็บไว้ใช้ซ้ำหรือรีไซเคิล</small></div>
+
+  <div class="sp">${IM("shield")}</div>
+  <div class="k">THANK YOU</div><div class="v">อาจารย์ทุกท่าน<small>ที่บอกว่า "สั้นไป" จนเกมนี้เกิดขึ้น</small></div>
+  <div class="v">เพื่อนที่ช่วยเทสต์<small>และเจอจุดที่งงทุกจุด</small></div>
+  <div class="v">นายกฯ ทุกคนที่มาเล่น<small>ทั้งที่ได้ 8 ดาว และที่ไม่ได้รับเลือกตั้งอีกสมัย</small></div>
+  <div class="k">NO BUILDINGS WERE HARMED</div><div class="v"><small>…ยกเว้นในเกม ซึ่งพังเยอะมาก</small></div>
+  <div class="sp">${IM("crown")}</div><h3>THE END</h3><div class="v"><small>…or is it? กลับไปเป็นนายกฯ อีกสมัย →</small></div>
+ </div><button type="button" class="go" id="go"><b>▶ CREDITS</b>เครดิตทีมงาน · แตะเพื่อเล่น</button><div class="hint">แตะเพื่อหยุด / เล่นต่อ</div></div>
 
 <div class="foot">Staff only · หน้านี้ไม่ได้ลิงก์จากเกม · เปิดได้จาก QR บนบัตรสตาฟ</div>`;
 
-document.getElementById("go").onclick=()=>{const c=document.getElementById("cred"); c.classList.remove("on"); void c.offsetWidth; c.classList.add("on")};
+const cr=document.getElementById("cred");
+document.getElementById("go").onclick=e=>{e.stopPropagation(); cr.classList.remove("on","paused"); void cr.offsetWidth; cr.classList.add("on")};
+cr.addEventListener("click",()=>{ if(cr.classList.contains("on")) cr.classList.toggle("paused") });
 })();
 </script>
 </body>
