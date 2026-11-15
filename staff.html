@@ -45,11 +45,6 @@ table{width:100%;border-collapse:collapse;font-size:14px}
 td,th{border:2px solid var(--ink);padding:6px 8px;text-align:left;vertical-align:top}
 th{background:var(--ink);color:var(--gold);font-family:var(--f-pix);font-size:11px;letter-spacing:.05em;font-weight:400}
 ol,ul{margin:0;padding-left:20px;line-height:1.65;font-size:15px}
-.chk label{display:flex;gap:10px;align-items:flex-start;padding:7px 4px;border-bottom:1px dotted #CBBF9F;font-size:15px;line-height:1.45;cursor:pointer}
-.chk label:last-child{border-bottom:0}
-.chk input{width:20px;height:20px;flex:none;margin-top:2px;accent-color:var(--go)}
-.chk input:checked+span{color:var(--muted);text-decoration:line-through}
-.chk .rst{border:0;background:none;color:var(--muted);text-decoration:underline;font-size:12.5px;padding:6px 0 0}
 .fix div{padding:8px 0;border-bottom:1px dotted #CBBF9F;font-size:15px;line-height:1.5}.fix div:last-child{border-bottom:0}
 .fix b{display:block}
 .sch td:first-child{font-family:var(--f-pix);font-size:12px;white-space:nowrap}
@@ -193,19 +188,6 @@ const IM=(k,c)=>`<img class="px ${c||""}" src="${U(k)}" alt="">`;
 SPR.crown_s=fromMap([".k...k...k.","ksk.ksk.ksk","ksskssskssk","ksssssssssk","ksssbsssbsk","ksssssssssk","kSSSSSSSSSk","kkkkkkkkkkk"]);
 SPR.medal=fromMap(["..kk...kk..","..kBk.kBk..","...kBkBk...","....kkk....","...kooook..","..kooyyook.","..koyyyyok.","..koyyyyok.","..kooyyook.","...kooook..","....kkkk..."]);
 const SHEET="https://docs.google.com/spreadsheets/d/1A9yeudeTOP5L0ZS6Gqkgi7rQCy2g0_Z-yMU1BeoTE4s/edit";
-const CHECK=[
- "ชาร์จ MacBook 2 เครื่อง + iPad เต็ม 100% (เช็กว่ามีปลั๊กไหม)",
- "MacBook ทั้ง 2 เครื่อง: กดปุ่ม \"เปิดเกมโหมดบูธ\" ข้างบน แล้วรีเฟรช 1 ครั้ง",
- "กด ⌘+Ctrl+F เต็มจอ · ซูม 100% (⌘+0) · ตั้งจอไม่ดับ",
- "iPad: เปิด \"จอตารางนายกฯ\" · แตะปุ่มเปิดเสียง 1 ครั้ง · เปิด Guided Access",
- "ลบแถวทดสอบใน Google Sheet (เช่น Test) แล้วดูว่าจอ iPad อัปเดต",
- "ลองส่งคะแนนจากมือถือ 1 ครั้ง ดูชื่อขึ้นบน iPad แล้วลบแถวนั้น",
- "เปิดฮอตสปอตมือถือสำรองไว้ · ไฟล์เกมออฟไลน์อยู่ใน ~/Desktop/MrMayor",
- "บัตร 4 ระดับ + ปากกา + มงกุฎ Hall of Fame + หมุด พร้อมบนโต๊ะ",
- "ป้ายชื่อสตาฟครบทุกคน · 9:45 ทุกคนพร้อมที่บูธ (ประเมิน 10:00)"];
-const KEY="mm-staff-chk";
-let done={}; try{done=JSON.parse(localStorage.getItem(KEY)||"{}")}catch(e){}
-
 document.getElementById("app").innerHTML=`
 <div class="top"><img class="px" src="${TSPR.quake.toDataURL()}" alt=""><div><b>STAFF PASS</b><span>CITY HALL · ALL ACCESS · Mr. Mayor SDG 11 · 17 พ.ย.</span></div></div>
 
@@ -233,10 +215,6 @@ document.getElementById("app").innerHTML=`
   <tr><td>4–5</td><td>City Councillor (ทองแดง)</td><td>—</td></tr>
   <tr><td>0–3</td><td>Citizen (ฟ้า)</td><td>ชวนเขียนกำแพง "ถ้าฉันเป็นนายกฯ…"</td></tr></table>
  <p class="note">ดูดาวจากหน้าจบเกมก่อนมอบทุกครั้ง · เขียนชื่อผู้เล่นบนบัตรให้ · Check the end screen, then write their name on the card.</p></div>
-
-<div class="box chk"><h2>${IM("doc")}เช็กลิสต์เช้าวันงาน <small>Morning checklist</small></h2>
- ${CHECK.map((t,i)=>`<label><input type="checkbox" data-i="${i}" ${done[i]?"checked":""}><span>${t}</span></label>`).join("")}
- <button type="button" class="rst" id="rst">ล้างเครื่องหมายทั้งหมด</button></div>
 
 <div class="box fix"><h2>${IM("warn")}ถ้ามีปัญหา <small>If something goes wrong</small></h2>
  <div><b>มีคนเล่นค้าง / กดมั่วบน MacBook</b>กดค้างที่โลโก้ MR.MAYOR มุมซ้ายบน 3 วินาที → กลับหน้าตารางนายกฯ</div>
@@ -279,8 +257,6 @@ document.getElementById("app").innerHTML=`
 
 <div class="foot">Staff only · หน้านี้ไม่ได้ลิงก์จากเกม · เปิดได้จาก QR บนบัตรสตาฟ</div>`;
 
-document.querySelectorAll(".chk input").forEach(c=>c.onchange=()=>{done[c.dataset.i]=c.checked; try{localStorage.setItem(KEY,JSON.stringify(done))}catch(e){}});
-document.getElementById("rst").onclick=()=>{done={}; try{localStorage.removeItem(KEY)}catch(e){} document.querySelectorAll(".chk input").forEach(c=>c.checked=false)};
 document.getElementById("go").onclick=()=>{const c=document.getElementById("cred"); c.classList.remove("on"); void c.offsetWidth; c.classList.add("on")};
 })();
 </script>
