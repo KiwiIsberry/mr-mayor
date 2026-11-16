@@ -142,6 +142,13 @@ img.px{image-rendering:pixelated;image-rendering:crisp-edges}
 .foot{text-align:center;color:#C9C6E0;font-size:12.5px;line-height:1.6;padding:4px 8px 10px}
 .foot b{font-family:var(--f-pix);color:var(--gold)}
 .langsw{border:0;background:none;color:#C9C6E0;text-decoration:underline;font-size:13px;padding:6px;align-self:center}
+.guide{background:linear-gradient(135deg,#7A6AB0,#4A3B80);color:#fff}
+.guide h2{color:var(--gold)}
+.guide p{color:#E6E2F7}
+.guide ul{margin:0 0 14px;padding-left:20px;line-height:1.75;font-size:14.5px;color:#fff}
+.guide .gbtn{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;max-width:420px;margin:0 auto;border:3px solid var(--ink);box-shadow:4px 4px 0 var(--ink);background:var(--panel);color:var(--ink);font-weight:700;font-size:17px;padding:12px 16px;text-decoration:none}
+.guide .gbtn img{width:22px}
+.guide .gbtn:active{transform:translate(2px,2px);box-shadow:2px 2px 0 var(--ink)}
 </style>
 </head>
 <body>
@@ -419,6 +426,11 @@ function info(){
      <div class="row"><div class="ic">${IM("warn")}</div><div><b>${T("ความเสี่ยงสูงขึ้นทุกปี","Risk rises every year")}</b><span>${T("ยิ่งเล่นนาน ภัยยิ่งเกิดง่ายขึ้น เหมือนโลกที่ร้อนขึ้นทำให้ภัยธรรมชาติหลายอย่างรุนแรงและเกิดบ่อยขึ้น","The longer you play, the likelier disasters get — like a warming world making many natural hazards stronger and more frequent.")}</span></div></div>
      <div class="row"><div class="ic">${IM("coin","sm")}${IM("house","sm")}${IM("green","sm")}${IM("fire_t","sm")}</div><div><b>${T("ดาว 4 ด้าน","4 kinds of stars")}</b><span>${T("เศรษฐกิจ ที่อยู่อาศัย สิ่งแวดล้อม และความพร้อมรับภัย เมืองที่ยั่งยืนต้องดีทุกด้านพร้อมกัน ทำด้านเดียวได้ดีไม่พอ จึงต้องได้ครบ 8 ดาวถึงเป็น Best Mayor","Economy, housing, environment and disaster readiness. A sustainable city needs all four at once — being great at one isn't enough, which is why Best Mayor takes all 8 stars.")}</span></div></div>
     </div></div>
+
+  <div class="box sec guide"><h2>${IM("book")}${T("อยากรู้ทุกอย่าง?","WANT THE FULL STORY?")}</h2>
+    <p>${T("คู่มือเต็มของ Mr. Mayor รวมทุกอย่างไว้ในหน้าเดียว","The complete Mr. Mayor guide puts everything on one page:")}</p>
+    <ul>${(lang==="th"?["SDG 11 ครบทั้ง 10 เป้าย่อย และกรอบเซนไดฯ","วิธีเล่นทั้งหมด พร้อมตัวจำลองลูกเต๋าและเครื่องคิดดาว","การ์ดทุกใบในเกม พลิกและสุ่มจั่วได้","เมืองพิกเซลที่แตะปล่อยภัยได้"]:["All 10 targets of SDG 11 and the Sendai Framework","Every rule, with a dice simulator and a star calculator","Every card in the game — flip them, draw them","A pixel city you can hit with disasters"]).map(t=>`<li>${t}</li>`).join("")}</ul>
+    <a class="gbtn" href="guide.html?lang=${lang}">${IM("book")}${T("เปิดคู่มือเต็ม","Open the full guide")} ▶</a></div>
 
   <div class="box sec"><h2>${IM("house")}${T("เริ่มได้ที่บ้านเรา","WHAT YOU CAN DO")}</h2>
     <ul class="tips">${(lang==="th"?["รู้ว่าบ้านเราเสี่ยงภัยแบบไหน","เตรียมกระเป๋าฉุกเฉิน และนัดจุดนัดพบกับครอบครัว","ติดตามประกาศเตือนภัยจากหน่วยงานรัฐ","ช่วยกันรักษาต้นไม้และพื้นที่สีเขียวในชุมชน"]:["Find out which hazards your area faces","Pack an emergency bag and agree on a family meeting point","Follow official warnings","Protect the trees and green spaces in your neighbourhood"]).map(t=>`<li>${t}</li>`).join("")}</ul></div>
