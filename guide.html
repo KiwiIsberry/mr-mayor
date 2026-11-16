@@ -402,6 +402,45 @@ table.t td img{vertical-align:middle}
 .ru b{font-size:14px;display:flex;align-items:center;gap:4px}
 .ru b img{width:16px}
 
+/* ---- story ---- */
+.sstats{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin-bottom:22px}
+.sstats div{background:var(--panel);border:3px solid var(--ink);box-shadow:4px 4px 0 var(--ink);padding:12px;display:flex;flex-direction:column;gap:2px}
+.sstats b{font-family:var(--f-pix);font-size:26px;color:var(--plum)}
+.sstats span{font-weight:700;font-size:14.5px;line-height:1.3}
+.sstats small{font-size:12.5px;color:var(--muted)}
+.phase{display:flex;align-items:center;gap:14px;margin:26px 0 14px;background:var(--pc);border:3px solid var(--ink);box-shadow:5px 5px 0 var(--ink);padding:10px 14px;color:#fff}
+.phase .pn{font-family:var(--f-pix);font-size:26px;background:var(--ink);color:var(--gold);min-width:56px;text-align:center;padding:6px 8px}
+.phase b{display:block;font-family:var(--f-pix);font-size:clamp(15px,2.4vw,20px);text-shadow:2px 2px 0 var(--ink)}
+.phase span{font-size:14px;opacity:.95}
+.chs{position:relative;padding-left:28px}
+.chs::before{content:"";position:absolute;left:10px;top:4px;bottom:4px;width:4px;background:var(--gold);border:1px solid var(--ink)}
+.chx{position:relative;display:grid;grid-template-columns:120px 1fr;gap:0;margin-bottom:14px;background:var(--panel);border:3px solid var(--ink);box-shadow:4px 4px 0 var(--ink)}
+.chx::before{content:"";position:absolute;left:-26px;top:16px;width:16px;height:16px;background:var(--gold);border:3px solid var(--ink)}
+.chx.big::before{background:var(--red);width:20px;height:20px;left:-28px;top:14px}
+.chx .cd{background:var(--ink);color:var(--gold);padding:12px 8px;display:flex;flex-direction:column;align-items:center;gap:10px;text-align:center}
+.chx .cd b{font-family:var(--f-pix);font-size:13px;line-height:1.4}
+.chx .cd span{display:flex;flex-wrap:wrap;gap:4px;justify-content:center}
+.chx .cd img{width:26px;background:var(--panel);padding:2px;border:2px solid var(--gold)}
+.chx .cc{padding:12px 14px}
+.chx h4{margin:0 0 6px;font-size:18px;line-height:1.3}
+.chx.big h4{font-size:20px}
+.chx p{font-size:15px;margin:0 0 8px}
+.chx ul{margin:0 0 8px;padding-left:20px;font-size:14.5px;line-height:1.6}
+.chx li{margin-bottom:2px}
+.chx blockquote{margin:8px 0 10px;background:#FFF1B8;border:3px solid var(--ink);border-left:8px solid var(--red);padding:10px 12px;font-size:15.5px;font-weight:600;line-height:1.5}
+.chx cite{display:block;font-style:normal;font-weight:500;font-size:12.5px;color:var(--muted);margin-top:4px}
+.why2,.fun{font-size:14px;line-height:1.55;padding:8px 10px;margin:6px 0 8px;border:2px solid var(--ink)}
+.why2{background:#DDEBF7}.fun{background:#E3F2D6}
+.why2 b,.fun b{font-family:var(--f-pix);font-size:10px;letter-spacing:.06em;display:inline-block;background:var(--ink);color:var(--panel);padding:2px 5px;margin-right:6px}
+.lks{display:flex;flex-wrap:wrap;gap:6px;margin-top:6px}
+.lks a{font-size:13px;font-weight:700;text-decoration:none;border:2px solid var(--ink);background:var(--panel-2);padding:4px 8px;box-shadow:2px 2px 0 var(--ink)}
+.lks a.play{background:var(--go);color:#fff}
+.lks a:active{transform:translate(1px,1px);box-shadow:1px 1px 0 var(--ink)}
+.kl{margin:0;padding-left:0;list-style:none;display:grid;gap:6px;font-size:14.5px;line-height:1.5}
+.kl li{padding:6px 10px 6px 30px;border:2px solid var(--ink);background:#E3F2D6;position:relative}
+.kl li::before{content:"✓";position:absolute;left:9px;top:5px;font-weight:700;color:var(--go-dk)}
+.kl.cut li{background:#F8DDD6}.kl.cut li::before{content:"✗";color:var(--red)}
+@media (max-width:760px){.sstats{grid-template-columns:repeat(2,minmax(0,1fr))}.chx{grid-template-columns:1fr}.chx .cd{flex-direction:row;justify-content:space-between;padding:8px 12px}.chx .cd img{width:22px}}
 /* booth, journey, credits */
 .steps{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}
 .sp4{border:3px solid var(--ink);background:var(--panel);box-shadow:4px 4px 0 var(--ink);padding:12px;display:flex;flex-direction:column;gap:6px}
@@ -569,6 +608,70 @@ const REAL=[
 /* ---------- small helpers ---------- */
 const zoneCards=z=>{ const m={}; DISCARDS.filter(c=>c.z===z).forEach(c=>m[c.k]=(m[c.k]||0)+1); return Object.entries(m).map(([k,n])=>({k,n})) };
 const hitsHTML=k=>D.HAZ[k].hits.map(t=>`<span>${I(BICON[t])}${NM(t)}</span>`).join("");
+
+/* ---------- the game's story (from HISTORY.md, history/ and the commit log) ---------- */
+const H="history/", GH="https://github.com/KiwiIsberry/mr-mayor/blob/main/history/";
+const STORY=[
+ {n:"I",col:"#7A6AB0",t:["ยุคเกมกระดาน","The board-game era"],d:["ปลาย ก.ย. – 2 พ.ย. · บนโต๊ะ ด้วยกระดาษ บล็อก และลูกเต๋า","Late Sep – 2 Nov · on a table, with paper, blocks and dice"],items:[
+  {d:["ปลาย ก.ย.","LATE SEP"],ic:["s_house","s_shop","s_green"],t:["ไอเดียแรก: บูธที่ได้ลงมือเล่น","First idea: a booth you play, not read"],
+   s:["โจทย์คือบูธ SDG 11 ที่สนุก ไม่ใช่ยืนอ่านป้ายหรือทำแบบทดสอบ ไอเดียแรกคือเกมสร้างเมืองบนกระดาน A2 ที่มีถนนพิมพ์ไว้แล้ว ผู้เล่นได้โจทย์ว่าต้องมีอาคารแต่ละแบบกี่ชิ้น แล้วจั่วการ์ดกติกาที่ยากขึ้นเรื่อยๆ ทุก 15–20 วินาที","The brief: a fun SDG 11 booth — not posters, not quizzes. The first idea was a city-building game on an A2 board with roads printed on it. Players got a target (so many of each building) and drew harder and harder rule cards every 15–20 seconds."],
+   ch:[["ชิ้นเมืองเป็นบล็อก 3 มิติทาสี: บ้าน 1×1 ร้าน 1×1 อาคาร 1×2 หมุนได้ และพื้นที่สีเขียว","Pieces were painted 3D blocks: a 1×1 house, a 1×1 shop, a 1×2 building that could rotate, and green space"],["ทำครบได้มงกุฎ <b>Best Mayor</b> ถ่ายรูปกับเมืองตัวเอง และทุกคนได้ของที่ระลึก","Finish it and you got the <b>Best Mayor</b> crown and a photo with your city; everyone got a souvenir"],["การ์ดเคลือบใช้ซ้ำได้ เพื่อประหยัดค่าพิมพ์สี","Laminated, reusable cards to save on colour printing"]]},
+  {d:["7 ต.ค.","7 OCT"],ic:["s_doc"],big:1,t:["v1 \"Mr. Mayor: Build the City!\" และการพรีเซนต์ครั้งแรก","v1 \"Mr. Mayor: Build the City!\" and the first pitch"],
+   s:["กระดาน 6×6 ถนนกากบาท 11 ช่อง เหลือช่องสร้างได้ 25 ช่องใน 4 โซน เริ่มด้วยชิ้นเมือง 10 ชิ้น (บ้าน 4 อาคาร 2 ร้าน 2 สวน 2) ได้ภารกิจ 1 ใบ แล้วจั่วการ์ดเหตุการณ์ 3 จาก 15 ใบ ทำครบทั้งภารกิจและการ์ดทั้ง 3 ใบ = Best Mayor","A 6×6 board with 11 road cells, leaving 25 buildable cells in 4 zones. You started with 10 pieces (4 houses, 2 buildings, 2 shops, 2 parks), got one mission card, then drew 3 of 15 event cards. Meet the mission and all 3 cards = Best Mayor."],
+   ch:[["การ์ด 15 ใบ แบ่ง 3 แบบ: ต้องสร้าง 5 ใบ · ข้อจำกัด 6 ใบ · โอกาส 4 ใบ","15 cards in 3 kinds: 5 requirements, 6 constraints, 4 opportunities"],["ตัดสินใจให้การ์ด 12, 14, 15 เป็นการ์ดบังคับ เพราะการ์ดคือความท้าทายของเกม","Cards 12, 14 and 15 were made compulsory, because the cards are the challenge"],["มีนาฬิกาจับเวลา 120 วินาที (ปรับได้)","An optional 120-second timer"]],
+   q:["น่าสนใจ แต่สั้นไป เล่นจบในราว 3 นาที และกว้างไป ให้เลือกปัญหา SDG 11 เรื่องเดียวแล้วทำให้ลึก เล่นได้ไม่เกิน 20 นาที","Interesting — but too short, about 3 minutes, and too broad. Pick one SDG 11 problem and go deep. Up to 20 minutes is fine."],qc:["สรุปฟีดแบ็กของอาจารย์ หลังพรีเซนต์ 7 ต.ค.","Summary of our teacher's feedback after the 7 Oct pitch"],
+   fun:["การ์ดใบที่ 08 ของ v1 ชื่อ \"ปกป้องย่านที่อยู่อาศัย\" สั่งว่าโรงงานห้ามติดบ้าน เป็นกฎเดียวจากวันแรกที่ยังอยู่ในเกมวันนี้แทบเหมือนเดิม","v1's card 08, \"Protect Residential Areas\", said no factory may touch a house. It is the one day-one rule still in the game almost word for word."],
+   links:[[["เล่น v1 ได้จริง","Play v1"],H+"2026-10-07_v1-board-game/prototype-v1.html",1],[["คู่มือ v1 (PDF)","v1 rulebook (PDF)"],H+"2026-10-07_v1-board-game/mr-mayor-rulebook.pdf"],[["การ์ด 15 ใบ (PDF)","The 15 cards (PDF)"],H+"2026-10-07_v1-board-game/mr-mayor-event-cards.pdf"],[["กติกา v1","v1 rules"],GH+"2026-10-07_v1-board-game/rules_v1.md"]]},
+  {d:["18 ต.ค.","18 OCT"],ic:["s_fire","s_flood","s_quake","s_storm"],big:1,t:["เลือกปัญหาเดียว: ภัยพิบัติ","One problem: disasters"],
+   s:["หลังฟีดแบ็ก มีหลายทางให้เลือก เช่น พื้นที่สีเขียว ความร้อน และน้ำท่วม ที่อยู่อาศัยสำหรับทุกคน หรือนักท่องเที่ยวกับคนในพื้นที่ สุดท้ายเลือก <b>ภัยพิบัติ</b> ซึ่งกลุ่มเคยพูดถึงไว้และอาจารย์เห็นด้วยว่าตรงกับ SDG 11 วันนี้วางระบบหลักที่ยังใช้มาถึงทุกวันนี้","After the review there were several directions: green space, heat and flooding; housing for all; tourists versus locals. The choice was <b>disasters</b> — something the group had raised before and the teacher agreed fits SDG 11. The core systems still in the game today were laid down that day."],
+   ch:[["อาคารให้เงินทุกรอบ แล้วเอาเงินไปสร้างหรือป้องกันภัย","Buildings pay every round; spend it on building or on protection"],["ทอยลูกเต๋าเทียบกับความเสี่ยงของเมือง","Roll dice against the city's risk level"],["โรงงานเพิ่มความเสี่ยง และเพิ่มการ์ด \"ไฟไหม้โรงงาน\"","Factories raise risk and add a \"factory fire\" card"],["<b>Totem กันภัยแบบละอัน</b> เช่น นักดับเพลิงกันไฟไหม้","<b>One Totem per hazard</b> — e.g. firefighters against fire"],["วาระนายกฯ แทนการจับเวลา","A mayor's term instead of a timer"]],
+   why:["ไม่ใช้จำนวนประชากรเป็นเป้า เพราะเป้าที่แท้จริงคือ \"เมืองที่ยั่งยืนและรอดจากภัย\" และความพร้อมรับภัยต้องนับเป็นคะแนนด้วย","Population was rejected as the goal: the real goal is \"a sustainable city that survives disasters\", and being disaster-ready has to count."],
+   links:[[["คู่มือวิธีเล่นฉบับร่างสองภาษา (PDF)","Bilingual draft how-to-play (PDF)"],H+"2026-10-18_disaster-redesign/MrMayor_HowToPlay.pdf"],[["บันทึกโปรเจกต์ 18 ต.ค.","Project notes, 18 Oct"],GH+"2026-10-18_disaster-redesign/CLAUDE_2026-10-18.md"]]},
+  {d:["19–28 ต.ค.","19–28 OCT"],ic:["s_warn"],t:["v2, ลองทางอื่น, แล้ว v3","v2, other roads, then v3"],
+   s:["ช่วงที่วนหาทางมากที่สุด v2 (19 ต.ค.) มีวาระ 12 รอบ ฤดูกาล และระบบคนงาน แต่สุดท้ายรู้สึกว่าเรื่องฤดูกาลไม่เข้ากับเกม จึงลองพิจารณาแนวเกมอื่นอีกหลายแบบ เช่น เล่นเป็นคนธรรมดาหนึ่งคน เกมมือถือ หรือเกมสืบสวน ก่อนตัดสินใจกลับมาพัฒนา Mr. Mayor ต่อ","The most searching stretch. v2 (19 Oct) had a 12-round term, seasons and a workers system — but the seasons never felt right. Several other kinds of game were considered — playing one ordinary person, a phone game, an investigation game — before deciding to keep building Mr. Mayor."],
+   ch:[["28 ต.ค. v3: กระดานใหญ่ขึ้นเป็น 7×7 มีกองการ์ดสถานที่ และชนะทันทีได้","28 Oct, v3: a bigger 7×7 board, a location deck and instant wins"],["30 ต.ค. ทำการ์ดสำหรับพิมพ์","30 Oct: printable cards"]]},
+  {d:["2 พ.ย.","2 NOV"],ic:["t_fire","t_flood","t_quake","t_storm"],big:1,t:["v4 / v4.1: กติกาหลักของเกมวันนี้","v4 / v4.1: today's core rules"],
+   s:["รอบนี้กติกาลงตัว และเป็นพื้นฐานของทุกอย่างที่เล่นอยู่ตอนนี้","This is where the rules clicked, and everything you play today is built on it."],
+   ch:[["แบ่ง 4 โซนตามภัย: ย่านเก่า-ไฟไหม้ · ริมแม่น้ำ-น้ำท่วม · ดินอ่อน-แผ่นดินไหว · ที่โล่ง-พายุ","4 hazard zones: Old Town-fire, Riverside-flood, Soft Ground-quake, Open Plain-storm"],["การ์ดภัยบอกโซนและแบบอาคารที่พังตรงๆ","Disaster cards name the zone and the building types directly"],["ร้านต้องติดบ้าน แทนระบบคนงาน · เล่นครบ 12 รอบเสมอ · ดาว 2 ระดับใน 4 ด้าน · เสริมอาคาร 3 เหรียญ","Shops must touch homes (replacing workers) · always 12 rounds · 2-tier stars in 4 areas · reinforce for 3 coins"],["v4.1 วันเดียวกัน: เกมง่ายไป (ปีแรกๆ ปลอดภัย เก็บเงินไว้แล้วซื้อ Totem ทีเดียว) จึงให้ความเสี่ยงเริ่มที่ 4 (4/6/8/10) Totem แพงขึ้นเรื่อยๆ 8→12→16→20 และเพิ่มการรื้อ","v4.1 the same day: too easy (safe early years, hoard coins, buy every Totem at once). So risk starts at 4 (4/6/8/10), Totems climb 8→12→16→20, and demolish was added"],["วาด Totem เป็นของจริง (รถดับเพลิง คันกั้นน้ำ วิศวกร หอเตือนภัย) ไม่ใช่โล่","Totems drawn as the real thing (fire truck, flood wall, engineer, siren), not a shield"]],
+   why:["ทุกครั้งก่อนเปลี่ยนตัวเลข ให้บอท 4 แบบเล่นจำลองแบบละ 2,000 เกมก่อน เพื่อดูว่าเกมยากหรือง่ายไป ไม่ได้เดาเอา","Before any number changed, 4 kinds of bot played 2,000 simulated games each, so balance was measured, not guessed."],
+   links:[[["กติกา v4.1","v4.1 rules"],GH+"2026-11-02_v4-print-and-sim/rules_v4.1.md"],[["กระดาน A3 (PDF)","A3 board (PDF)"],H+"2026-11-02_v4-print-and-sim/MrMayor_v4_Board_A3_Color.pdf"],[["การ์ด 15 หน้า (PDF)","15 pages of cards (PDF)"],H+"2026-11-02_v4-print-and-sim/MrMayor_v4_Cards_Color.pdf"],[["สคริปต์จำลองเกม","Simulation script"],GH+"2026-11-02_v4-print-and-sim/v4sim.py"]]},
+ ]},
+ {n:"II",col:"#2F7FC0",t:["ยุคเกมเว็บ","The web-game era"],d:["3 – 13 พ.ย. · ทุกการเปลี่ยนแปลงมีบันทึกใน GitHub","3 – 13 Nov · every change is recorded on GitHub"],items:[
+  {d:["3 พ.ย.","3 NOV"],ic:["s_phone"],t:["ขึ้นเว็บครั้งแรก","Online for the first time"],
+   s:["เกม v4 กลายเป็นเกมเว็บ 8-bit ไฟล์เดียว ขึ้น GitHub Pages เล่นจากลิงก์ได้ทันทีไม่ต้องลงแอป วันเดียวกันเพิ่มผังเริ่มต้นแบบสุ่ม 8 แบบ (โซนละ 2 แบบ)","v4 became a single-file 8-bit web game on GitHub Pages — tap a link and play, no app. The same day it got 8 random starting towns (2 per zone)."],
+   links:[[["เล่นเวอร์ชันเว็บแรกสุด","Play the very first web version"],H+"2026-11-03_first-web-game/index.html",1]]},
+  {d:["4 พ.ย.","4 NOV"],ic:["s_crown"],big:1,t:["อาจารย์อนุมัติ: บูธเป็นเกมเว็บอย่างเดียว","Approved: the booth is a web game"],
+   s:["ไม่ต้องทำเกมกระดานจริงแล้ว อาจารย์รู้ว่ากลุ่มใช้ AI และอนุญาต ตราบที่ไอเดียเป็นของกลุ่มและเข้าใจเกมจริง คืนเดียวกันเกมได้ระบบใหญ่หลายอย่าง","No physical board game needed any more. The teacher knew the group used AI and allowed it, as long as the idea was theirs and they truly understood the game. That night the game gained several big systems."],
+   ch:[["บันทึกเกมอัตโนมัติ · ถามว่าจะเล่นต่อหรือเริ่มใหม่","Autosave, and a continue-or-new-game prompt"],["สรุปผลท้ายวาระ · บันทึกรูปเมือง · เสียง 8-bit · ฉลอง Best Mayor · ตารางคะแนน","End-of-term summary, save-your-city image, 8-bit sound, Best Mayor celebration, leaderboard"],["<b>เมืองมีชีวิต</b>: รถ คน นกในสวน ไฟหน้าต่าง คนหลบภัยตอนเกิดเหตุ","<b>A living city</b>: traffic, people, birds in parks, lit windows, people taking shelter"],["ภัยบนแผนที่แยกตามชนิด และซากอาคารต่างกัน (หลังคาปลิว โคลน ซากปรักหักพัง ไหม้เกรียม)","Hazard-specific damage and ruins (roofs torn off, flood mud, quake rubble, charring)"],["ตัดการ์ดพยากรณ์อากาศออก","The weather-forecast card cut"]]},
+  {d:["5 พ.ย.","5 NOV"],ic:["s_fire"],t:["จอใหญ่ จั่วการ์ดแบบแตะ และการ์ดที่ถูกทำลาย","Laptop layout, tap-to-draw, cards that get destroyed"],
+   s:["ทำหน้าจอ laptop ให้เห็นทั้งเกมโดยไม่ต้องเลื่อน ลำดับรอบใหม่ (v5) ให้แตะเพื่อจั่วการ์ดและทอยเต๋า การ์ดบินไปวางบนโต๊ะ การ์ดภัยถูกทำลายตามแบบของภัย (น้ำท่วมจม แผ่นดินไหวแตกร้าว ไฟไหม้เป็นเถ้า) และรถดับเพลิงขับออกไปหลังดับไฟ","A laptop layout that fits without scrolling. Round flow v5: tap to draw and to roll, cards fly to the desk, disaster cards are destroyed in their own way (the flood card sinks, the quake card cracks, the fire card burns to ash) and the fire truck drives off afterwards."],
+   ch:[["แก้ตามรายงานทดสอบรอบ 1: แผนที่บนมือถือไม่ถูกบัง ขอให้หมุนจอเป็นแนวตั้ง","Fixes from test report 1: the phone map is no longer covered; a prompt to turn the phone upright"]]},
+  {d:["6 พ.ย.","6 NOV"],ic:["x_factory","s_green"],big:1,t:["ผังเมืองจริงจัง: โรงงานห่างบ้าน สวนลดความเสี่ยง","Real planning: factories away from homes, parks cut risk"],
+   s:["วันที่กติกาเชื่อมกับ SDG 11 มากขึ้นอีกขั้น","The day the rules tied even closer to SDG 11."],
+   ch:[["<b>โรงงานห้ามติดบ้านหรือคอนโด</b> (ทแยงได้) เหมือนผังเมืองจริง","<b>No factory next to a house or apartment block</b> (diagonals fine), like real zoning"],["ไฟจราจรที่สี่แยก รถหยุดหลังเส้น คนรอข้ามทางม้าลาย","Traffic lights at the crossroads; cars stop at the line, people wait to cross"],["<b>สวนลดความเสี่ยงแห่งละ 1</b> (สูงสุด 3 ต่ำสุด 2)","<b>Each park cuts risk by 1</b> (up to 3, never below 2)"],["<b>โหมดฝึก 4 รอบ</b> พาเล่นทีละขั้น แทนรอบแรกแบบเดิม","<b>4-round practice mode</b>, step by step, replacing the old guided first round"]]},
+  {d:["7–9 พ.ย.","7–9 NOV"],ic:["s_flood"],t:["พร้อมบูธ และแก้ตามรายงานทดสอบรอบ 2","Booth-ready, and test report 2"],
+   s:["ฝังฟอนต์ในไฟล์ให้เล่นได้แม้ไม่มีเน็ต เพิ่มโหมดบูธสำหรับ MacBook (ไม่มีคนแตะ 2 นาทีแล้วรีเซ็ต กดค้างโลโก้เพื่อรีเซ็ต) แล้วให้บอทเล่นกว่า 300 เกมเพื่อหาบั๊กและช่องโหว่","Fonts embedded so the game runs with no internet; booth mode for the MacBooks (reset after 2 idle minutes, hold the logo to reset); then 300+ bot games hunting for bugs and loopholes."],
+   ch:[["โหมดฝึกไม่ค้างแล้ว ถ้าน้ำท่วมไม่ทำให้อะไรพัง","Practice no longer locks if the flood damages nothing"],["<b>น้ำท่วมทำให้โรงงานพังด้วย</b> อ้างอิงน้ำท่วมนิคมอุตสาหกรรมปี 2554 (เดิมโรงงานริมแม่น้ำไม่มีวันพัง)","<b>Floods now damage factories</b>, after the 2011 industrial-estate floods (before, a riverside factory could never be hit)"],["การ์ดที่ขัดกันไม่ออกรอบเดียวกัน","Contradicting event cards are never dealt together"]],
+   why:["บอทที่ตั้งใจใช้ช่องโหว่โรงงานริมแม่น้ำได้ 7 ดาวบ่อยกว่าปกติหลายเท่า เกมที่ดีไม่ควรมีที่ปลอดภัย 100%","A bot that abused the riverside-factory loophole hit 7 stars many times more often. A good game shouldn't have a 100% safe spot."]},
+  {d:["11 พ.ย.","11 NOV"],ic:["s_trophy","s_star"],t:["ตารางคะแนนรวม และไอคอน 8-bit ทั้งหมด","A shared leaderboard and all-pixel icons"],
+   s:["เชื่อมตารางคะแนนรวมด้วย Google Sheets ทุกเครื่องเห็นอันดับเดียวกัน เปลี่ยนอีโมจิทุกตัวเป็นไอคอน 8-bit ที่วาดเอง","The shared leaderboard goes live on Google Sheets — every device sees the same ranking. Every emoji was replaced with hand-drawn 8-bit icons."],
+   ch:[["คอนโดได้ 2 เหรียญต่อรอบ (เดิม 1) ทดสอบด้วยบอท 50 เกม: Best Mayor จาก 4% เป็น 16%","Apartments earn 2 a round (was 1). Bot test, 50 games: Best Mayor went from 4% to 16%"],["ฟอนต์ตัวเลขพิกเซลอ่านง่ายขึ้น แถบสถานะบนมือถือ ตัวกรองชื่อไม่สุภาพ","A clearer pixel number font, a phone status bar, a rude-name filter"]]},
+  {d:["12 พ.ย.","12 NOV"],ic:["s_storm"],t:["เอฟเฟครอบใหญ่","The big effects pass"],
+   s:["การ์ดพายุโดนฟ้าผ่าแล้วไหม้เป็นถ่าน การ์ดไฟไหม้ลุกจากมุมเป็นเปลวไฟ ถ่าน แล้วเถ้า การ์ดน้ำท่วมทำใหม่ด้วยคลื่นพิกเซลและฟองน้ำ ป้ายประกาศขึ้นปีใหม่ เหรียญบินจากอาคารเข้ากระเป๋า","The storm card is struck by lightning and turns to charcoal; the fire card catches at a corner and goes flame, ember, ash; the flood card was redone with pixel waves and foam; a new-year banner; coins fly from buildings into your purse."]},
+  {d:["13 พ.ย.","13 NOV"],ic:["s_phone","s_trophy"],t:["ทดสอบบน iPhone แล้วงง จึงแก้ใหม่","Tested on an iPhone, got confused, fixed it"],
+   s:["หลังลองเล่นโหมดฝึกบน iPhone เองแล้วพบว่างง จึงทำใหม่ให้ชี้ช่องบนแผนที่ที่ต้องแตะ และเขียนหน้าทอยเต๋ากับป้ายปีใหม่ให้อ่านง่ายขึ้น","After trying practice mode on an iPhone and finding it confusing, it was rebuilt to point at the exact lot to tap, and the dice screen and new-year banner were rewritten in plain language."],
+   ch:[["ตาข่ายนิรภัย: เอฟเฟคที่พังจะไม่ทำให้เกมค้าง","A safety net: a broken effect can no longer freeze the game"],["<b>จอตารางนายกฯ</b> สำหรับ iPad ที่บูธ อัปเดตสด พร้อมพลุตอนมี Best Mayor ใหม่","<b>The live leaderboard screen</b> for the booth iPad, with fireworks for every new Best Mayor"],["<b>ดาวเท่ากัน ใครเร็วกว่าอยู่สูงกว่า</b> (จับเวลาตั้งแต่รอบ 2)","<b>Equal stars? The faster mayor ranks higher</b> (timed from round 2)"],["บันทึกประวัติทั้งหมดลง HISTORY.md","The whole history written up in HISTORY.md"]]},
+ ]},
+ {n:"III",col:"#D08A1C",t:["ยุคบูธ","The booth era"],d:["15 – 17 พ.ย. · ของจริงที่ผู้เข้าชมจับต้องได้","15 – 17 Nov · things visitors can hold"],items:[
+  {d:["15 พ.ย.","15 NOV"],ic:["s_crown","s_star"],big:1,t:["บัตร MAYOR ID และ Special Edition","MAYOR ID cards and the Special Edition"],
+   s:["บัตรขนาดบัตรเครดิต 4 ระดับตามดาวที่ได้ QR บนบัตรเปิดหน้าบัตรของตัวเอง บัตรทองมีเลขประจำ No.001–020 และปลดล็อก Special Edition ให้ลงสมัครสมัยที่ 2 เป็น <b>Legendary Mayor</b> ในเมืองสีทอง","Credit-card-size cards in 4 tiers by stars. The QR opens your own card page. Gold cards are numbered No.001–020 and unlock the Special Edition: run for a second term as <b>Legendary Mayor</b> in a golden city."],
+   ch:[["Best Mayor (ทอง) · Deputy Mayor (เงิน) · City Councillor (ทองแดง) · Citizen (ฟ้า)","Best Mayor (gold) · Deputy Mayor (silver) · City Councillor (bronze) · Citizen (blue)"],["Staff Pass สำหรับทีมงาน: ปุ่มเปิดเครื่องมือบูธ ขั้นตอนมอบรางวัล วิธีแก้ปัญหา และเครดิต","A Staff Pass for the team: booth tools, prize steps, troubleshooting and credits"],["ศาลาว่าการตั้ง iPad ทำจากกล่องลังกับโฟมที่เหลือจากการสั่งโต๊ะ","The City Hall stand for the iPad, made from boxes and foam left over from ordering the table"]]},
+  {d:["16 พ.ย.","16 NOV"],ic:["s_book"],t:["คู่มือหน้านี้","This guide"],
+   s:["รวม SDG 11 วิธีเล่น และการ์ดทุกใบไว้หน้าเดียว ภาพทุกภาพดึงจากโค้ดเกมจริง และเช้าวันงานเพิ่มปุ่มเปิดคู่มือนี้ในหน้าบัตรทุกระดับ บัตรที่พิมพ์แล้วไม่ต้องพิมพ์ใหม่","SDG 11, the rules and every card on one page, with every picture taken from the game's own code. On the morning of the show, a button to this guide was added to every card page — no reprinting needed."]},
+  {d:["17 พ.ย.","17 NOV"],ic:["s_crown"],now:1,t:["วันงาน: ถึงตาคุณเป็นนายกฯ","Showcase day: your turn to be mayor"],
+   s:["MacBook 2 เครื่องในโหมดบูธ iPad เปิดจอตารางนายกฯ ทั้งวัน และ QR ให้ทุกคนเล่นบนมือถือตัวเอง จากเกมที่เล่นจบใน 3 นาที สู่วาระนายกฯ 4 ปีที่ต้องรับมือภัยพิบัติจริงจัง","Two MacBooks in booth mode, an iPad showing the leaderboard all day, and a QR so anyone can play on their own phone. From a 3-minute game to a 4-year term facing real disasters."]},
+ ]},
+];
 
 /* ======================= VIEW ======================= */
 function view(){
@@ -801,30 +904,51 @@ function view(){
 <!-- ============ STORY ============ -->
 <section id="story"><div class="wrap">
   <div class="sh rv"><span class="no">07</span><h2>${T("เบื้องหลังเกม","Behind the game")}</h2>
-    <p>${T("จากเกมกระดานบนโต๊ะ สู่เกมเว็บ 8-bit ที่เล่นบนมือถือได้","From a tabletop board game to an 8-bit web game you can play on your phone.")}</p></div>
-  <div class="grid2">
-    <div class="jr rv">
-      ${[
-       ["SEP 2026",["ไอเดียแรก: เกมกระดาน A2 วางบล็อก 3 มิติ จั่วการ์ดกติกา","First idea: an A2 board game with 3D blocks and rule cards"]],
-       ["7 OCT",["v1 \"Build the City!\" กระดาน 6×6 พรีเซนต์ครั้งแรก อาจารย์บอกว่า \"สั้นไป กว้างไป เลือกปัญหาเดียว\"","v1 \"Build the City!\" on a 6×6 board, first pitch. Our teacher: \"Too short, too broad — pick one problem.\""]],
-       ["18 OCT",["เลือกปัญหาเดียว: ภัยพิบัติ · รายได้ทุกรอบ · ลูกเต๋าเทียบความเสี่ยง · Totem","One problem chosen: disasters. Income every round, dice against risk, Totems."]],
-       ["2 NOV",["v4 กติกาหลักปัจจุบัน · บอทจำลองเล่นหลายพันเกมเพื่อปรับสมดุล","v4, today's core rules. Bots played thousands of simulated games to balance it."]],
-       ["3–4 NOV",["เกมเว็บ 8-bit ขึ้นออนไลน์ อาจารย์อนุมัติให้บูธเป็นเกมเว็บ","The 8-bit web game goes online; the booth becomes a web game."]],
-       ["5–12 NOV",["เมืองมีชีวิต (รถ คน ไฟจราจร) · เอฟเฟคภัย · ตารางคะแนนรวม","A living city (cars, people, traffic lights), disaster effects, a shared leaderboard."]],
-       ["13–15 NOV",["โหมดฝึก 4 รอบ · จอตารางนายกฯ · บัตร MAYOR ID","4-round practice, the live leaderboard screen, MAYOR ID cards."]],
-       ["17 NOV",["วันงาน · ถึงตาคุณเป็นนายกฯ","Showcase day — your turn to be mayor."]],
-      ].map(([d,t],i,a)=>`<div class="${i===a.length-1?"now":""}"><b>${d}</b><span>${L(t)}</span></div>`).join("")}
-    </div>
+    <p>${T("Mr. Mayor ไม่ได้เกิดมาเป็นเกมเว็บ มันเริ่มจากเกมกระดานบนโต๊ะ ถูกรื้อและคิดใหม่หลายรอบใน 2 เดือน จนกลายเป็นเกมที่คุณเล่นวันนี้ ทุกเหตุการณ์ข้างล่างมีหลักฐานจริง และบางเวอร์ชันยังเปิดเล่นได้",
+      "Mr. Mayor wasn't born a web game. It started as a tabletop board game and was torn down and rethought several times in two months before it became the game you play today. Everything below really happened, and some old versions are still playable.")}</p></div>
+
+  <div class="sstats rv">${[
+    ["5",["เวอร์ชันกติกา","rule versions"],["v1 → v2 → v3 → v4 → v4.1","v1 → v2 → v3 → v4 → v4.1"]],
+    ["1",["ฟีดแบ็กที่เปลี่ยนทุกอย่าง","review that changed everything"],["\"สั้นไป กว้างไป\"","\"too short, too broad\""]],
+    ["2,000",["เกมจำลองต่อบอทหนึ่งแบบ","simulated games per bot type"],["ก่อนเปลี่ยนตัวเลขทุกครั้ง","before any number changed"]],
+    ["58",["commit บน GitHub","GitHub commits"],["3–17 พ.ย. ดูได้ทุกครั้ง","3–17 Nov, every one public"]],
+  ].map(([n,a,b])=>`<div><b>${n}</b><span>${L(a)}</span><small>${L(b)}</small></div>`).join("")}</div>
+
+  ${STORY.map(ph=>`<div class="phase rv" style="--pc:${ph.col}"><span class="pn">${ph.n}</span><div><b>${L(ph.t)}</b><span>${L(ph.d)}</span></div></div>
+   <div class="chs">${ph.items.map(it=>`<article class="chx rv${it.big?" big":""}"><div class="cd"><b>${L(it.d)}</b>${it.ic?`<span>${it.ic.map(k=>I(k)).join("")}</span>`:""}</div>
+     <div class="cc"><h4>${L(it.t)}</h4><p>${L(it.s)}</p>
+      ${it.q?`<blockquote>${L(it.q)}<cite>${L(it.qc)}</cite></blockquote>`:""}
+      ${it.ch?`<ul>${it.ch.map(x=>`<li>${L(x)}</li>`).join("")}</ul>`:""}
+      ${it.why?`<div class="why2"><b>${T("ทำไม","WHY")}</b>${L(it.why)}</div>`:""}
+      ${it.fun?`<div class="fun"><b>${T("เกร็ด","FUN FACT")}</b>${L(it.fun)}</div>`:""}
+      ${it.links?`<div class="lks">${it.links.map(([l,h,play])=>`<a class="${play?"play":""}" href="${h}" target="_blank" rel="noopener">${play?"▶ ":""}${L(l)}</a>`).join("")}</div>`:""}
+     </div></article>`).join("")}</div>`).join("")}
+
+  <div class="grid2" style="margin-top:20px">
+    <div class="box rv"><h3>${I("s_shield")}${T("อยู่รอดมาตั้งแต่วันแรก","Survived from day one")}</h3>
+      <ul class="kl">${[["มงกุฎ <b>Best Mayor</b> และธีมนายกฯ","The <b>Best Mayor</b> crown and the mayor theme"],["แผนที่ตารางที่มี<b>ถนนกากบาท</b>แบ่งเมืองเป็น 4 โซน","A grid map with a <b>cross of roads</b> splitting the city into 4 zones"],["บ้าน ร้านค้า สวน โรงงาน และอาคาร 2 ช่อง (ตอนนี้คือคอนโด)","House, shop, park, factory and a 2-lot building (now apartments)"],["<b>ห้ามตั้งโรงงานติดบ้าน</b> เริ่มจากการ์ดใบที่ 08 ของ v1","<b>No factories next to homes</b>, first seen on v1's card 08"],["นับเฉพาะด้านที่ติดกัน ทแยงไม่นับ","Only shared sides count, never diagonals"],["การ์ดที่ขัดกันจะไม่จั่วคู่กัน (มีตั้งแต่ v1)","Contradicting cards are never drawn together (since v1)"]].map(x=>`<li>${L(x)}</li>`).join("")}</ul></div>
+    <div class="box rv"><h3>${I("x_debris")}${T("ถูกตัดทิ้งระหว่างทาง","Cut along the way")}</h3>
+      <ul class="kl cut">${[["บล็อกไม้ 3 มิติทาสี และกระดานพิมพ์จริง","Painted 3D blocks and a printed board"],["นาฬิกาจับเวลา 120 วินาที และการ์ดภารกิจ","The 120-second timer and mission cards"],["ฤดูกาล และระบบคนงาน (v2)","Seasons and the workers system (v2)"],["กองการ์ดสถานที่ และชนะทันที (v3)","The location deck and instant wins (v3)"],["จำนวนประชากรเป็นเป้าหมาย","Population as the goal"],["การ์ดพยากรณ์อากาศ (ตัดออก 4 พ.ย.)","The weather-forecast card (cut 4 Nov)"]].map(x=>`<li>${L(x)}</li>`).join("")}</ul></div>
+  </div>
+
+  <div class="grid2" style="margin-top:14px">
+    <div class="box rv"><h3>${I("s_crown")}${T("ใครทำอะไร","Who did what")}</h3>
+      <p><b>${T("ผู้สร้างและเจ้าของไอเดีย: Alex","Creator and owner of the idea: Alex")}</b> ${T("ตั้งแนวคิดและธีม \"นายกฯ / Best Mayor\" เลือกโฟกัสภัยพิบัติหลังได้ฟีดแบ็กจากอาจารย์ ตัดสินใจกติกาทุกข้อ ทดลองเล่นและสั่งแก้ทุกเวอร์ชัน",
+        "set the concept and the \"Mayor / Best Mayor\" theme, chose the disaster focus after the teacher's review, decided every rule, and playtested and directed every version.")}</p>
+      <p class="sm">${T("ใช้ AI เป็นเครื่องมือ (อาจารย์อนุญาต โดยมีเงื่อนไขว่าไอเดียต้องเป็นของกลุ่มและต้องเข้าใจเกมจริง): ChatGPT ช่วยเรียบเรียงสเปกเวอร์ชันแรก · Claude ช่วยเสนอทางเลือก เขียนเอกสาร จำลองเกมด้วยบอท เขียนโค้ด และทดสอบ · ข้อเสนอของ AI ที่ไม่ถูกเลือกก็มีจำนวนมาก",
+        "AI was used as a tool (allowed by the teacher, on condition that the idea is the group's and that they truly understand the game): ChatGPT helped write up the first spec; Claude proposed options, wrote documents, ran bot simulations, wrote code and tested. Plenty of AI suggestions were turned down.")}</p>
+      <p class="note">${T("ทีม: กลุ่ม 321B G.4 · ENL511 · English Major Showcase มหาวิทยาลัยกรุงเทพ","Team: Group 321B G.4 · ENL511 · English Major Showcase, Bangkok University")}</p>
+      <div class="lks"><a href="https://github.com/KiwiIsberry/mr-mayor/blob/main/HISTORY.md" target="_blank" rel="noopener">${T("อ่านประวัติฉบับเต็ม (HISTORY.md)","Read the full history (HISTORY.md)")}</a><a href="https://github.com/KiwiIsberry/mr-mayor/commits/main" target="_blank" rel="noopener">${T("ดูทุก commit","See every commit")}</a></div></div>
     <div class="box rv"><h3>${I("s_trophy")}${T("ตัวเลขน่ารู้","By the numbers")}</h3>
       <table class="t">
         <tr><td><b>${T("ภาพทุกชิ้น","Every picture")}</b></td><td>${T("วาดด้วยโค้ดทีละพิกเซล ทั้งอาคาร การ์ด ภัย และ Totem","drawn pixel by pixel in code — buildings, cards, hazards, Totems")}</td></tr>
-        <tr><td><b>36</b></td><td>${T("ช่องที่สร้างได้บนแผนที่","buildable lots on the map")}</td></tr>
-        <tr><td><b>30 + 12</b></td><td>${T("การ์ดเหตุการณ์ + การ์ดภัย (ไม่นับไฟไหม้โรงงาน)","event cards + disaster cards (not counting factory fires)")}</td></tr>
+        <tr><td><b>3 นาที → 15–20</b></td><td>${T("เวลาเล่น v1 เทียบกับตอนนี้","play time of v1 versus today")}</td></tr>
+        <tr><td><b>6×6 → 7×7</b></td><td>${T("ขนาดกระดาน (25 → 36 ช่องที่สร้างได้)","board size (25 → 36 buildable lots)")}</td></tr>
+        <tr><td><b>15 → 30 + 12</b></td><td>${T("การ์ด v1 เทียบกับการ์ดเหตุการณ์ + การ์ดภัยวันนี้","v1's cards versus today's event + disaster cards")}</td></tr>
         <tr><td><b>2</b></td><td>${T("ภาษา ไทย และอังกฤษ","languages, Thai and English")}</td></tr>
         <tr><td><b>0</b></td><td>${T("ต้องใช้เน็ตไหม? เกมทั้งเกมอยู่ในไฟล์เดียว เล่นออฟไลน์ได้","internet needed — the whole game is one file and plays offline")}</td></tr>
       </table>
-      <p class="note">${T("เครื่องมือ: HTML · JavaScript · GitHub Pages · Google Sheets · AI ช่วยเขียนโค้ด ไอเดียและการตัดสินใจกติกาเป็นของทีม","Built with HTML, JavaScript, GitHub Pages and Google Sheets. AI helped write the code; the ideas and every rule decision are the team's.")}</p>
-      <p class="note">${T("ทีม: กลุ่ม 321B G.4 · ENL511 · English Major Showcase มหาวิทยาลัยกรุงเทพ","Team: Group 321B G.4 · ENL511 · English Major Showcase, Bangkok University")}</p></div>
+      <p class="note">${T("เครื่องมือ: HTML · JavaScript · GitHub Pages · Google Sheets","Built with HTML, JavaScript, GitHub Pages and Google Sheets.")}</p></div>
   </div>
   <div class="cta rv" style="margin-top:22px"><h2>${T("พร้อมเป็นนายกฯ หรือยัง?","Ready to be mayor?")}</h2>
     <p>${T("4 ปี 12 รอบ 4 ภัย และเมืองเดียวที่คุณต้องดูแล","4 years, 12 rounds, 4 hazards — and one city in your hands.")}</p>
