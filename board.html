@@ -332,8 +332,8 @@ async function poll(){
   if(busy||fanOn){ return } busy=true;
   try{ let j;
     if(DEMO) j=demoStep();
-    else { const ctl=new AbortController(), to=setTimeout(()=>ctl.abort(),12000);
-      const r=await fetch(`${LB_URL}?a=top&n=20&_=${Date.now()}`,{cache:"no-store",signal:ctl.signal}); clearTimeout(to);
+    else { const ctl=new AbortController(), to=setTimeout(()=>ctl.abort(),20000);
+      const r=await fetch(`${LB_URL}?a=top&n=100&_=${Date.now()}`,{cache:"no-store",signal:ctl.signal}); clearTimeout(to);
       if(!r.ok) throw new Error("HTTP "+r.status); j=await r.json(); if(!j||!Array.isArray(j.top)) throw new Error("bad data") }
     setLive(true,Date.now()); await handle(j,false); fails=0
   }catch(e){ fails++; setLive(false) }
