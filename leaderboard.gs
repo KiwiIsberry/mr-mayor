@@ -20,12 +20,16 @@ function doPost(e) {
   var sec = Math.max(0, Math.min(36000, Math.floor(Number(d.sec) || 0)));
   var lock = LockService.getScriptLock();
   lock.waitLock(5000);
-  try { sheet_().appendRow([new Date(), name, stars, pts, id, sec]); } finally { lock.releaseLock(); }
+  try {
+    // a retry after a slow reply sends the same score again: keep only the first copy (same id)
+    var dup = id && sheet_().getDataRange().getValues().some(function (r) { return String(r[4]) === id; });
+    if (!dup) sheet_().appendRow([new Date(), name, stars, pts, id, sec]);
+  } finally { lock.releaseLock(); }
   return out(top_(10));
 }
 
 // Same simple word list as the game: rude names are stored as "Mayor".
-var BAD_ = ['ควย','เหี้ย','สัส','เย็ด','หี','แตด','ดอกทอง','อีดอก','แม่ง','ระยำ','ชิบหาย','เชี่ย','กระหรี่','ส้นตีน','เงี่ยน','หำ','เสือก','สถุน','fuck','shit','bitch','cunt','dick','pussy','asshole','nigg','fag','cock','slut','whore','porn','rape','nazi','hitler','penis','vagina','bastard'];
+var BAD_ = ['kuay','kuy','ควย','เหี้ย','สัส','เย็ด','หี','แตด','ดอกทอง','อีดอก','แม่ง','ระยำ','ชิบหาย','เชี่ย','กระหรี่','ส้นตีน','เงี่ยน','หำ','เสือก','สถุน','fuck','shit','bitch','cunt','dick','pussy','asshole','nigg','fag','cock','slut','whore','porn','rape','nazi','hitler','penis','vagina','bastard'];
 function rude_(n) {
   var t = String(n).toLowerCase().replace(/[\u200b-\u200d\ufeff]/g, '')
     .replace(/0/g, 'o').replace(/[1!|]/g, 'i').replace(/3/g, 'e').replace(/[4@]/g, 'a').replace(/[5$]/g, 's').replace(/7/g, 't')
@@ -38,8 +42,10 @@ function sheet_() { return SpreadsheetApp.getActiveSpreadsheet().getSheets()[0];
 
 // top: best n rows · total: every score sent · best: how many Best Mayors (8 stars) — board.html shows the last two
 function top_(n) {
+  var seen = {};
   var rows = sheet_().getDataRange().getValues().filter(function (r) {
-    return r[1] !== '' && r[1] !== 'name';
+    if (r[1] === '' || r[1] === 'name') return false;
+    var k = String(r[4]); if (k && seen[k]) return false; if (k) seen[k] = 1; return true;
   });
   var t = function (r) { var v = Number(r[5]); return v > 0 ? v : 1e9; };   // no time recorded = after everyone with a time
   rows.sort(function (a, b) { return (b[2] - a[2]) || (t(a) - t(b)) || (b[3] - a[3]) || (new Date(a[0]) - new Date(b[0])); });

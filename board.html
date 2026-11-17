@@ -290,7 +290,7 @@ function setStats(j){ if(typeof j.total!=="number") return; const s=$("stats"); 
     el.textContent=v; if(was!=null&&v>was){ const p=document.createElement("span"); p.className="plus"; p.textContent="+"+(v-was); el.appendChild(p); setTimeout(()=>p.remove(),1700) } meta[k]=v }) }
 let busy=false, sig="";
 async function handle(j,fromCache){
-  const top=(Array.isArray(j.top)?j.top:[]).slice(0,10).map(e=>({name:String(e.name||"Mayor").slice(0,20),stars:Math.max(0,Math.min(8,e.stars|0)),pts:e.pts|0,sec:Math.max(0,e.sec|0),id:e.id?String(e.id):""}));
+  const seen=new Set(), top=(Array.isArray(j.top)?j.top:[]).filter(e=>{ const k=e&&e.id?"i"+e.id:JSON.stringify(e); if(seen.has(k)) return false; seen.add(k); return true }).slice(0,10).map(e=>({name:String(e.name||"Mayor").slice(0,20),stars:Math.max(0,Math.min(8,e.stars|0)),pts:e.pts|0,sec:Math.max(0,e.sec|0),id:e.id?String(e.id):""}));
   const s=JSON.stringify(top); const prevTotal=meta.total; setStats(j);
   if(s===sig){ if(!fromCache&&typeof j.total==="number"&&prevTotal!=null&&j.total>prevTotal) banner(`มีนายกฯ คนใหม่ส่งคะแนนแล้ว · สู้ต่อ ยังไม่ถึง 10 อันดับแรก!`); return }
   const initial=first, oldKeys=new Set(cur.map(key));
@@ -306,7 +306,7 @@ async function poll(){
   try{ let j;
     if(DEMO) j=demoStep();
     else { const ctl=new AbortController(), to=setTimeout(()=>ctl.abort(),12000);
-      const r=await fetch(`${LB_URL}?a=top&n=10&_=${Date.now()}`,{cache:"no-store",signal:ctl.signal}); clearTimeout(to);
+      const r=await fetch(`${LB_URL}?a=top&n=20&_=${Date.now()}`,{cache:"no-store",signal:ctl.signal}); clearTimeout(to);
       if(!r.ok) throw new Error("HTTP "+r.status); j=await r.json(); if(!j||!Array.isArray(j.top)) throw new Error("bad data") }
     setLive(true,Date.now()); await handle(j,false); fails=0
   }catch(e){ fails++; setLive(false) }
