@@ -5,7 +5,7 @@
 // Ranking: more stars first; on equal stars the shorter play time wins; then pts; then who sent first. Delete a row in the Sheet to remove a fake score.
 
 function doGet(e) {
-  var n = Math.max(1, Math.min(20, Number(e && e.parameter && e.parameter.n) || 10));
+  var n = Math.max(1, Math.min(500, Number(e && e.parameter && e.parameter.n) || 10));
   return out(top_(n));
 }
 
